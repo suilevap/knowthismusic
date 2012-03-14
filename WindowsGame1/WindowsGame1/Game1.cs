@@ -48,6 +48,7 @@ namespace WindowsGame1
     public struct Cursor
     {
         public Vector2 position;
+        public Vector2 prevposition;
         public bool pressed;
         public bool justPressed;
     }
@@ -88,9 +89,7 @@ namespace WindowsGame1
 #else
         private string demoFile = "demo.txt";
 #endif
-        //private List<string> demoList = new List<string>();
-        //private List<TimeSpan> timeStamps = new List<TimeSpan>();
-        //private List<float[]> timePayload = new List<float[]>();
+
         List<DemoData> DemoDatas = new List<DemoData>();
         List<DemoData2> DemoDatas2 = new List<DemoData2>();
         public int demoPointer = 0;
@@ -130,8 +129,8 @@ namespace WindowsGame1
             graphics = new GraphicsDeviceManager(this);
 
 #if WINDOWS_PHONE
-            graphics.PreferredBackBufferWidth = 480; // ширина приложения
-            graphics.PreferredBackBufferHeight = 800; // высота приложения
+            graphics.PreferredBackBufferWidth = 800; // ширина приложения
+            graphics.PreferredBackBufferHeight = 480; // высота приложения
             graphics.IsFullScreen = true; // флаг полноэкранного приложения
 
 #else
@@ -173,7 +172,7 @@ namespace WindowsGame1
             {
                 MusicSrc a;
                 // if (i<3)
-                a = new MusicSrc(MelList[i], new Vector2(70f + i * 79, 650f - i * 10), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.5f, 0.7f);
+                a = new MusicSrc(MelList[i], new Vector2(70f + i * 79, 350f - i * 10), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.7f);
                 //else
                 //     a = new MusicSrc(MelList[i], new Vector2(100f + (i-3) * 70, 600f+i*10), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.5f, 0.5f);
 
@@ -234,12 +233,12 @@ namespace WindowsGame1
                 }
 #else
                 //string[] aa = File.ReadAllLines(demoFile + "x");
-                Stream stream = TitleContainer.OpenStream("Content/"+demoFile + "x");
+                Stream stream = TitleContainer.OpenStream("Content/" + demoFile + "x");
                 using (StreamReader sr = new StreamReader(stream))
                 {
                     TimeSpan prevTime = new TimeSpan(0);
                     string a;
-                    while ((a = sr.ReadLine()) != null)                
+                    while ((a = sr.ReadLine()) != null)
                     {
                         string[] temp = a.Split(";".ToCharArray());
                         TimeSpan timesp = TimeSpan.Parse(temp[0]);
@@ -253,25 +252,7 @@ namespace WindowsGame1
 
                 demoPoints = DemoDatas2.Count();
 #endif
-                //string[] fromFile = File.ReadAllLines(demoFile);
 
-                //foreach (string a in fromFile)
-                //{
-
-                //    string[] b = a.Split(";".ToCharArray());
-                //    timeStamps.Add(TimeSpan.Parse(b[0]));
-                //    float[] c = new float[128];
-                //    for (int i = 1; i < 129; i++)
-                //    {
-                //        c[i - 1] = float.Parse(b[i]);
-
-
-                //    }
-
-                //    timePayload.Add(c);
-
-                //}
-                //demoPoints = fromFile.Length;
 
             }
 
@@ -499,6 +480,7 @@ namespace WindowsGame1
         //cursor state
         public void CursorStateUpdate()
         {
+            cursor.prevposition = cursor.position;
 #if !WINDOWS_PHONE
             cursor.justPressed = false;
             cursor.position = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
@@ -528,6 +510,8 @@ namespace WindowsGame1
                 cursor.pressed = false;
             }
 #endif
+            if (cursor.justPressed)
+            { cursor.prevposition = cursor.position; }
 
         }
 
@@ -647,7 +631,7 @@ namespace WindowsGame1
                 File.WriteAllLines(demoFile + "x", finalDemo, System.Text.Encoding.ASCII);
             }
 #else
-            
+
 #endif
             // Stop the threads
         }

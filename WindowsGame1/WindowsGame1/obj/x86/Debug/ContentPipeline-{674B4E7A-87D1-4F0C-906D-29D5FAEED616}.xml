@@ -7,7 +7,7 @@
       <Importer>FontDescriptionImporter</Importer>
       <Processor>FontDescriptionProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\SpriteFont1.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\SpriteFont1.xnb</Output>
       <Time>2012-03-06T14:02:32+03:00</Time>
     </Item>
     <Item>
@@ -16,7 +16,7 @@
       <Importer>WavImporter</Importer>
       <Processor>SoundEffectProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\Miss2.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\Miss2.xnb</Output>
       <Time>2012-03-05T11:17:07.4035974+03:00</Time>
     </Item>
     <Item>
@@ -25,7 +25,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a1.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a1.xnb</Output>
       <Time>2012-03-06T11:06:42+03:00</Time>
     </Item>
     <Item>
@@ -34,7 +34,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a2.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a2.xnb</Output>
       <Time>2012-03-06T11:00:14+03:00</Time>
     </Item>
     <Item>
@@ -43,7 +43,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a3.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a3.xnb</Output>
       <Time>2012-03-06T11:00:28+03:00</Time>
     </Item>
     <Item>
@@ -52,7 +52,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a4.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a4.xnb</Output>
       <Time>2012-03-06T11:01:06+03:00</Time>
     </Item>
     <Item>
@@ -61,7 +61,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a5.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a5.xnb</Output>
       <Time>2012-03-06T11:07:08+03:00</Time>
     </Item>
     <Item>
@@ -70,7 +70,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a6.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a6.xnb</Output>
       <Time>2012-03-06T10:59:58+03:00</Time>
     </Item>
     <Item>
@@ -79,7 +79,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a7.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\a7.xnb</Output>
       <Time>2012-03-06T11:00:38+03:00</Time>
     </Item>
     <Item>
@@ -88,7 +88,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\SA400178.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\SA400178.xnb</Output>
       <Time>2012-03-06T17:55:45.0960455+03:00</Time>
     </Item>
     <Item>
@@ -97,7 +97,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\mouse.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\mouse.xnb</Output>
       <Time>2012-03-06T16:15:12+03:00</Time>
     </Item>
     <Item>
@@ -106,7 +106,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\ready.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\ready.xnb</Output>
       <Time>2012-03-06T16:42:19.7602692+03:00</Time>
     </Item>
     <Item>
@@ -115,7 +115,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\background.xnb</Output>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\background.xnb</Output>
       <Time>2012-03-06T21:48:42+03:00</Time>
     </Item>
     <Item>
@@ -124,8 +124,8 @@
       <Importer>Mp3Importer</Importer>
       <Processor>SongProcessor</Processor>
       <Options>None</Options>
-      <Output>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\Minus.xnb</Output>
-      <Extra>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\Minus.wma</Extra>
+      <Output>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\Minus.xnb</Output>
+      <Extra>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\Minus.wma</Extra>
       <Time>2012-03-06T12:10:00+03:00</Time>
     </Item>
     <BuildSuccessful>true</BuildSuccessful>
@@ -135,10 +135,10 @@
       <TargetProfile>Reach</TargetProfile>
       <BuildConfiguration>Debug</BuildConfiguration>
       <CompressContent>false</CompressContent>
-      <RootDirectory>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1Content\</RootDirectory>
-      <LoggerRootDirectory>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\</LoggerRootDirectory>
-      <IntermediateDirectory>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\obj\x86\Debug\</IntermediateDirectory>
-      <OutputDirectory>D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\</OutputDirectory>
+      <RootDirectory>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1Content\</RootDirectory>
+      <LoggerRootDirectory>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\</LoggerRootDirectory>
+      <IntermediateDirectory>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\obj\x86\Debug\</IntermediateDirectory>
+      <OutputDirectory>D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1\bin\x86\Debug\Content\</OutputDirectory>
     </Settings>
     <Assemblies>
       <Assembly>

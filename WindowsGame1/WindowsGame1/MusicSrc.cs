@@ -108,6 +108,11 @@ namespace WindowsGame1
 
         public void Updater(Game1 game)
         {
+            if (isPermPressed(game))
+            {
+                Position += game.cursor.position - game.cursor.prevposition;
+            }
+
             if (Angle!=0)
             {
                 float k=0.2f;
@@ -129,14 +134,13 @@ namespace WindowsGame1
                     if (game.timeSpa >= ts+game.pogreshn)
                     {
                         toRemove.Add(ts);
-
-                        //nextPoints.Removel(ts);
+                                                
                     }
                 }
                 if (toRemove.Count() > 0)
                 {
                     MediaPlayer.Volume = game.lowVol;
-                    //game.soundEffects[0].Play();
+                    
                     foreach (TimeSpan ts in toRemove)
                     {
                         nextPoints.Remove(ts);
@@ -173,7 +177,7 @@ namespace WindowsGame1
                     if (missClick)
                     {
                         MediaPlayer.Volume = game.lowVol;
-                        //game.soundEffects[1].Play();
+                        
                         game.soundEffects[0].Play();
                         game.score -= game.scoreAdd/2;
                         
@@ -205,19 +209,25 @@ namespace WindowsGame1
             }
             return result;
         }
+        private bool isPermPressed(Game1 game)
+        {
+            bool result = false;
+            if (game.cursor.pressed)
+            {
+                if (game.cursor.prevposition.X > (Position.X - Texture.Width * Size / 2) && game.cursor.prevposition.X < (Position.X + Texture.Width * Size / 2) && game.cursor.prevposition.Y > (Position.Y - Texture.Height / 2 * Size) && game.cursor.prevposition.Y < (Position.Y + Texture.Height / 2 * Size))
+                {
+                    result = true;
+
+                }
+            }
+            return result;
+        }
 
         public void Update2() // Обновление единичной частички2
         {
             
             alpha = 1;
-            //if (power != 0)
-            //{
-            //    if (powers.Max(x=>x.) == power)
-            //    {
-
-            //        alpha = 1;
-            //    }
-            //}
+       
 
         }
 
@@ -234,13 +244,7 @@ namespace WindowsGame1
                 List<TimeSpan> toRemove = new List<TimeSpan>();
                 foreach (TimeSpan ts in nextPoints)
                 {
-                    //if (timeSpa >= ts)
-                    //{
-                    //    toRemove.Add(ts);
-                        
-                    //    //nextPoints.Removel(ts);
-                    //}
-                    //else
+                  
                     {
                         Single coef;
                         Vector2 po;
@@ -249,11 +253,7 @@ namespace WindowsGame1
                             coef = ((float)((ts - timeSpa).Ticks) / zapas.Ticks);
                             po = new Vector2(Position.X, Position.Y - (float)Math.Sin(coef * 3.1416 / 2) * 500);
                         }
-                        //else
-                        //{
-                        //    coef = ((float)(( timeSpa-ts).Ticks) / game.pogreshn.Ticks);
-                        //    po = new Vector2(Position.X, Position.Y + (float)Math.Sin(coef * 3.1416 / 2) * 50);
-                        //}
+                        
                         float al=0.4f*(1-coef);
                         if (coef < 0)
                             al = 0.4f * (1 - Math.Abs(coef)*10);
@@ -263,15 +263,7 @@ namespace WindowsGame1
  
                     }
                 }
-                //if (toRemove.Count() > 0)
-                //{
-                //    foreach (TimeSpan ts in toRemove)
-                //    {
-                //        nextPoints.Remove(ts);
- 
-                //    }
- 
-                //}
+                
             }
 
            
