@@ -51,6 +51,7 @@ namespace WindowsGame1
         public Vector2 prevposition;
         public bool pressed;
         public bool justPressed;
+        public object draggedObject;
     }
 
     public struct powerAddition
@@ -512,6 +513,11 @@ namespace WindowsGame1
 #endif
             if (cursor.justPressed)
             { cursor.prevposition = cursor.position; }
+            if (!cursor.pressed)
+            {
+                cursor.draggedObject = null;
+            }
+
 
         }
 

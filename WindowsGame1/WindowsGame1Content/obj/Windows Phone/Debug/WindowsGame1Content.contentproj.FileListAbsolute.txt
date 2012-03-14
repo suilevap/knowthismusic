@@ -1,3 +1,4 @@
 E:\code\gamedevelop\fromSasha\hhh\WindowsGame1\WindowsGame1Content\obj\Windows Phone\Debug\ResolveAssemblyReference.cache
 D:\Repos\KnowThisMusic\WindowsGame1\WindowsGame1Content\obj\Windows Phone\Debug\ResolveAssemblyReference.cache
 D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1Content\obj\Windows Phone\Debug\ResolveAssemblyReference.cache
+E:\montag\knowThisMusic\WindowsGame1\WindowsGame1Content\obj\Windows Phone\Debug\ResolveAssemblyReference.cache
