@@ -109,7 +109,7 @@ namespace WindowsGame1
         public float lowVol = 0.25f;
         public int score = 0;
         public int scoreAdd = 100;
-        public int maxScore = 4500;
+        public int maxScore = 2000;
         Texture2D background;
         Texture2D back_background;
         Texture2D readyTexture;
@@ -607,12 +607,13 @@ namespace WindowsGame1
             }
             Vector2 origin = new Vector2(MouseIcon.Width / 2, MouseIcon.Height / 2);
             spriteBatch.Draw(MouseIcon, cursor.position, new Rectangle(0, 0, MouseIcon.Width, MouseIcon.Height), Color.MintCream, 0f, origin, 0.1f, SpriteEffects.None, 1f);
-
+             
             if (readyO != null)
                 readyO.Draw(spriteBatch, this);
 
            // spriteBatch.Drawl
             spriteBatch.DrawLine(new Vector2(100, 100), cursor.position, Color.Black);
+            spriteBatch.DrawRectangle(new Vector2(100, 100), cursor.position, Color.Black);
 
             spriteBatch.End();
 
