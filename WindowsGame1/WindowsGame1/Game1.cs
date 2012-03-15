@@ -73,7 +73,7 @@ namespace WindowsGame1
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        SpriteBatchEx spriteBatch;
         private List<Texture2D> MelList;
         private Texture2D MouseIcon;
         private Song song;
@@ -116,6 +116,7 @@ namespace WindowsGame1
         public bool ready = false;
         public bool toPlay = true;
         public Ready readyO = null;
+        
 
 
 
@@ -162,6 +163,9 @@ namespace WindowsGame1
             //graphics.SynchronizeWithVerticalRetrace = false;
 
             base.Initialize();
+
+            
+            
 
             readyO = new Ready(readyTexture, new Vector2(320, 240), 1);
 #if !WINDOWS_PHONE
@@ -267,7 +271,7 @@ namespace WindowsGame1
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            spriteBatch = new SpriteBatchEx(GraphicsDevice);
 
 
             // TODO: use this.Content to load your game content here
@@ -606,6 +610,9 @@ namespace WindowsGame1
 
             if (readyO != null)
                 readyO.Draw(spriteBatch, this);
+
+           // spriteBatch.Drawl
+            spriteBatch.DrawLine(new Vector2(100, 100), cursor.position, Color.Black);
 
             spriteBatch.End();
 
