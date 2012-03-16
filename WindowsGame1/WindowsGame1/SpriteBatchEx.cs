@@ -39,8 +39,19 @@ namespace WindowsGame1
 
         public void DrawRectangle(Vector2 start, Vector2 end, Color color)
         {
-
-            Draw(txPixel, start, null, Color.Black, 0, new Vector2(0, 0), new Vector2((end - start).X, (end - start).Y), SpriteEffects.None, 1f);
+            Vector2 start1=start;
+            Vector2 end1=end;
+            if (end.X - start.X < 0)
+            {
+                start1.X = end.X;
+                end1.X = start.X;
+            }
+            if (end.Y - start.Y < 0)
+            {
+                start1.Y = end.Y;
+                end1.Y=start.Y;
+            }
+            Draw(txPixel, start1, null, Color.Black, 0, new Vector2(0, 0), new Vector2((end1 - start1).X, (end1 - start1).Y), SpriteEffects.None, 1f);
 
 
         }
