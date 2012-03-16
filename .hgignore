@@ -1,4 +1,7 @@
-# use glob syntax.
+relre:/bin/
+relre:/obj/
+relre:.suo
+relre:.cachefile
+relre:ReSharper
 syntax: glob
-
-*.exe
+.vs10x

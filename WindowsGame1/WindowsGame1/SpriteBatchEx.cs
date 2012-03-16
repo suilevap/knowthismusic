@@ -45,6 +45,7 @@ namespace WindowsGame1
             {
                 start1.X = end.X;
                 end1.X = start.X;
+                
             }
             if (end.Y - start.Y < 0)
             {
