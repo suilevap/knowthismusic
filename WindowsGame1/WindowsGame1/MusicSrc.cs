@@ -24,19 +24,21 @@ namespace WindowsGame1
 
         public float alpha = 1f;
 
-        private float RComponent; // Красный компонент RGB
-        private float GComponent; // Зеленый компонент RGB
-        private float BComponent; // Синий компонент RGB
+       
         private int MinFreq;
         private int MaxFreq;
         private float React;// Тип частицы// Тип частицы
         public int power;
+        int score = 0;
+        int maxScore = 10;
         private float sumAdd;
         public List<TimeSpan> nextPoints = new List<TimeSpan>();
          Random random=new Random(); // Генератор случайных чисел
+        Ball myball;
+        Game1 gameobj;
 
         public MusicSrc(Texture2D texture, Vector2 position, Vector2 velocity,
-            float angle, float angularVelocity, int minFreq, int maxFreq, float react, float size)
+            float angle, float angularVelocity, int minFreq, int maxFreq, float react, float size, Game1 game)
         {
             // Установка переменных из конструктора
             Texture = texture;
@@ -49,14 +51,12 @@ namespace WindowsGame1
             MinFreq = minFreq;
             MaxFreq = maxFreq;
             React = react;
+            gameobj = game;
 
-            Color StartColor = new Color(1f, 0f, 0f); // Обычная
+            myball = new Ball(game.textures["ball"],position-new Vector2(60,0),new Vector2(0),0,0,1);
 
 
-
-            RComponent = ((int)StartColor.R) / 255f;
-            GComponent = ((int)StartColor.G) / 255f;
-            BComponent = ((int)StartColor.B) / 255f;
+         
 
             color = new Vector4(1f, 1f, 1f, alpha);
 
@@ -108,6 +108,9 @@ namespace WindowsGame1
 
         public void Updater(Game1 game)
         {
+            myball.Update();
+            myball.score = score;
+
             if (isDragged(game))
             {
                 Position += game.cursor.position - game.cursor.prevposition;
@@ -118,9 +121,9 @@ namespace WindowsGame1
                 float k=0.2f;
                 float f = Math.Abs(k * Angle);
                 if (Angle>0)
-                Angle -= (float)Math.Sqrt(f  * 2)/5;
+                Angle -= (float)Math.Sqrt(f  * 2)/10;
                 else
-                    Angle += (float)Math.Sqrt(f  * 2)/5;
+                    Angle += (float)Math.Sqrt(f  * 2)/10;
 
 
 
@@ -162,7 +165,8 @@ namespace WindowsGame1
                         if (game.timeSpa - nextPoints[0] < game.pogreshn && game.timeSpa - nextPoints[0] > -game.pogreshn)
                         {
                             MediaPlayer.Volume = 1;
-                            game.score += (int)Math.Floor((float)(game.scoreAdd * (1 - Math.Abs(((float)(game.timeSpa - nextPoints[0]).Ticks) / game.pogreshn.Ticks))));
+                            //game.score += (int)Math.Floor((float)(game.scoreAdd * (1 - Math.Abs(((float)(game.timeSpa - nextPoints[0]).Ticks) / game.pogreshn.Ticks))));
+                            score++;
                             nextPoints.RemoveAt(0);
                             Angle = -((float)random.Next(100)/100)+0.5f;
                            
@@ -190,7 +194,7 @@ namespace WindowsGame1
             color = new Vector4(1f, 1f, 1f, alpha);
             if (alpha > 0)
             {
-                alpha -= 0.03f;
+                alpha -= 0.01f;
 
 
             }
@@ -237,32 +241,33 @@ namespace WindowsGame1
 
         
 
-        public void Draw(SpriteBatch spriteBatch,TimeSpan timeSpa, TimeSpan zapas, Game1 game) // Прорисовка частички
+        public void Draw(SpriteBatchEx spriteBatch,TimeSpan timeSpa, TimeSpan zapas, Game1 game) // Прорисовка частички
         {
-            Rectangle sourceRectangle = new Rectangle(0, 0, Texture.Width, Texture.Height);
+            
             Vector2 origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
 
             
             if (nextPoints.Count() > 0)
             {
-                List<TimeSpan> toRemove = new List<TimeSpan>();
+               
                 foreach (TimeSpan ts in nextPoints)
                 {
                   
                     {
                         Single coef;
                         Vector2 po;
-                        //if (ts >= timeSpa)
+                        
                         {
                             coef = ((float)((ts - timeSpa).Ticks) / zapas.Ticks);
-                            po = new Vector2(Position.X, Position.Y - (float)Math.Sin(coef * 3.1416 / 2) * 500);
+                            float coef2 = (float)Math.Sin(coef * 3.1416 / 2);
+                            po = new Vector2(Position.X - coef2 * (Position.X - game.musicSourcePosition.X), Position.Y - coef2 * (Position.Y - game.musicSourcePosition.Y));
                         }
                         
                         float al=0.4f*(1-coef);
                         if (coef < 0)
                             al = 0.4f * (1 - Math.Abs(coef)*10);
                         Vector4 colo = new Vector4(1, 1, 1, al);
-                        spriteBatch.Draw(Texture, po, sourceRectangle, new Color(colo),
+                        spriteBatch.Draw(Texture, po, null, new Color(colo),
                 0, origin, Size*(1-Math.Abs(coef)), SpriteEffects.None, 0f);
  
                     }
@@ -271,17 +276,19 @@ namespace WindowsGame1
             }
 
            
-            spriteBatch.Draw(Texture, Position, sourceRectangle, new Color(color),
+            spriteBatch.Draw(Texture, Position, null, new Color(color),
                 Angle, origin, Size, SpriteEffects.None, 0f);
+
+            myball.Draw(spriteBatch);
 
 
         }
 
         public void Draw2(SpriteBatch spriteBatch, TimeSpan timeSpa, TimeSpan zapas, Game1 game) // Прорисовка частички
         {
-            Rectangle sourceRectangle = new Rectangle(0, 0, Texture.Width, Texture.Height);
+            
             Vector2 origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
-            spriteBatch.Draw(Texture, Position, sourceRectangle, new Color (1,1,1,0.3f),
+            spriteBatch.Draw(Texture, Position, null, new Color (1,1,1,0.3f),
               0, origin, Size*0.85f, SpriteEffects.None, 0f);
 
 

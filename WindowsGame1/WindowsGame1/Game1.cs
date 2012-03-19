@@ -100,22 +100,24 @@ namespace WindowsGame1
         List<string> finalDemo = new List<string>();
         public TimeSpan timeSpa;
         public TimeSpan pogreshn = new TimeSpan(0, 0, 0, 0, 200);
-        TimeSpan lastMaxTime = new TimeSpan(0);
-        TimeSpan difficulty = new TimeSpan(0, 0, 0, 0, 200);
-        public TimeSpan zapas = new TimeSpan(0, 0, 0, 0, 2000);
+        TimeSpan lastMaxTime = new TimeSpan(0); // mnt. To support prediction functionality
+        TimeSpan difficulty = new TimeSpan(0, 0, 0, 0, 200); // time between 2 demo points
+        public TimeSpan zapas = new TimeSpan(0, 0, 0, 0, 2000); // when you'll see next point. To support prediction functionality
         public Cursor cursor = new Cursor();
         public bool isGame = true;
         public List<SoundEffect> soundEffects = new List<SoundEffect>();
         public float lowVol = 0.25f;
         public int score = 0;
         public int scoreAdd = 100;
-        public int maxScore = 2000;
+        public int maxScore = 4500;
         Texture2D background;
         Texture2D back_background;
         Texture2D readyTexture;
         public bool ready = false;
         public bool toPlay = true;
         public Ready readyO = null;
+       public Dictionary<string,Texture2D> textures=new Dictionary<string,Texture2D>();
+        public Vector2 musicSourcePosition = new Vector2(400, 240);
         
 
 
@@ -173,11 +175,11 @@ namespace WindowsGame1
 #else
             demoFile = song.Name + ".txt";
 #endif
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i <3; i++)
             {
                 MusicSrc a;
                 // if (i<3)
-                a = new MusicSrc(MelList[i], new Vector2(70f + i * 79, 350f - i * 10), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.7f);
+                a = new MusicSrc(textures["player1"], new Vector2(120f , 95f + i * 70), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.7f,this);
                 //else
                 //     a = new MusicSrc(MelList[i], new Vector2(100f + (i-3) * 70, 600f+i*10), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.5f, 0.5f);
 
@@ -290,6 +292,10 @@ namespace WindowsGame1
 
 
             soundEffects.Add(Content.Load<SoundEffect>("Miss2"));
+
+            textures.Add("player1", Content.Load<Texture2D>("player1"));
+            textures.Add("field", Content.Load<Texture2D>("field"));
+            textures.Add("ball", Content.Load<Texture2D>("ball"));
 
 
 
@@ -535,9 +541,10 @@ namespace WindowsGame1
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
-            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
+            spriteBatch.Begin(SpriteSortMode.Immediate,BlendState.NonPremultiplied);
 
-            spriteBatch.Draw(back_background, new Vector2(0, 0), new Rectangle(0, 0, back_background.Width, back_background.Height), new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            spriteBatch.Draw(back_background, new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+            spriteBatch.Draw(textures["field"], new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
 
             if (ready)
             {
@@ -547,29 +554,28 @@ namespace WindowsGame1
 
                 }
 
-                if (score > 0)
-                {
-                    int width = 1;
-                    int height = 1;
+                /////////////////////////draw image according to score
+                //if (score > 0) 
+                //{
+                //    int width = 1;
+                //    int height = 1;
 
-                    if ((score < maxScore))
-                    {
-                        float coef = ((float)score / maxScore);
-                        width = (int)Math.Floor(coef * background.Width);
-                        height = (int)Math.Floor(coef * background.Height);
-                    }
-                    else
-                    {
-                        width = background.Width;
-                        height = background.Height;
+                //    if ((score < maxScore))
+                //    {
+                //        float coef = ((float)score / maxScore);
+                //        width = (int)Math.Floor(coef * background.Width);
+                //        height = (int)Math.Floor(coef * background.Height);
+                //    }
+                //    else
+                //    {
+                //        width = background.Width;
+                //        height = background.Height;
 
-                    }
-
-
-                    Vector2 origin1 = new Vector2(background.Width / 2, background.Height / 2);
-                    spriteBatch.Draw(background, new Vector2(610 - width / 2, 500 - height / 2), new Rectangle((background.Width - width) / 2, (background.Height - height) / 2, width, height), new Color(1, 1, 1, 0.7f), 0f, origin1, 0.95f, SpriteEffects.None, 1f);
-                }
-
+                //    }
+                //    Vector2 origin1 = new Vector2(background.Width / 2, background.Height / 2);
+                //    spriteBatch.Draw(background, new Vector2(610 - width / 2, 500 - height / 2), new Rectangle((background.Width - width) / 2, (background.Height - height) / 2, width, height), new Color(1, 1, 1, 0.7f), 0f, origin1, 0.95f, SpriteEffects.None, 1f);
+                //}
+                /////////////////////////// End of draw image according to score
                 //Font
 
                 //for (int index = 0; index < 128; index++)
@@ -612,8 +618,8 @@ namespace WindowsGame1
                 readyO.Draw(spriteBatch, this);
 
            // spriteBatch.Drawl
-            spriteBatch.DrawLine(new Vector2(100, 100), cursor.position, Color.Black);
-            spriteBatch.DrawRectangle(new Vector2(100, 100), cursor.position, Color.Black);
+           // spriteBatch.DrawLine(new Vector2(100, 100), cursor.position, Color.Black);
+            //spriteBatch.DrawRectangle(new Vector2(100, 100), cursor.position, Color.Black);
 
             spriteBatch.End();
 
