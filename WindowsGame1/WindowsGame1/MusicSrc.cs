@@ -29,8 +29,8 @@ namespace WindowsGame1
         private int MaxFreq;
         private float React;// Тип частицы// Тип частицы
         public int power;
-        int score = 0;
-        int maxScore = 10;
+        //int score = 0;
+        //int maxScore = 10;
         private float sumAdd;
         public List<TimeSpan> nextPoints = new List<TimeSpan>();
          Random random=new Random(); // Генератор случайных чисел
@@ -53,7 +53,8 @@ namespace WindowsGame1
             React = react;
             gameobj = game;
 
-            myball = new Ball(game.textures["ball"],position-new Vector2(60,0),new Vector2(0),0,0,1);
+            myball = new Ball(game.textures["ball"],position-new Vector2(60,0),new Vector2(0),0,0,0.4f);
+            game.balls.Add(myball);
 
 
          
@@ -108,12 +109,12 @@ namespace WindowsGame1
 
         public void Updater(Game1 game)
         {
-            myball.Update();
-            myball.score = score;
+            
 
             if (isDragged(game))
             {
                 Position += game.cursor.position - game.cursor.prevposition;
+                myball.TargetPosition += game.cursor.position - game.cursor.prevposition;
             }
 
             if (Angle!=0)
@@ -166,7 +167,7 @@ namespace WindowsGame1
                         {
                             MediaPlayer.Volume = 1;
                             //game.score += (int)Math.Floor((float)(game.scoreAdd * (1 - Math.Abs(((float)(game.timeSpa - nextPoints[0]).Ticks) / game.pogreshn.Ticks))));
-                            score++;
+                            myball.score++;
                             nextPoints.RemoveAt(0);
                             Angle = -((float)random.Next(100)/100)+0.5f;
                            
@@ -279,7 +280,7 @@ namespace WindowsGame1
             spriteBatch.Draw(Texture, Position, null, new Color(color),
                 Angle, origin, Size, SpriteEffects.None, 0f);
 
-            myball.Draw(spriteBatch);
+            
 
 
         }

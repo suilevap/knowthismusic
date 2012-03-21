@@ -118,6 +118,8 @@ namespace WindowsGame1
         public Ready readyO = null;
        public Dictionary<string,Texture2D> textures=new Dictionary<string,Texture2D>();
         public Vector2 musicSourcePosition = new Vector2(400, 240);
+        public List<Ball> balls = new List<Ball>();
+
         
 
 
@@ -179,7 +181,7 @@ namespace WindowsGame1
             {
                 MusicSrc a;
                 // if (i<3)
-                a = new MusicSrc(textures["player1"], new Vector2(120f , 95f + i * 70), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.7f,this);
+                a = new MusicSrc(textures["player1"], new Vector2(180f , 95f + i * 100), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.7f,this);
                 //else
                 //     a = new MusicSrc(MelList[i], new Vector2(100f + (i-3) * 70, 600f+i*10), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.5f, 0.5f);
 
@@ -483,6 +485,12 @@ namespace WindowsGame1
                     musics[index].Updater(this);
                 }
 
+                foreach (Ball ball in balls)
+                {
+                    ball.Update(this);
+                }
+
+
             } //end of Ready
 
             base.Update(gameTime);
@@ -545,6 +553,11 @@ namespace WindowsGame1
 
             spriteBatch.Draw(back_background, new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             spriteBatch.Draw(textures["field"], new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
+
+            foreach (Ball ball in balls)
+            {
+                ball.Draw(spriteBatch);
+            }
 
             if (ready)
             {

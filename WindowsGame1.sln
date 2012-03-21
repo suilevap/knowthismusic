@@ -42,6 +42,7 @@ Global
 		{31490D40-44FE-49AD-A6B3-4149F825B5EA}.Debug|Windows Phone.Build.0 = Debug|Windows Phone
 		{31490D40-44FE-49AD-A6B3-4149F825B5EA}.Debug|Windows Phone.Deploy.0 = Debug|Windows Phone
 		{31490D40-44FE-49AD-A6B3-4149F825B5EA}.Debug|x86.ActiveCfg = Debug|Windows Phone
+		{31490D40-44FE-49AD-A6B3-4149F825B5EA}.Debug|x86.Build.0 = Debug|Windows Phone
 		{31490D40-44FE-49AD-A6B3-4149F825B5EA}.Release|Mixed Platforms.ActiveCfg = Release|Windows Phone
 		{31490D40-44FE-49AD-A6B3-4149F825B5EA}.Release|Mixed Platforms.Build.0 = Release|Windows Phone
 		{31490D40-44FE-49AD-A6B3-4149F825B5EA}.Release|Mixed Platforms.Deploy.0 = Release|Windows Phone
@@ -49,6 +50,7 @@ Global
 		{31490D40-44FE-49AD-A6B3-4149F825B5EA}.Release|Windows Phone.Build.0 = Release|Windows Phone
 		{31490D40-44FE-49AD-A6B3-4149F825B5EA}.Release|Windows Phone.Deploy.0 = Release|Windows Phone
 		{31490D40-44FE-49AD-A6B3-4149F825B5EA}.Release|x86.ActiveCfg = Release|Windows Phone
+		{31490D40-44FE-49AD-A6B3-4149F825B5EA}.Release|x86.Build.0 = Release|Windows Phone
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

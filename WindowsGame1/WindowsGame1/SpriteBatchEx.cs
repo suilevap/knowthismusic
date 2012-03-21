@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace WindowsGame1
 {
-    class SpriteBatchEx : SpriteBatch
+    public class SpriteBatchEx : SpriteBatch
     {
         Texture2D txPixel;
         //public SpriteBatchEx(GraphicsDevice graphicsDevice):base(graphicsDevice)

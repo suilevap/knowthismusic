@@ -12,11 +12,12 @@ using Microsoft.Xna.Framework.Media;
 
 namespace WindowsGame1
 {
-    class Ball
+    public class Ball
     {
 
          public Texture2D Texture { get; set; }        // Текстура частицы
-        public Vector2 Position { get; set; }        // Позиция частицы
+        public Vector2 Position { get; set; }
+        public Vector2 TargetPosition { get; set; }// Позиция частицы
         public Vector2 Velocity { get; set; }        // Скорость частицы
         public float Angle { get; set; }            // Угол поворота частицы
         public float AngularVelocity { get; set; }    // Угловая скорость частицы
@@ -29,6 +30,8 @@ namespace WindowsGame1
 
            public int score = 0;
          int maxScore = 10;
+         float friction = 0.9f;
+         float strength = 0.05f;
         
        
          Random random=new Random(); // Генератор случайных чисел
@@ -39,6 +42,7 @@ namespace WindowsGame1
             // Установка переменных из конструктора
             Texture = texture;
             Position = position;
+            TargetPosition = position;
             Velocity = velocity;
             Angle = angle;
             AngularVelocity = angularVelocity;
@@ -49,10 +53,58 @@ namespace WindowsGame1
             
         }
 
-        public void Update()
+        public void Update(Game1 game)
         {
-            Position += Velocity;
-            Angle += AngularVelocity;
+
+            if (isDragged(game))
+            {
+                Velocity = new Vector2(0);
+                Position += game.cursor.position - game.cursor.prevposition;
+            }
+            else
+            {
+                if (score > maxScore)
+                    score = maxScore;
+                strength = 0.06f+(1-(float)score/maxScore)*0.2f;                
+                if (Velocity.Length() < (TargetPosition - Position).Length() * strength)
+                    Velocity = (TargetPosition - Position) * strength;
+                Position += Velocity;
+                Angle += AngularVelocity;
+                Velocity = Velocity * friction;
+            }
+
+
+        }
+
+        private bool isPressed(Game1 game)
+        {
+            bool result = false;
+            if (game.cursor.justPressed)
+            {
+                if (game.cursor.position.X > (Position.X - Texture.Width * Size / 2) && game.cursor.position.X < (Position.X + Texture.Width * Size / 2) && game.cursor.position.Y > (Position.Y - Texture.Height / 2 * Size) && game.cursor.position.Y < (Position.Y + Texture.Height / 2 * Size))
+                {
+                    result = true;
+
+                }
+            }
+            return result;
+        }
+        private bool isDragged(Game1 game)
+        {
+            bool result = false;
+            if (game.cursor.pressed)
+            {
+                if (game.cursor.prevposition.X > (Position.X - Texture.Width * Size / 2) && game.cursor.prevposition.X < (Position.X + Texture.Width * Size / 2) && game.cursor.prevposition.Y > (Position.Y - Texture.Height / 2 * Size) && game.cursor.prevposition.Y < (Position.Y + Texture.Height / 2 * Size))
+                {
+                    if (game.cursor.draggedObject == null || game.cursor.draggedObject == this)
+                    {
+                        game.cursor.draggedObject = this;
+                        result = true;
+                    }
+
+                }
+            }
+            return result;
         }
 
         public void Draw(SpriteBatchEx spriteBatch) // Прорисовка частички
