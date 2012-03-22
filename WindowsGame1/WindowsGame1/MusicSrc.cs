@@ -14,15 +14,18 @@ namespace WindowsGame1
 {
     class MusicSrc
     {
-        public Texture2D Texture { get; set; }        // Текстура частицы
+         Texture2D Texture { get; set; }        // Текстура частицы
         public Vector2 Position { get; set; }        // Позиция частицы
         public Vector2 Velocity { get; set; }        // Скорость частицы
         public float Angle { get; set; }            // Угол поворота частицы
         public float AngularVelocity { get; set; }    // Угловая скорость частицы
-        public Vector4 color { get; set; }            // Цвет частицы
-        public float Size { get; set; }                // Размер частицы
+         Vector4 color { get; set; }            // Цвет частицы
+         float Size { get; set; }                // Размер частицы
+         float orbitRange = 60;
+         float orbitAngle = 0;
 
-        public float alpha = 1f;
+
+        float alpha = 1f;
 
        
         private int MinFreq;
@@ -109,7 +112,10 @@ namespace WindowsGame1
 
         public void Updater(Game1 game)
         {
-            
+            orbitAngle += 0.04f * (1.2f-myball.Size2);
+            myball.TargetPosition.X = Position.X + orbitRange * (float)Math.Cos(orbitAngle);
+            myball.TargetPosition.Y = Position.Y + orbitRange * (float)Math.Sin(orbitAngle);
+
 
             if (isDragged(game))
             {
@@ -289,6 +295,7 @@ namespace WindowsGame1
         {
             
             Vector2 origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
+          
             spriteBatch.Draw(Texture, Position, null, new Color (1,1,1,0.3f),
               0, origin, Size*0.85f, SpriteEffects.None, 0f);
 
