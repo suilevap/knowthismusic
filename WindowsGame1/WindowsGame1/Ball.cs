@@ -120,11 +120,9 @@ namespace WindowsGame1
 
         public void Draw(SpriteBatchEx spriteBatch) // Прорисовка частички
         {
-            spriteBatch.DrawLine(Position, TargetPosition,Color.Black);
-            spriteBatch.Draw(Texture, TargetPosition, null, new Color(color),
-              Angle, origin, 0.08f, SpriteEffects.None, 0f);
-            spriteBatch.Draw(Texture, Position, null, new Color(color),
-               Angle, origin, Size * Size2realtime, SpriteEffects.None, 0f);
+            spriteBatch.DrawLine(Position, TargetPosition,Color.Black,3);
+            spriteBatch.Draw(Texture, TargetPosition, null, new Color(color),Angle, origin, 0.08f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(Texture, Position, null, new Color(color),Angle, origin, Size * Size2realtime, SpriteEffects.None, 0f);
         }
     }
 }

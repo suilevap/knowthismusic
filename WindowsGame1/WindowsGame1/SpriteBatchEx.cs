@@ -24,7 +24,7 @@ namespace WindowsGame1
             txPixel.SetData<Color>(new Color[1] { Color.White });
         }
 
-        public void DrawLine(Vector2 start, Vector2 end, Color color)
+        public void DrawLine(Vector2 start, Vector2 end, Color color, int size)
         {
             float len = (end - start).Length();
             int mnoz = 1;
@@ -32,7 +32,7 @@ namespace WindowsGame1
                 mnoz = -1;
 
             float angle = mnoz * (float)Math.Acos(((end - start).X) / len);
-            Draw(txPixel, start, null, Color.Black, angle, new Vector2(0, 0), new Vector2(len, 1f), SpriteEffects.None, 1f);
+            Draw(txPixel, start, null, Color.Black, angle, new Vector2(0, 0), new Vector2(len, size), SpriteEffects.None, 1f);
 
 
         }

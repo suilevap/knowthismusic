@@ -21,7 +21,7 @@ namespace WindowsGame1
         public float AngularVelocity { get; set; }    // Угловая скорость частицы
          Vector4 color { get; set; }            // Цвет частицы
          float Size { get; set; }                // Размер частицы
-         float orbitRange = 60;
+         float orbitRange = 36;
          float orbitAngle = 0;
 
 
@@ -56,7 +56,7 @@ namespace WindowsGame1
             React = react;
             gameobj = game;
 
-            myball = new Ball(game.textures["ball"],position-new Vector2(60,0),new Vector2(0),0,0,0.4f);
+            myball = new Ball(game.textures["ball"],position,new Vector2(0),0,0,0.4f);
             game.balls.Add(myball);
 
 
@@ -113,8 +113,9 @@ namespace WindowsGame1
         public void Updater(Game1 game)
         {
             orbitAngle += 0.04f * (1.2f-myball.Size2);
-            myball.TargetPosition.X = Position.X + orbitRange * (float)Math.Cos(orbitAngle);
-            myball.TargetPosition.Y = Position.Y + orbitRange * (float)Math.Sin(orbitAngle);
+
+            myball.TargetPosition.X = Position.X + orbitRange*(1+myball.Size2realtime) * (float)Math.Cos(orbitAngle);
+            myball.TargetPosition.Y = Position.Y + orbitRange*(1+myball.Size2realtime) * (float)Math.Sin(orbitAngle);
 
 
             if (isDragged(game))

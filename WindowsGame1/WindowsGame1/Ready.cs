@@ -25,7 +25,7 @@ namespace WindowsGame1
 
         public Ready(Texture2D texture, Vector2 position, float size)
         {
-            // Установка переменных из конструктора
+          
             Texture = texture;
             Position = position;
            
@@ -65,7 +65,7 @@ namespace WindowsGame1
             if (isPressed(game))
             {
                 //game.readyO = null;
-                Position = new Vector2(470, 16);
+                Position = new Vector2(570, 16);
                 Size = 0.7f;
 
                 //game.score = 0;
@@ -82,7 +82,7 @@ namespace WindowsGame1
             }
         }
 
-        public void Draw(SpriteBatch spriteBatch, Game1 game) // Прорисовка частички
+        public void Draw(SpriteBatch spriteBatch, Game1 game) 
         {
 
             float mnoz = 0.8f;
