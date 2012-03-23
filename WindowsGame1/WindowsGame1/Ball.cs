@@ -32,7 +32,7 @@ namespace WindowsGame1
 
         public int score = 0;
         int maxScore = 10;
-        float friction = 0.9f;
+        float friction = 0.95f;
         float strength = 0.05f;
 
 
@@ -63,8 +63,9 @@ namespace WindowsGame1
             Size2=(float)Math.Sin((float)score / maxScore*(float)Math.PI/2)*0.8f+0.2f;
             if (isDragged(game))
             {
-                Velocity = new Vector2(0);
-                Position += game.cursor.position - game.cursor.prevposition;
+                Vector2 dPos = game.cursor.position - game.cursor.prevposition;
+                Velocity = (Velocity+dPos)/2;
+                Position += dPos;
             }
             else
             {
