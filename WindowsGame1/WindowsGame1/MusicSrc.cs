@@ -58,7 +58,7 @@ namespace WindowsGame1
             gameobj = game;
 
             color = colorr;
-            myball = new Ball(game.textures["player1"], position, new Vector2(0), 0, 0, 0.4f, color);
+            myball = new Ball(game.textures["player1"], position, new Vector2(0), 0, 0, 0.6f, color);
             game.balls.Add(myball);
 
 
@@ -268,12 +268,12 @@ namespace WindowsGame1
                         {
                             coef = ((float)((ts - timeSpa).Ticks) / zapas.Ticks);
                             float coef2 = (float)Math.Sin(coef * 3.1416 / 2);
-                            po = new Vector2(Position.X - coef2 * (Position.X - game.musicSourcePosition.X), Position.Y - coef2 * (Position.Y - game.musicSourcePosition.Y));
+                            po = new Vector2(Position.X - coef2 * (Position.X - game.musicSource.Position.X), Position.Y - coef2 * (Position.Y - game.musicSource.Position.Y));
                         }
 
-                        float al = 0.4f * (1 - coef);
+                        float al = 0.6f * (1 - coef);
                         if (coef < 0)
-                            al = 0.4f * (1 - Math.Abs(coef) * 10);
+                            al = 0.6f * (1 - Math.Abs(coef) * 10);
                         Vector4 colo = color;
                         colo.W = al;
                             
@@ -300,8 +300,9 @@ namespace WindowsGame1
 
             Vector2 origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
 
-
-            spriteBatch.Draw(Texture, Position, null, new Color(1, 1, 1, 0.3f),
+            Vector4 colo = color;
+            colo.W = 0.9f;
+            spriteBatch.Draw(Texture, Position, null, new Color(colo),
               0, origin, Size * 0.85f, SpriteEffects.None, 0f);
 
 
