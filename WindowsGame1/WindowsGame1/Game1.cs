@@ -324,8 +324,13 @@ namespace WindowsGame1
                 for (int i = 0; i < 3; i++)
                 {
                     MusicSrc a;
-                    // if (i<3)
-                    a = new MusicSrc(textures["player1"], new Vector2(180f, 95f + i * 100), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.7f, this);
+                    if (i==1)
+                        a = new MusicSrc(textures["player1"], new Vector2(250f, 380), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.7f, this,new Vector4(1,0,0,1));
+
+                    else if (i==0)
+                        a = new MusicSrc(textures["player1"], new Vector2(400f, 50), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.7f, this, new Vector4(0, 1, 0, 1));
+                    else 
+                        a = new MusicSrc(textures["player1"], new Vector2(550f,380), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.7f, this, new Vector4(0, 0, 1f, 1));
                     //else
                     //     a = new MusicSrc(MelList[i], new Vector2(100f + (i-3) * 70, 600f+i*10), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.5f, 0.5f);
 
