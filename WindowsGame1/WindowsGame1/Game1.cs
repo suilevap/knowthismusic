@@ -462,6 +462,10 @@ namespace WindowsGame1
                         foreach (DemoData2 b in a)
                         {
                             musics[b.index].nextPoints.Add(b.timeStamp);
+                            Vector2 direction = musics[b.index].Position - musicSource.Position;
+                            direction.Normalize();
+                               
+                               musicSource.targetAngle = (float)Math.Atan2(direction.Y, direction.X);
 
                         }
                     }
@@ -513,7 +517,7 @@ namespace WindowsGame1
                     ball.Update(this);
                 }
 
-
+                MusicSourceUpdate();
             } //end of Ready
 
             base.Update(gameTime);
@@ -562,6 +566,17 @@ namespace WindowsGame1
 
         }
 
+        public void MusicSourceUpdate()
+        {
+            if (musicSource.targetAngle != musicSource.angle)
+            {
+                float ang=(musicSource.targetAngle - musicSource.angle);
+                musicSource.angularVelocity +=  ang* 0.95f;
+                musicSource.angle += musicSource.angularVelocity;
+                musicSource.angularVelocity = musicSource.angularVelocity * 0.8f;
+            }
+        }
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -577,7 +592,7 @@ namespace WindowsGame1
             //spriteBatch.Draw(back_background, new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //spriteBatch.Draw(textures["field"], new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             Vector2 origin = new Vector2(textures["source"].Width / 2, textures["source"].Height / 2);
-            spriteBatch.Draw(textures["source"], musicSource.Position, null, Color.MintCream, 0f, origin, 0.9f, SpriteEffects.None, 1f);
+            spriteBatch.Draw(textures["source"], musicSource.Position, null, Color.MintCream, musicSource.targetAngle, origin, 0.9f, SpriteEffects.None, 1f);
             foreach (Ball ball in balls)
             {
                 ball.Draw(spriteBatch);
