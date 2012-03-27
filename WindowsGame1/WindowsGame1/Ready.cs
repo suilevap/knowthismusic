@@ -23,10 +23,15 @@ namespace WindowsGame1
        
         public float Size { get; set; }                // Размер частицы
 
+        public Action PressedHandler;
+        private Vector2 StartPosition;     // Позиция частицы
+
+
         public Ready(Texture2D texture, Vector2 position, float size)
         {
           
             Texture = texture;
+            StartPosition = position;
             Position = position;
            
 
@@ -73,10 +78,15 @@ namespace WindowsGame1
 
                 game.ready = true;
                 game.toPlay = true;
+
+                if (PressedHandler != null)
+                {
+                    PressedHandler();
+                }
             }
             if (game.demoPointer >= game.demoPoints - 1)
             {
-                Position = new Vector2(350, 350);
+                Position = StartPosition;// new Vector2(350, 350);
                 Size = 1f;
 
             }

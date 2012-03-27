@@ -1,18 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Net.Sockets;
+using System.Net;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using System.IO;
-
 #if WINDOWS_PHONE
 using Microsoft.Xna.Framework.Input.Touch;
 #endif
+using Microsoft.Xna.Framework.Media;
+
 
 namespace WindowsGame1
 {
@@ -116,18 +119,18 @@ namespace WindowsGame1
         public bool ready = false;
         public bool toPlay = true;
         public Ready readyO = null;
-       public Dictionary<string,Texture2D> textures=new Dictionary<string,Texture2D>();
+        public Ready ready1 = null;
+
+        public Dictionary<string,Texture2D> textures=new Dictionary<string,Texture2D>();
         public Vector2 musicSourcePosition = new Vector2(400, 240);
         public List<Ball> balls = new List<Ball>();
-
-        
-
-
-
-
         VisualizationData visualizationData;
         float[] visualizationDataMas = new float[128];
         float[] visualizationDataMasPrev = new float[128];
+
+        private UdpAnySourceMulticastClient _client;
+        private bool _connected;
+        private byte[] _receiveBuffer;
 
         public Game1()
         {
@@ -168,10 +171,22 @@ namespace WindowsGame1
 
             base.Initialize();
 
-            
-            
+            Connect();
 
             readyO = new Ready(readyTexture, new Vector2(320, 240), 1);
+            ////ready1 = new Ready(readyTexture, new Vector2(320, 340), 1);
+
+            //readyO.PressedHandler = () =>
+            //    {
+            //        _client.BeginJoinGroup(
+            //            x => 
+            //            {
+            //                _client.EndJoinGroup(x);
+            //            },
+            //        null);
+            //    };
+
+
 #if !WINDOWS_PHONE
             demoFile = Directory.GetCurrentDirectory() + "\\" + song.Name + ".txt";
 #else
@@ -257,6 +272,7 @@ namespace WindowsGame1
 
 
         }
+
 
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
@@ -678,5 +694,97 @@ namespace WindowsGame1
             // Stop the threads
         }
 
+
+        private void Connect()
+        {
+            _client = new UdpAnySourceMulticastClient(IPAddress.Parse("224.109.108.107"), 3007);
+
+            //_client.MulticastLoopback = true;
+
+            _client.BeginJoinGroup(
+                        x =>
+                        {
+                            _connected = true;
+                            _client.EndJoinGroup(x);
+                            Receive();
+                        },
+                    null);
+        }
+
+        private void Receive()
+        {
+            if (_connected)
+            {
+                Array.Clear(_receiveBuffer, 0, _receiveBuffer.Length);
+
+                _client.BeginReceiveFromGroup(_receiveBuffer, 0, _receiveBuffer.Length,
+                    result =>
+                    {
+                        
+                            IPEndPoint source;
+
+                            try
+                            {
+                                _client.EndReceiveFromGroup(result, out source);
+                                OnReceive(source, _receiveBuffer);
+                                //так делать плохо=)
+                                Receive();
+                            }
+                            catch
+                            {
+                                _connected = false;
+                                Connect();
+                            }
+                        
+                    }, null);
+            }
+        }
+
+        private void OnReceive(IPEndPoint source, byte[] receiveBuffer)
+        {
+            int i = 0;
+            int x0 = 0;
+            int y0 = 0;
+            x0 |= receiveBuffer[i++];
+            x0 <<= 8;
+            x0 |= receiveBuffer[i++];
+            x0 <<= 8;
+            x0 |= receiveBuffer[i++];
+            x0 <<= 8;
+            x0 |= receiveBuffer[i++];
+            x0 <<= 8;
+
+            y0 |= receiveBuffer[i++];
+            y0 <<= 8;
+            y0 |= receiveBuffer[i++];
+            y0 <<= 8;
+            y0 |= receiveBuffer[i++];
+            y0 <<= 8;
+            y0 |= receiveBuffer[i++];
+            y0 <<= 8;
+        }
+
+        private void Send(int x0, int y0)
+        {
+            byte[] sendBuffer = new byte[8];
+            int i = 0;
+            sendBuffer[i++] = (byte)((x0 >> 24) & (0xFF));
+            sendBuffer[i++] = (byte)((x0 >> 16) & (0xFF));
+            sendBuffer[i++] = (byte)((x0 >> 8) & (0xFF));
+            sendBuffer[i++] = (byte)((x0 >> 0) & (0xFF));
+
+            sendBuffer[i++] = (byte)((y0 >> 24) & (0xFF));
+            sendBuffer[i++] = (byte)((y0 >> 16) & (0xFF));
+            sendBuffer[i++] = (byte)((y0 >> 8) & (0xFF));
+            sendBuffer[i++] = (byte)((y0 >> 0) & (0xFF));
+
+
+            _client.BeginSendToGroup(sendBuffer, 0, sendBuffer.Length,
+                                     (x) =>
+                                         {
+                                             _client.EndSendToGroup(x);
+                                         },
+                                     null);
+        }
     }
 }
