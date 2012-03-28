@@ -58,8 +58,8 @@ namespace WindowsGame1
         public Vector2 Position;
         public float angle;
         public float targetAngle;
-        public float  angularVelocity;
-        
+        public float angularVelocity;
+
     }
 
     public struct powerAddition
@@ -124,13 +124,14 @@ namespace WindowsGame1
         public bool ready = false;
         public bool toPlay = true;
         public Ready readyO = null;
-       public Dictionary<string,Texture2D> textures=new Dictionary<string,Texture2D>();
+        public Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         //public Vector2 musicSourcePosition = new Vector2(400, 240);
         public List<Ball> balls = new List<Ball>();
+        public Ball ballToRemove = null;
         public MusicSource musicSource = new MusicSource();
-        
 
-        
+
+
 
 
 
@@ -179,7 +180,7 @@ namespace WindowsGame1
             base.Initialize();
 
             musicSource.Position = new Vector2(400, 240);
-            
+
 
             readyO = new Ready(readyTexture, new Vector2(400, 240), 1);
 #if !WINDOWS_PHONE
@@ -188,7 +189,7 @@ namespace WindowsGame1
             demoFile = song.Name + ".txt";
 #endif
 
-           
+
             visualizationData = new VisualizationData();
 
 
@@ -329,17 +330,18 @@ namespace WindowsGame1
             if (ready && toPlay)
             {
                 toPlay = false;
-
+                musics.Clear();
+                balls.Clear();
                 for (int i = 0; i < 3; i++)
                 {
                     MusicSrc a;
-                    if (i==1)
-                        a = new MusicSrc(textures["player1"], new Vector2(250f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this,new Vector4(1,0,0,1));
+                    if (i == 1)
+                        a = new MusicSrc(textures["player1"], new Vector2(250f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(1, 0, 0, 1));
 
-                    else if (i==0)
+                    else if (i == 0)
                         a = new MusicSrc(textures["player1"], new Vector2(400f, 100), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 1, 0, 1));
-                    else 
-                        a = new MusicSrc(textures["player1"], new Vector2(550f,330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 0, 1f, 1));
+                    else
+                        a = new MusicSrc(textures["player1"], new Vector2(550f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 0, 1f, 1));
                     //else
                     //     a = new MusicSrc(MelList[i], new Vector2(100f + (i-3) * 70, 600f+i*10), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.5f, 0.5f);
 
@@ -355,13 +357,11 @@ namespace WindowsGame1
                 score = 0;
                 lastMaxTime = new TimeSpan(0);
             }
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
+
 
             // TODO: Add your update logic here
             CursorStateUpdate();
-           
+
 
             if (ready)
             {
@@ -464,8 +464,8 @@ namespace WindowsGame1
                             musics[b.index].nextPoints.Add(b.timeStamp);
                             Vector2 direction = musics[b.index].Position - musicSource.Position;
                             direction.Normalize();
-                               
-                               musicSource.targetAngle = (float)Math.Atan2(direction.Y, direction.X);
+
+                            musicSource.targetAngle = (float)Math.Atan2(direction.Y, direction.X);
 
                         }
                     }
@@ -515,6 +515,12 @@ namespace WindowsGame1
                 foreach (Ball ball in balls)
                 {
                     ball.Update(this);
+                }
+                if (ballToRemove != null)
+                {
+                    ballToRemove.parentMusicSrc.NewBallCreate();
+                    balls.Remove(ballToRemove);
+                    ballToRemove = null;
                 }
 
                 MusicSourceUpdate();
@@ -570,10 +576,14 @@ namespace WindowsGame1
         {
             if (musicSource.targetAngle != musicSource.angle)
             {
-                float ang=(musicSource.targetAngle - musicSource.angle);
-                musicSource.angularVelocity +=  ang* 0.95f;
+                float ang = (musicSource.targetAngle - musicSource.angle);
+                if (ang > Math.PI)
+                    ang -= (float)Math.PI * 2;
+                else if (ang < -Math.PI)
+                    ang += (float)Math.PI * 2;
+                musicSource.angularVelocity += ang * 0.25f;
                 musicSource.angle += musicSource.angularVelocity;
-                musicSource.angularVelocity = musicSource.angularVelocity * 0.8f;
+                musicSource.angularVelocity = musicSource.angularVelocity * 0.7f;
             }
         }
 
@@ -587,12 +597,12 @@ namespace WindowsGame1
             GraphicsDevice.Clear(Color.WhiteSmoke);
 
             // TODO: Add your drawing code here
-            spriteBatch.Begin(SpriteSortMode.Immediate,BlendState.NonPremultiplied);
+            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
 
             //spriteBatch.Draw(back_background, new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //spriteBatch.Draw(textures["field"], new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             Vector2 origin = new Vector2(textures["source"].Width / 2, textures["source"].Height / 2);
-            spriteBatch.Draw(textures["source"], musicSource.Position, null, Color.MintCream, musicSource.targetAngle, origin, 0.9f, SpriteEffects.None, 1f);
+            spriteBatch.Draw(textures["source"], musicSource.Position, null, Color.Aquamarine, musicSource.angle, origin, 0.9f, SpriteEffects.None, 1f);
             foreach (Ball ball in balls)
             {
                 ball.Draw(spriteBatch);
@@ -663,14 +673,14 @@ namespace WindowsGame1
 
 
             }
-             origin = new Vector2(MouseIcon.Width / 2, MouseIcon.Height / 2);
+            origin = new Vector2(MouseIcon.Width / 2, MouseIcon.Height / 2);
             spriteBatch.Draw(MouseIcon, cursor.position, new Rectangle(0, 0, MouseIcon.Width, MouseIcon.Height), Color.MintCream, 0f, origin, 0.1f, SpriteEffects.None, 1f);
-             
+
             if (readyO != null)
                 readyO.Draw(spriteBatch, this);
 
-           // spriteBatch.Drawl
-           // spriteBatch.DrawLine(new Vector2(100, 100), cursor.position, Color.Black);
+            // spriteBatch.Drawl
+            // spriteBatch.DrawLine(new Vector2(100, 100), cursor.position, Color.Black);
             //spriteBatch.DrawRectangle(new Vector2(100, 100), cursor.position, Color.Black);
 
             spriteBatch.End();

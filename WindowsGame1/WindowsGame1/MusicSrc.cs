@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework.Media;
 
 namespace WindowsGame1
 {
-    class MusicSrc
+   public class MusicSrc
     {
         Texture2D Texture { get; set; }        // Текстура частицы
         public Vector2 Position { get; set; }        // Позиция частицы
@@ -23,6 +23,7 @@ namespace WindowsGame1
         float Size { get; set; }                // Размер частицы
         float orbitRange = 36;
         float orbitAngle = 0;
+        int orbitDirection = 1;
 
 
         float alpha = 1f;
@@ -37,7 +38,7 @@ namespace WindowsGame1
         private float sumAdd;
         public List<TimeSpan> nextPoints = new List<TimeSpan>();
         Random random = new Random(); // Генератор случайных чисел
-        Ball myball;
+        public Ball myball;
         Game1 gameobj;
         bool isStatic = true;
 
@@ -58,11 +59,20 @@ namespace WindowsGame1
             gameobj = game;
 
             color = colorr;
-            myball = new Ball(game.textures["player1"], position, new Vector2(0), 0, 0, 0.6f, color);
-            game.balls.Add(myball);
+            orbitAngle = (float)(random.NextDouble() * Math.PI * 2);
+            if (random.NextDouble() >= 0.5)
+                orbitDirection = -1;
+            NewBallCreate();
+            
 
 
 
+        }
+
+        public void NewBallCreate()
+        {
+            myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.9f, color, this);
+            gameobj.balls.Add(myball);
         }
 
         public void Update(float[] visualizationData, float[] visualizationDataAvg, float[] visualizationDataPrev, Game1 game, int index) // Обновление единичной частички
@@ -109,7 +119,7 @@ namespace WindowsGame1
 
         public void Updater(Game1 game)
         {
-            orbitAngle += 0.04f * (1.2f - myball.Size2);
+            orbitAngle += orbitDirection*(0.04f * (1.2f - myball.Size2));
 
             myball.TargetPosition.X = Position.X + orbitRange * (1 + myball.Size2realtime) * (float)Math.Cos(orbitAngle);
             myball.TargetPosition.Y = Position.Y + orbitRange * (1 + myball.Size2realtime) * (float)Math.Sin(orbitAngle);
@@ -267,7 +277,7 @@ namespace WindowsGame1
 
                         {
                             coef = ((float)((ts - timeSpa).Ticks) / zapas.Ticks);
-                            float coef2 = (float)Math.Sin(coef * 3.1416 / 2);
+                            float coef2 = (float)Math.Abs(Math.Sin(coef * 3.1416/2));
                             po = new Vector2(Position.X - coef2 * (Position.X - game.musicSource.Position.X), Position.Y - coef2 * (Position.Y - game.musicSource.Position.Y));
                         }
 
