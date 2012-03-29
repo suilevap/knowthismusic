@@ -60,7 +60,17 @@ namespace WindowsGame1
         public float targetAngle;
         public float angularVelocity;
 
+        public MusicSource(Vector2 position)
+        {
+            Position = position;
+            angle = 0;
+            targetAngle = 0;
+            angularVelocity = 0;
+        }
+
     }
+
+    
 
     public struct powerAddition
     {
@@ -128,7 +138,8 @@ namespace WindowsGame1
         //public Vector2 musicSourcePosition = new Vector2(400, 240);
         public List<Ball> balls = new List<Ball>();
         public Ball ballToRemove = null;
-        public MusicSource musicSource = new MusicSource();
+        public MusicSource musicSource = new MusicSource(new Vector2(400, 240));
+        ColorTanker myTanker=null;
 
 
 
@@ -179,7 +190,7 @@ namespace WindowsGame1
 
             base.Initialize();
 
-            musicSource.Position = new Vector2(400, 240);
+           
 
 
             readyO = new Ready(readyTexture, new Vector2(400, 240), 1);
@@ -259,6 +270,7 @@ namespace WindowsGame1
                 }
 
                 demoPoints = DemoDatas2.Count();
+               
 #endif
 
 
@@ -332,14 +344,15 @@ namespace WindowsGame1
                 toPlay = false;
                 musics.Clear();
                 balls.Clear();
+                myTanker = new ColorTanker(new Vector2(100, 300), DemoDatas2.Where(x => x.index == 0).Count(), DemoDatas2.Where(x => x.index == 1).Count(), DemoDatas2.Where(x => x.index == 2).Count());
                 for (int i = 0; i < 3; i++)
                 {
                     MusicSrc a;
                     if (i == 1)
-                        a = new MusicSrc(textures["player1"], new Vector2(250f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(1, 0, 0, 1));
+                        a = new MusicSrc(textures["player1"], new Vector2(250f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 1, 0, 1));
 
                     else if (i == 0)
-                        a = new MusicSrc(textures["player1"], new Vector2(400f, 100), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 1, 0, 1));
+                        a = new MusicSrc(textures["player1"], new Vector2(400f, 100), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(1, 0, 0, 1));
                     else
                         a = new MusicSrc(textures["player1"], new Vector2(550f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 0, 1f, 1));
                     //else
@@ -462,6 +475,7 @@ namespace WindowsGame1
                         foreach (DemoData2 b in a)
                         {
                             musics[b.index].nextPoints.Add(b.timeStamp);
+                            myTanker.Minus(b.index);
                             Vector2 direction = musics[b.index].Position - musicSource.Position;
                             direction.Normalize();
 
@@ -599,6 +613,8 @@ namespace WindowsGame1
             // TODO: Add your drawing code here
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
 
+            if (myTanker != null)
+                myTanker.Draw(spriteBatch,font);
             //spriteBatch.Draw(back_background, new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //spriteBatch.Draw(textures["field"], new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             Vector2 origin = new Vector2(textures["source"].Width / 2, textures["source"].Height / 2);
