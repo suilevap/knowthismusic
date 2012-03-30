@@ -345,7 +345,7 @@ namespace WindowsGame1
                 toPlay = false;
                 musics.Clear();
                 balls.Clear();
-                myBall = new Ball(textures["player1"], new Vector2(600, 240), new Vector2(0), 0, 0, 1, new Vector4(1,0,1,1), null);
+                myBall = new Ball(textures["player1"], new Vector2(600, 240), new Vector2(0), 0, 0, 1, ColorRandomizer(true), null);
                 myBall.score = myBall.maxScore;
                 balls.Add(myBall);
                 myTanker = new ColorTanker(new Vector2(100, 300), DemoDatas2.Where(x => x.index == 0).Count(), DemoDatas2.Where(x => x.index == 1).Count(), DemoDatas2.Where(x => x.index == 2).Count());
@@ -609,14 +609,25 @@ namespace WindowsGame1
         public Vector4 ColorRandomizer(bool two)
         {
             Vector4 result;
-             int r =0;
-            int g = 0;
-            int b = 0;
-            if (two)
-
-             r = random.Next(5);
-             g = random.Next(5);
-             b = random.Next(5);
+             int[] rgb =new int[3];
+                       int randMax = 5;
+                       int dominant = random.Next(2);
+                       rgb[dominant] = randMax;
+                       for (int i = 0; i < 3; i++)
+                       {
+                          if (i!=dominant)
+                              rgb[i]=random.Next(1,randMax);
+                          
+                       }
+                       if (two)
+                       {
+                           int toDel = random.Next(1, 2);
+                           int index = dominant + toDel;
+                           if (index > 2)
+                               index -= 3;
+                           rgb[index] = 0;
+                       }
+                       result = new Vector4((float)rgb[0] / randMax, (float)rgb[1] / randMax, (float)rgb[2] / randMax, 1);
 
             return result;
         }
