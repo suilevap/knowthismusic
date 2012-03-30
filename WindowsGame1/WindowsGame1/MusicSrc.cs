@@ -289,7 +289,7 @@ namespace WindowsGame1
                             
 
                         spriteBatch.Draw(Texture, po, null, new Color(colo),
-                0, origin, Size * (1 - Math.Abs(coef)), SpriteEffects.None, 0f);
+                0, origin, Size*0.3f * (1 - Math.Abs(coef)), SpriteEffects.None, 0f);
 
                     }
                 }
