@@ -33,7 +33,7 @@ namespace WindowsGame1
 
 
         public int score = 0;
-        int maxScore = 20;
+        public int maxScore = 20;
         float friction = 0.9f;
         float strength = 0.05f;
         //List<Ball> collisions = new List<Ball>();
@@ -94,7 +94,8 @@ namespace WindowsGame1
             {
                 game.ballToRemove = toRemove;
 
-                Vector4 resultColor = collides.color * (float)collides.score / (collides.score + this.score) + this.color * (float)this.score / (collides.score + this.score);
+                int biggerScore=Math.Max(collides.score, this.score);
+                Vector4 resultColor = collides.color * (float)collides.score / biggerScore + this.color * (float)this.score / biggerScore;
                 int resultScore = (int)Math.Floor((collides.score + this.score)*1.2f);
                 //resultColor.Normalize();
                 if (toRemove == this)

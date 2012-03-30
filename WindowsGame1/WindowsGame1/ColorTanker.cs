@@ -39,6 +39,8 @@ namespace WindowsGame1
             curB = maxb;
 
         }
+
+        
         public void Minus(int index)
         {
             if (index == 0)

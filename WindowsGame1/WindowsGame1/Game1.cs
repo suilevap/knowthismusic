@@ -108,7 +108,7 @@ namespace WindowsGame1
 #else
         private string demoFile = "demo.txt";
 #endif
-
+        Random random = new Random();
         List<DemoData> DemoDatas = new List<DemoData>();
         List<DemoData2> DemoDatas2 = new List<DemoData2>();
         public int demoPointer = 0;
@@ -137,6 +137,7 @@ namespace WindowsGame1
         public Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         //public Vector2 musicSourcePosition = new Vector2(400, 240);
         public List<Ball> balls = new List<Ball>();
+        Ball myBall;
         public Ball ballToRemove = null;
         public MusicSource musicSource = new MusicSource(new Vector2(400, 240));
         ColorTanker myTanker=null;
@@ -344,6 +345,9 @@ namespace WindowsGame1
                 toPlay = false;
                 musics.Clear();
                 balls.Clear();
+                myBall = new Ball(textures["player1"], new Vector2(600, 240), new Vector2(0), 0, 0, 1, new Vector4(1,0,1,1), null);
+                myBall.score = myBall.maxScore;
+                balls.Add(myBall);
                 myTanker = new ColorTanker(new Vector2(100, 300), DemoDatas2.Where(x => x.index == 0).Count(), DemoDatas2.Where(x => x.index == 1).Count(), DemoDatas2.Where(x => x.index == 2).Count());
                 for (int i = 0; i < 3; i++)
                 {
@@ -532,6 +536,7 @@ namespace WindowsGame1
                 }
                 if (ballToRemove != null)
                 {
+                    if (ballToRemove.parentMusicSrc!=null)
                     ballToRemove.parentMusicSrc.NewBallCreate();
                     balls.Remove(ballToRemove);
                     ballToRemove = null;
@@ -599,6 +604,21 @@ namespace WindowsGame1
                 musicSource.angle += musicSource.angularVelocity;
                 musicSource.angularVelocity = musicSource.angularVelocity * 0.7f;
             }
+        }
+
+        public Vector4 ColorRandomizer(bool two)
+        {
+            Vector4 result;
+             int r =0;
+            int g = 0;
+            int b = 0;
+            if (two)
+
+             r = random.Next(5);
+             g = random.Next(5);
+             b = random.Next(5);
+
+            return result;
         }
 
         /// <summary>
