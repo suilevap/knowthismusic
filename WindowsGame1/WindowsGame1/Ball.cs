@@ -21,7 +21,8 @@ namespace WindowsGame1
         public Vector2 Velocity { get; set; }        // Скорость частицы
         public float Angle { get; set; }            // Угол поворота частицы
         public float AngularVelocity { get; set; }    // Угловая скорость частицы
-        public Vector4 color;            // Цвет частицы
+        public Vector4 targetColor;
+        public Vector4 color;// Цвет частицы
         public float Size { get; set; }
         public float Size2 = 1;// Размер частицы
         public float Size2realtime = 0;
@@ -33,7 +34,7 @@ namespace WindowsGame1
 
 
         public int score = 0;
-        public int maxScore = 20;
+        public int maxScore = 255;
         float friction = 0.9f;
         float strength = 0.05f;
         //List<Ball> collisions = new List<Ball>();
@@ -42,7 +43,7 @@ namespace WindowsGame1
         Random random = new Random(); // Генератор случайных чисел
 
         public Ball(Texture2D texture, Vector2 position, Vector2 velocity,
-            float angle, float angularVelocity, float size, Vector4 colorr, MusicSrc parentSource)
+            float angle, float angularVelocity, float size, Vector4 colorr, MusicSrc parentSource,int Score)
         {
             // Установка переменных из конструктора
             Texture = texture;
@@ -53,8 +54,10 @@ namespace WindowsGame1
             AngularVelocity = angularVelocity;
             Size = size;
             parentMusicSrc = parentSource;
-            color = colorr;
+            targetColor = colorr;
+            color = new Vector4(1, 1, 1, 1);
             color.W = alpha;
+            score = Score;
             origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
             range = Texture.Width / 2 * Size * Size2realtime;
 

@@ -22,8 +22,8 @@ namespace WindowsGame1
         public float veloR = 0;
         public float veloG = 0;
         public float veloB = 0;
-        int rectWidth = 36;
-        int zazor = 8;
+        int rectWidth = 20;
+        int zazor = 4;
         int height = 200;
         float friction = 0.96f;
         float strength = 0.002f;
@@ -90,12 +90,12 @@ namespace WindowsGame1
             spriteBatch.DrawRectangle(new Vector2(Position.X - rectWidth / 2f, Position.Y), new Vector2(Position.X + rectWidth /2, Position.Y - height * curGrealtime / maxG), Color.Green);
             spriteBatch.DrawRectangle(new Vector2(Position.X + rectWidth / 2f + zazor, Position.Y), new Vector2(Position.X + rectWidth * 1.5f + zazor, Position.Y - height * curBrealtime / maxB), Color.Blue);
 
-            string output = string.Format("{0}/{1} {2}/{3} {4}/{5}", curR, maxR, curG, maxG, curB, maxB);
+            //string output = string.Format("{0}/{1} {2}/{3} {4}/{5}", curR, maxR, curG, maxG, curB, maxB);
 
             // Find the center of the string
-            Vector2 FontOrigin = font.MeasureString(output) / 2;
+           // Vector2 FontOrigin = font.MeasureString(output) / 2;
             // Draw the string
-            spriteBatch.DrawString(font, output, new Vector2(Position.X , Position.Y-height/2), Color.Black,0,FontOrigin,1,SpriteEffects.None,0);
+            //spriteBatch.DrawString(font, output, new Vector2(Position.X , Position.Y-height/2), Color.Black,0,FontOrigin,1,SpriteEffects.None,0);
  
         }
     }

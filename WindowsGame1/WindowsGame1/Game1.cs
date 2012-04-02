@@ -99,8 +99,8 @@ namespace WindowsGame1
         private bool PRELOAD2 = false;
         private string songFile = "Minus";
         private TimeSpan TimeBetweenWrites = new TimeSpan(200000); // 1/frequency.
-        private DateTime startTime; //music start
-        private DateTime lastWriteTime;
+        //private DateTime startTime; //music start
+       // private DateTime lastWriteTime;
         private List<MusicSrc> musics = new List<MusicSrc>();
         private SpriteFont font;
 #if !WINDOWS_PHONE
@@ -137,7 +137,7 @@ namespace WindowsGame1
         public Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         //public Vector2 musicSourcePosition = new Vector2(400, 240);
         public List<Ball> balls = new List<Ball>();
-        Ball myBall;
+       // Ball myBall;
         public Ball ballToRemove = null;
         public MusicSource musicSource = new MusicSource(new Vector2(400, 240));
         ColorTanker myTanker=null;
@@ -345,34 +345,37 @@ namespace WindowsGame1
                 toPlay = false;
                 musics.Clear();
                 balls.Clear();
-                myBall = new Ball(textures["player1"], new Vector2(600, 240), new Vector2(0), 0, 0, 1, ColorRandomizer(true), null);
-                myBall.score = myBall.maxScore;
-                balls.Add(myBall);
+                //myBall = new Ball(textures["player1"], new Vector2(600, 240), new Vector2(0), 0, 0, 1, ColorRandomizer(true), null);
+                //myBall.score = myBall.maxScore;
+                //balls.Add(myBall);
                 myTanker = new ColorTanker(new Vector2(100, 300), DemoDatas2.Where(x => x.index == 0).Count(), DemoDatas2.Where(x => x.index == 1).Count(), DemoDatas2.Where(x => x.index == 2).Count());
-                for (int i = 0; i < 3; i++)
-                {
-                    MusicSrc a;
-                    if (i == 1)
-                        a = new MusicSrc(textures["player1"], new Vector2(250f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 1, 0, 1));
 
-                    else if (i == 0)
-                        a = new MusicSrc(textures["player1"], new Vector2(400f, 100), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(1, 0, 0, 1));
-                    else
-                        a = new MusicSrc(textures["player1"], new Vector2(550f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 0, 1f, 1));
-                    //else
-                    //     a = new MusicSrc(MelList[i], new Vector2(100f + (i-3) * 70, 600f+i*10), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.5f, 0.5f);
+                MusicSrc a = new MusicSrc(textures["player1"], new Vector2(250f, 330), new Vector2(), 0f, 0f,0, 0, 0.4f, 0.5f, this, new Vector4(0, 1, 0, 1));
+                musics.Add(a);
+                //for (int i = 0; i < 3; i++)
+                //{
+                //    MusicSrc a;
+                //    if (i == 1)
+                //        a = new MusicSrc(textures["player1"], new Vector2(250f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 1, 0, 1));
 
-                    musics.Add(a);
+                //    else if (i == 0)
+                //        a = new MusicSrc(textures["player1"], new Vector2(400f, 100), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(1, 0, 0, 1));
+                //    else
+                //        a = new MusicSrc(textures["player1"], new Vector2(550f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 0, 1f, 1));
+                //    //else
+                //    //     a = new MusicSrc(MelList[i], new Vector2(100f + (i-3) * 70, 600f+i*10), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.5f, 0.5f);
 
-                }
+                //    musics.Add(a);
 
-                MediaPlayer.Play(song);
-                MediaPlayer.Volume = 1f;
-                startTime = DateTime.Now;
-                lastWriteTime = startTime;
+                //}
+
+                //MediaPlayer.Play(song);
+                //MediaPlayer.Volume = 1f;
+                //startTime = DateTime.Now;
+                //lastWriteTime = startTime;
                 demoPointer = 0;
                 score = 0;
-                lastMaxTime = new TimeSpan(0);
+                //lastMaxTime = new TimeSpan(0);
             }
 
 
@@ -383,145 +386,145 @@ namespace WindowsGame1
             if (ready)
             {
 
-                int activeIndex = -1;
+                //int activeIndex = -1;
 
-                if (PRELOAD)
-                {
-                    visualizationDataMas = new float[128];
+                //if (PRELOAD)
+                //{
+                //    visualizationDataMas = new float[128];
 
-                    MediaPlayer.GetVisualizationData(visualizationData);
-                    for (int index = 0; index < 128; index++)
-                    {
-                        visualizationDataMas[index] = visualizationData.Frequencies[index];
+                //    MediaPlayer.GetVisualizationData(visualizationData);
+                //    for (int index = 0; index < 128; index++)
+                //    {
+                //        visualizationDataMas[index] = visualizationData.Frequencies[index];
 
-                    }
+                //    }
 
-                }
-
-
-
-                timeSpa = new TimeSpan();
-                timeSpa = DateTime.Now - startTime;
-
-                if (DateTime.Now - lastWriteTime >= TimeBetweenWrites)
-                {
-                    lastWriteTime = DateTime.Now;
-
-                    if (PRELOAD)
-                    {
-
-                        DemoDatas.Add(new DemoData(timeSpa, visualizationDataMas));
-
-
-                    }
-                    else
-                    {
-                        if (PRELOAD2)
-                        {
-                            if (timeSpa > DemoDatas[demoPointer].timeStamp)
-                            {
-
-                                if (demoPointer > 1)
-                                    visualizationDataMasPrev = DemoDatas[demoPointer - 1].timePayload;
-
-                                int diapazon = 25;
-                                if (demoPointer > diapazon && demoPointer < demoPoints - diapazon - 1)
-                                {
-                                    visualizationDataMasAvg = new float[128];
-                                    for (int k = -diapazon; k < diapazon; k++)
-                                    {
-                                        for (int i = 0; i < 128; i++)
-                                        {
-                                            visualizationDataMasAvg[i] += DemoDatas[demoPointer + k].timePayload[i] / (diapazon * 2);
-                                        }
-                                    }
-                                }
-                                visualizationDataMas = DemoDatas[demoPointer].timePayload;
+                //}
 
 
 
-                                demoPointer++;
+               // timeSpa = new TimeSpan();
+               //// timeSpa = DateTime.Now - startTime;
 
-                            }
+               // if (DateTime.Now - lastWriteTime >= TimeBetweenWrites)
+               // {
+               //     lastWriteTime = DateTime.Now;
 
+               //     if (PRELOAD)
+               //     {
 
-                        }
-                        else
-                        {
-                            if (demoPointer < demoPoints)
-                            {
-                                if (timeSpa > DemoDatas2[demoPointer].timeStamp)
-                                {
-                                    activeIndex = DemoDatas2[demoPointer].index;
-                                    if (demoPointer < demoPoints - 1)
-                                    {
-
-                                        demoPointer++;
-                                    }
+               //         DemoDatas.Add(new DemoData(timeSpa, visualizationDataMas));
 
 
-                                }
-                            }
+               //     }
+               //     else
+               //     {
+               //         if (PRELOAD2)
+               //         {
+               //             if (timeSpa > DemoDatas[demoPointer].timeStamp)
+               //             {
+
+               //                 if (demoPointer > 1)
+               //                     visualizationDataMasPrev = DemoDatas[demoPointer - 1].timePayload;
+
+               //                 int diapazon = 25;
+               //                 if (demoPointer > diapazon && demoPointer < demoPoints - diapazon - 1)
+               //                 {
+               //                     visualizationDataMasAvg = new float[128];
+               //                     for (int k = -diapazon; k < diapazon; k++)
+               //                     {
+               //                         for (int i = 0; i < 128; i++)
+               //                         {
+               //                             visualizationDataMasAvg[i] += DemoDatas[demoPointer + k].timePayload[i] / (diapazon * 2);
+               //                         }
+               //                     }
+               //                 }
+               //                 visualizationDataMas = DemoDatas[demoPointer].timePayload;
 
 
-                        }
-                    }
 
-                }
+               //                 demoPointer++;
+
+               //             }
+
+
+               //         }
+               //         else
+               //         {
+               //             if (demoPointer < demoPoints)
+               //             {
+               //                 if (timeSpa > DemoDatas2[demoPointer].timeStamp)
+               //                 {
+               //                     activeIndex = DemoDatas2[demoPointer].index;
+               //                     if (demoPointer < demoPoints - 1)
+               //                     {
+
+               //                         demoPointer++;
+               //                     }
+
+
+               //                 }
+               //             }
+
+
+               //         }
+               //     }
+
+               // }
 
                 // next points
                 //if (demoPointer + 10 < demoPoints)
-                {
-                    var a = DemoDatas2.Where(x => x.timeStamp < timeSpa.Add(zapas) && x.timeStamp > lastMaxTime).ToArray();
-                    if (a.Count() > 0)
-                    {
-                        lastMaxTime = a.Max(x => x.timeStamp);
-                        foreach (DemoData2 b in a)
-                        {
-                            musics[b.index].nextPoints.Add(b.timeStamp);
-                            myTanker.Minus(b.index);
-                            Vector2 direction = musics[b.index].Position - musicSource.Position;
-                            direction.Normalize();
+                //{
+                //    var a = DemoDatas2.Where(x => x.timeStamp < timeSpa.Add(zapas) && x.timeStamp > lastMaxTime).ToArray();
+                //    if (a.Count() > 0)
+                //    {
+                //        lastMaxTime = a.Max(x => x.timeStamp);
+                //        foreach (DemoData2 b in a)
+                //        {
+                //            musics[b.index].nextPoints.Add(b.timeStamp);
+                //            myTanker.Minus(b.index);
+                //            Vector2 direction = musics[b.index].Position - musicSource.Position;
+                //            direction.Normalize();
 
-                            musicSource.targetAngle = (float)Math.Atan2(direction.Y, direction.X);
+                //            musicSource.targetAngle = (float)Math.Atan2(direction.Y, direction.X);
 
-                        }
-                    }
+                //        }
+                //    }
 
-                }
+                //}
 
                 // objects update
-                if (!PRELOAD)
-                {
+                //if (!PRELOAD)
+                //{
 
-                    if (PRELOAD2)
-                    {
-                        powers = new List<powerAddition>();
-                        for (int index = 0; index < musics.Count; index++)
-                        {
-                            musics[index].Update(visualizationDataMas, visualizationDataMasAvg, visualizationDataMasPrev, this, index);
-                        }
+                //    if (PRELOAD2)
+                //    {
+                //        powers = new List<powerAddition>();
+                //        for (int index = 0; index < musics.Count; index++)
+                //        {
+                //            musics[index].Update(visualizationDataMas, visualizationDataMasAvg, visualizationDataMasPrev, this, index);
+                //        }
 
-                        int mybeat = powers.OrderByDescending(x => x.power).ThenByDescending(y => y.addition).First().index;
-                        if (musics[mybeat].power > 0)
-                        {
-                            musics[mybeat].Update2();
-                            finalDemo.Add(timeSpa + ";" + mybeat);
-                        }
-                    }
-                    else
-                    {
-                        if (activeIndex != -1)
-                        {
-                            if (!isGame)
-                                musics[activeIndex].Update2();
-                        }
+                //        int mybeat = powers.OrderByDescending(x => x.power).ThenByDescending(y => y.addition).First().index;
+                //        if (musics[mybeat].power > 0)
+                //        {
+                //            musics[mybeat].Update2();
+                //            finalDemo.Add(timeSpa + ";" + mybeat);
+                //        }
+                //    }
+                //    else
+                //    {
+                //        if (activeIndex != -1)
+                //        {
+                //            if (!isGame)
+                //                musics[activeIndex].Update2();
+                //        }
 
-                    }
+                //    }
 
 
 
-                }
+                //}
 
 
 
@@ -542,7 +545,7 @@ namespace WindowsGame1
                     ballToRemove = null;
                 }
 
-                MusicSourceUpdate();
+                //MusicSourceUpdate();
             } //end of Ready
 
             base.Update(gameTime);
@@ -648,8 +651,8 @@ namespace WindowsGame1
                 myTanker.Draw(spriteBatch,font);
             //spriteBatch.Draw(back_background, new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //spriteBatch.Draw(textures["field"], new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
-            Vector2 origin = new Vector2(textures["source"].Width / 2, textures["source"].Height / 2);
-            spriteBatch.Draw(textures["source"], musicSource.Position, null, Color.Aquamarine, musicSource.angle, origin, 0.9f, SpriteEffects.None, 1f);
+            //Vector2 origin = new Vector2(textures["source"].Width / 2, textures["source"].Height / 2);
+            //spriteBatch.Draw(textures["source"], musicSource.Position, null, Color.Aquamarine, musicSource.angle, origin, 0.9f, SpriteEffects.None, 1f);
             foreach (Ball ball in balls)
             {
                 ball.Draw(spriteBatch);
@@ -720,7 +723,7 @@ namespace WindowsGame1
 
 
             }
-            origin = new Vector2(MouseIcon.Width / 2, MouseIcon.Height / 2);
+            Vector2 origin = new Vector2(MouseIcon.Width / 2, MouseIcon.Height / 2);
             spriteBatch.Draw(MouseIcon, cursor.position, new Rectangle(0, 0, MouseIcon.Width, MouseIcon.Height), Color.MintCream, 0f, origin, 0.1f, SpriteEffects.None, 1f);
 
             if (readyO != null)
