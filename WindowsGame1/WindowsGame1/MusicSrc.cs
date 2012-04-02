@@ -35,10 +35,10 @@ namespace WindowsGame1
         public int power;
         //int score = 0;
         //int maxScore = 10;
-        private float sumAdd;
+       
         public List<TimeSpan> nextPoints = new List<TimeSpan>();
         Random random = new Random(); // Генератор случайных чисел
-        public Ball myball;
+        public List<Ball> myballs;
         Game1 gameobj;
         bool isStatic = true;
 
@@ -71,47 +71,14 @@ namespace WindowsGame1
 
         public void NewBallCreate()
         {
-            myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.9f, color, this);
+            Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.9f, color, this, 5);
+            myballs.Add(myball);
             gameobj.balls.Add(myball);
         }
 
         public void Update(float[] visualizationData, float[] visualizationDataAvg, float[] visualizationDataPrev, Game1 game, int index) // Обновление единичной частички
         {
-
-            power = 0;
-            sumAdd = 0;
-            for (int i = MinFreq; i < MaxFreq; i++)
-            {
-
-                float addition = 0;
-                if (visualizationDataAvg[i] > 0.41)
-                    addition = (float)(visualizationData[i] - visualizationDataPrev[i] * 1.06);
-                else
-                    addition = (float)(visualizationData[i] - visualizationDataPrev[i] * 1.4);
-
-                if (visualizationData[i] > visualizationDataAvg[i] * 1.09 && addition > 0)
-                {
-                    power++;
-                    sumAdd += addition;
-                }
-            }
-            //if (power > 0)
-            {
-                game.powers.Add(new powerAddition(power, sumAdd, index));
-
-
-            }
-            //if (power != 0)
-            //{
-            //    if (alpha < power / (MaxFreq - MinFreq))//power / (MaxFreq - MinFreq))
-            //    {
-            //        alpha += power / (MaxFreq - MinFreq);
-            //        if (alpha > 1)
-            //            alpha = 1;
-            //    }
-            //}
-            //if (alpha < 0.2f &&  power / (MaxFreq - MinFreq)>0.2f)//power / (MaxFreq - MinFreq))
-            //  alpha = power/ (MaxFreq - MinFreq);
+                                                          
 
 
 
@@ -119,16 +86,21 @@ namespace WindowsGame1
 
         public void Updater(Game1 game)
         {
-            orbitAngle += orbitDirection*(0.04f * (1.2f - myball.Size2));
+            foreach (Ball myball in myballs)
+            {
+                orbitAngle += orbitDirection * (0.001f * (1.2f - myball.Size2));
 
-            myball.TargetPosition.X = Position.X + orbitRange * (1 + myball.Size2realtime) * (float)Math.Cos(orbitAngle);
-            myball.TargetPosition.Y = Position.Y + orbitRange * (1 + myball.Size2realtime) * (float)Math.Sin(orbitAngle);
-
+                myball.TargetPosition.X = Position.X + orbitRange * (1 + myball.Size2realtime) * (float)Math.Cos(orbitAngle);
+                myball.TargetPosition.Y = Position.Y + orbitRange * (1 + myball.Size2realtime) * (float)Math.Sin(orbitAngle);
+            }
 
             if (isDragged(game))
             {
                 Position += game.cursor.position - game.cursor.prevposition;
-                myball.TargetPosition += game.cursor.position - game.cursor.prevposition;
+                foreach (Ball myball in myballs)
+                {
+                    myball.TargetPosition += game.cursor.position - game.cursor.prevposition;
+                }
             }
 
             if (Angle != 0)
@@ -144,75 +116,24 @@ namespace WindowsGame1
 
             }
 
-            if (nextPoints.Count() != 0)
-            {
-                List<TimeSpan> toRemove = new List<TimeSpan>();
-                foreach (TimeSpan ts in nextPoints)
-                {
-                    if (game.timeSpa >= ts + game.pogreshn)
-                    {
-                        toRemove.Add(ts);
-
-                    }
-                }
-                if (toRemove.Count() > 0)
-                {
-                    MediaPlayer.Volume = game.lowVol;
-
-                    foreach (TimeSpan ts in toRemove)
-                    {
-                        nextPoints.Remove(ts);
-
-                    }
-
-                }
-            }
+            
             if (game.isGame)
             {
                 if (isPressed(game))
                 {
-                    bool missClick = false;
+                   // bool missClick = false;
                     alpha = 1;
 
+                                                            
 
-                    if (nextPoints.Count() != 0)
-                    {
-                        if (game.timeSpa - nextPoints[0] < game.pogreshn && game.timeSpa - nextPoints[0] > -game.pogreshn)
-                        {
-                            MediaPlayer.Volume = 1;
-                            //game.score += (int)Math.Floor((float)(game.scoreAdd * (1 - Math.Abs(((float)(game.timeSpa - nextPoints[0]).Ticks) / game.pogreshn.Ticks))));
-                            myball.score++;
-                            nextPoints.RemoveAt(0);
-                            Angle = -((float)random.Next(100) / 100) + 0.5f;
-
-                        }
-                        else
-                            missClick = true;
-
-                    }
-                    else
-                        missClick = true;
-
-                    if (missClick)
-                    {
-                        MediaPlayer.Volume = game.lowVol;
-
-                        game.soundEffects[0].Play();
-                        game.score -= game.scoreAdd / 2;
-
-                    }
+                   
 
 
                 }
 
             }
             color.W=alpha;
-            if (alpha > 0)
-            {
-                alpha -= 0.01f;
-
-
-            }
+            
         }
 
         private bool isPressed(Game1 game)
@@ -265,36 +186,7 @@ namespace WindowsGame1
             Vector2 origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
 
 
-            if (nextPoints.Count() > 0)
-            {
-
-                foreach (TimeSpan ts in nextPoints)
-                {
-
-                    {
-                        Single coef;
-                        Vector2 po;
-
-                        {
-                            coef = ((float)((ts - timeSpa).Ticks) / zapas.Ticks);
-                            float coef2 = (float)Math.Abs(Math.Sin(coef * 3.1416/2));
-                            po = new Vector2(Position.X - coef2 * (Position.X - game.musicSource.Position.X), Position.Y - coef2 * (Position.Y - game.musicSource.Position.Y));
-                        }
-
-                        float al = 0.6f * (1 - coef);
-                        if (coef < 0)
-                            al = 0.6f * (1 - Math.Abs(coef) * 10);
-                        Vector4 colo = color;
-                        colo.W = al;
-                            
-
-                        spriteBatch.Draw(Texture, po, null, new Color(colo),
-                0, origin, Size*0.3f * (1 - Math.Abs(coef)), SpriteEffects.None, 0f);
-
-                    }
-                }
-
-            }
+            
 
 
             spriteBatch.Draw(Texture, Position, null, new Color(color),
@@ -308,12 +200,12 @@ namespace WindowsGame1
         public void Draw2(SpriteBatch spriteBatch, TimeSpan timeSpa, TimeSpan zapas, Game1 game) // Прорисовка частички
         {
 
-            Vector2 origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
+            //Vector2 origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
 
-            Vector4 colo = color;
-            colo.W = 0.9f;
-            spriteBatch.Draw(Texture, Position, null, new Color(colo),
-              0, origin, Size * 0.85f, SpriteEffects.None, 0f);
+            //Vector4 colo = color;
+            //colo.W = 0.9f;
+            //spriteBatch.Draw(Texture, Position, null, new Color(colo),
+            //  0, origin, Size * 0.85f, SpriteEffects.None, 0f);
 
 
         }

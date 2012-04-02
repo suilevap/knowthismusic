@@ -74,12 +74,12 @@ namespace WindowsGame1
                 game.ready = true;
                 game.toPlay = true;
             }
-            if (game.demoPointer >= game.demoPoints - 1)
-            {
-                Position = new Vector2(350, 350);
-                Size = 1f;
+            //if (game.demoPointer >= game.demoPoints - 1)
+            //{
+            //    Position = new Vector2(350, 350);
+            //    Size = 1f;
 
-            }
+            //}
         }
 
         public void Draw(SpriteBatch spriteBatch, Game1 game) 
