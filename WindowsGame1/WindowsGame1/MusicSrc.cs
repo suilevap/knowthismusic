@@ -15,13 +15,14 @@ namespace WindowsGame1
    public class MusicSrc
     {
         Texture2D Texture { get; set; }        // Текстура частицы
-        public Vector2 Position { get; set; }        // Позиция частицы
+        public Vector2 Position;        // Позиция частицы
         public Vector2 Velocity { get; set; }        // Скорость частицы
         public float Angle { get; set; }            // Угол поворота частицы
         public float AngularVelocity { get; set; }    // Угловая скорость частицы
-        Vector4 color;            // Цвет частицы
+        Vector4 color;
+        Vector4 mergeColor;
         float Size { get; set; }                // Размер частицы
-        float orbitRange = 36;
+        float orbitRange = 70;
         float orbitAngle = 0;
         int orbitDirection = 1;
 
@@ -38,7 +39,7 @@ namespace WindowsGame1
        
         public List<TimeSpan> nextPoints = new List<TimeSpan>();
         Random random = new Random(); // Генератор случайных чисел
-        public List<Ball> myballs;
+        public List<Ball> myballs=new List<Ball>();
         Game1 gameobj;
         bool isStatic = true;
 
@@ -71,9 +72,28 @@ namespace WindowsGame1
 
         public void NewBallCreate()
         {
-            Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.9f, color, this, 5);
-            myballs.Add(myball);
-            gameobj.balls.Add(myball);
+            if (color.X > 0)
+            {
+                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(1, 0, 0, 1), this, (int)(color.X*255));
+                myballs.Add(myball);
+
+                gameobj.balls.Add(myball);
+            }
+            if (color.Y > 0)
+            {
+                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(0, 1, 0, 1), this, (int)(color.Y*255 ));
+                myballs.Add(myball);
+
+                gameobj.balls.Add(myball);
+            }
+            if (color.Z > 0)
+            {
+                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(0, 0, 1, 1), this, (int)(color.Z*255));
+                myballs.Add(myball);
+
+                gameobj.balls.Add(myball);
+            }
+            myballs = myballs.OrderBy(x => x.score).ToList();
         }
 
         public void Update(float[] visualizationData, float[] visualizationDataAvg, float[] visualizationDataPrev, Game1 game, int index) // Обновление единичной частички
@@ -86,12 +106,21 @@ namespace WindowsGame1
 
         public void Updater(Game1 game)
         {
+            mergeColor = new Vector4(0, 0, 0, 1);
+
+            float angadd = 0;
             foreach (Ball myball in myballs)
             {
+                if (myball.color != new Vector4(1, 1, 1, 1))
+                {
+                    mergeColor += myball.color * (float)myball.score / myball.maxScore;
+                mergeColor.W = 1;
+                }
                 orbitAngle += orbitDirection * (0.001f * (1.2f - myball.Size2));
 
-                myball.TargetPosition.X = Position.X + orbitRange * (1 + myball.Size2realtime) * (float)Math.Cos(orbitAngle);
-                myball.TargetPosition.Y = Position.Y + orbitRange * (1 + myball.Size2realtime) * (float)Math.Sin(orbitAngle);
+                myball.TargetPosition.X = Position.X + orbitRange * (1 ) * (float)Math.Cos(orbitAngle + angadd);
+                myball.TargetPosition.Y = Position.Y + orbitRange * (1 ) * (float)Math.Sin(orbitAngle + angadd);
+                angadd += (float)(Math.PI / 4);
             }
 
             if (isDragged(game))
@@ -191,6 +220,8 @@ namespace WindowsGame1
 
             spriteBatch.Draw(Texture, Position, null, new Color(color),
                 Angle, origin, Size, SpriteEffects.None, 0f);
+            spriteBatch.Draw(Texture, Position, null, new Color(mergeColor),
+                Angle, origin, Size*0.4f, SpriteEffects.None, 0f);
 
 
 
