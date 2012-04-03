@@ -34,8 +34,8 @@ namespace WindowsGame1
         public bool collidable = false;
 
 
-        public int score = 0;
-        public int maxScore = 255;
+        public float score = 0;
+        public float maxScore = 1;
         float friction = 0.9f;
         float strength = 0.05f;
         //List<Ball> collisions = new List<Ball>();
@@ -44,7 +44,7 @@ namespace WindowsGame1
         Random random = new Random(); // Генератор случайных чисел
 
         public Ball(Texture2D texture, Vector2 position, Vector2 velocity,
-            float angle, float angularVelocity, float size, Vector4 colorr, MusicSrc parentSource,int Score)
+            float angle, float angularVelocity, float size, Vector4 colorr, MusicSrc parentSource,float Score)
         {
             // Установка переменных из конструктора
             Texture = texture;
@@ -82,6 +82,8 @@ namespace WindowsGame1
                         collides = a;
                         {
                             this.color = collides.color;
+                            if (parentMusicSrc != null)
+                                parentMusicSrc.MergeColorUpdate();
                             //this.score = resultScore;
 
                         }

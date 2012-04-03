@@ -25,6 +25,7 @@ namespace WindowsGame1
         float orbitRange = 70;
         float orbitAngle = 0;
         int orbitDirection = 1;
+        bool constructed = false;
 
 
         float alpha = 1f;
@@ -74,21 +75,21 @@ namespace WindowsGame1
         {
             if (color.X > 0)
             {
-                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(1, 0, 0, 1), this, (int)(color.X*255));
+                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(1, 0, 0, 1), this, (color.X));
                 myballs.Add(myball);
 
                 gameobj.balls.Add(myball);
             }
             if (color.Y > 0)
             {
-                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(0, 1, 0, 1), this, (int)(color.Y*255 ));
+                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(0, 1, 0, 1), this, (color.Y ));
                 myballs.Add(myball);
 
                 gameobj.balls.Add(myball);
             }
             if (color.Z > 0)
             {
-                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(0, 0, 1, 1), this, (int)(color.Z*255));
+                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(0, 0, 1, 1), this, (color.Z));
                 myballs.Add(myball);
 
                 gameobj.balls.Add(myball);
@@ -104,18 +105,33 @@ namespace WindowsGame1
 
         }
 
-        public void Updater(Game1 game)
+        public void MergeColorUpdate()
         {
             mergeColor = new Vector4(0, 0, 0, 1);
 
-            float angadd = 0;
+            
             foreach (Ball myball in myballs)
             {
                 if (myball.color != new Vector4(1, 1, 1, 1))
                 {
                     mergeColor += myball.color * (float)myball.score / myball.maxScore;
-                mergeColor.W = 1;
+                    mergeColor.W = 1;
                 }
+            }
+ 
+        }
+
+        public void Updater(Game1 game)
+        {
+            if ((mergeColor - color).Length() == 0 )
+                constructed = true;
+            else
+                constructed = false;
+
+            float angadd = 0;
+            foreach (Ball myball in myballs)
+            {
+                
                 orbitAngle += orbitDirection * (0.001f * (1.2f - myball.Size2));
 
                 myball.TargetPosition.X = Position.X + orbitRange * (1 ) * (float)Math.Cos(orbitAngle + angadd);
