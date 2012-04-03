@@ -31,6 +31,7 @@ namespace WindowsGame1
         private Vector2 origin;
         public float range;
         public MusicSrc parentMusicSrc;
+        public bool collidable = false;
 
 
         public int score = 0;
@@ -53,6 +54,7 @@ namespace WindowsGame1
             Angle = angle;
             AngularVelocity = angularVelocity;
             Size = size;
+            
             parentMusicSrc = parentSource;
             targetColor = colorr;
             color = new Vector4(1, 1, 1, 1);
@@ -65,55 +67,59 @@ namespace WindowsGame1
         public void Collisions(Game1 game)
         {
             //collisions = new List<Ball>();
-            Ball toRemove = null;
+           // Ball toRemove = null;
+            if (!collidable)
+            {
             Ball collides = null;
             foreach (Ball a in game.balls)
             {
                 if (a != this)
                 {
                     float distance = (a.Position - this.Position).Length();
-                    if (distance < a.range + this.range && a.score>0 && this.score>0)
+                    if (distance < a.range + this.range && a.collidable && a.score>0 && this.score>0)
                     {
                         //collisions.Add(a);
                         collides = a;
-                        if (this.score < a.score)
-                            toRemove = this;
-                        else if (this.score > a.score)
-                            toRemove = a;
-                        else
                         {
-                            if (this.Velocity.Length() > a.Velocity.Length())
-                                toRemove = this;
-                            else
-                                toRemove = a;
+                            this.color = collides.color;
+                            //this.score = resultScore;
+
                         }
+                        //if (this.score < a.score)
+                        //    toRemove = this;
+                        //else if (this.score > a.score)
+                        //    toRemove = a;
+                        //else
+                        //{
+                        //    if (this.Velocity.Length() > a.Velocity.Length())
+                        //        toRemove = this;
+                        //    else
+                        //        toRemove = a;
+                        //}
                         break;
                        
 
                     }
                 }
             }
-            if (toRemove != null)
-            {
-                game.ballToRemove = toRemove;
+        }
+            //if (toRemove != null)
+            //{
+               // game.ballToRemove = toRemove;
 
-                int biggerScore=Math.Max(collides.score, this.score);
-                Vector4 resultColor = collides.color * (float)collides.score / biggerScore + this.color * (float)this.score / biggerScore;
-                int resultScore = (int)Math.Floor((collides.score + this.score)*1.2f);
+                //int biggerScore=Math.Max(collides.score, this.score);
+                //Vector4 resultColor = collides.color * (float)collides.score / biggerScore + this.color * (float)this.score / biggerScore;
+                //int resultScore = (int)Math.Floor((collides.score + this.score)*1.2f);
                 //resultColor.Normalize();
-                if (toRemove == this)
-                {
-                    collides.color = resultColor;
-                    collides.score = resultScore;
+                //if (toRemove == this)
+                //{
+                //    collides.color = resultColor;
+                //    collides.score = resultScore;
                     
-                }
-                if (toRemove == collides)
-                {
-                    this.color = resultColor;
-                    this.score = resultScore;
-                    
-                }
-            }
+                //}
+                //if (toRemove == collides)
+                
+            //}
         }
 
         public void Update(Game1 game)
@@ -121,7 +127,7 @@ namespace WindowsGame1
 
             if (score > maxScore)
                 score = maxScore;
-            Size2 = (float)Math.Sin((float)score / maxScore * (float)Math.PI / 2) * 0.8f + 0.2f;
+            Size2 = (float)Math.Sqrt((float)score / maxScore) * 0.9f + 0.1f;
             if (isDragged(game))
             {
                 Vector2 dPos = game.cursor.position - game.cursor.prevposition;
@@ -185,8 +191,11 @@ namespace WindowsGame1
 
         public void Draw(SpriteBatchEx spriteBatch) // Прорисовка частички
         {
+            if (parentMusicSrc!=null)
+            spriteBatch.DrawLine(parentMusicSrc.Position, TargetPosition, Color.Black, 1);
             spriteBatch.DrawLine(Position, TargetPosition, Color.Black, 1);
             spriteBatch.Draw(Texture, TargetPosition, null, new Color(color), Angle, origin, 0.08f, SpriteEffects.None, 0f);
+            spriteBatch.Draw(Texture, Position, null, Color.Black, Angle, origin, Size * Size2realtime/Size2, SpriteEffects.None, 0f);
             spriteBatch.Draw(Texture, Position, null, new Color(color), Angle, origin, Size * Size2realtime, SpriteEffects.None, 0f);
         }
     }

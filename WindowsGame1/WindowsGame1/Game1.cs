@@ -96,7 +96,7 @@ namespace WindowsGame1
         private Texture2D MouseIcon;
         private Song song;
         private bool PRELOAD = false;
-        private bool PRELOAD2 = false;
+        //private bool PRELOAD2 = false;
         private string songFile = "Minus";
         private TimeSpan TimeBetweenWrites = new TimeSpan(200000); // 1/frequency.
         //private DateTime startTime; //music start
@@ -213,44 +213,44 @@ namespace WindowsGame1
             {
 #if !WINDOWS_PHONE
 
-                if (PRELOAD2)
-                {
-                    using (System.IO.FileStream fs = new System.IO.FileStream(demoFile, System.IO.FileMode.Open, System.IO.FileAccess.Read))
-                    {
-                        System.Runtime.Serialization.Formatters.Binary.BinaryFormatter b = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                        DemoDatas = b.Deserialize(fs) as List<DemoData>;
-                        fs.Close();
-                    }
-                    demoPoints = DemoDatas.Count();
+                //if (PRELOAD2)
+                //{
+                //    using (System.IO.FileStream fs = new System.IO.FileStream(demoFile, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                //    {
+                //        System.Runtime.Serialization.Formatters.Binary.BinaryFormatter b = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                //        DemoDatas = b.Deserialize(fs) as List<DemoData>;
+                //        fs.Close();
+                //    }
+                //    demoPoints = DemoDatas.Count();
 
-                    foreach (DemoData a in DemoDatas)
-                    {
-                        for (int i = 0; i < 128; i++)
-                        {
-                            visualizationDataMasAvg[i] += a.timePayload[i] / demoPoints;
-                        }
-
-
-                    }
-                }
-                else
-                {
-                    string[] aa = File.ReadAllLines(demoFile + "x");
-                    TimeSpan prevTime = new TimeSpan(0);
-                    foreach (string a in aa)
-                    {
-                        string[] temp = a.Split(";".ToCharArray());
-                        TimeSpan timesp = TimeSpan.Parse(temp[0]);
-                        if (timesp - prevTime >= difficulty)
-                        {
-                            DemoDatas2.Add(new DemoData2(timesp, int.Parse(temp[1])));
-                            prevTime = timesp;
-                        }
-                    }
+                //    foreach (DemoData a in DemoDatas)
+                //    {
+                //        for (int i = 0; i < 128; i++)
+                //        {
+                //            visualizationDataMasAvg[i] += a.timePayload[i] / demoPoints;
+                //        }
 
 
-                    demoPoints = DemoDatas2.Count();
-                }
+                //    }
+                //}
+                //else
+                //{
+                //    string[] aa = File.ReadAllLines(demoFile + "x");
+                //    TimeSpan prevTime = new TimeSpan(0);
+                //    foreach (string a in aa)
+                //    {
+                //        string[] temp = a.Split(";".ToCharArray());
+                //        TimeSpan timesp = TimeSpan.Parse(temp[0]);
+                //        if (timesp - prevTime >= difficulty)
+                //        {
+                //            DemoDatas2.Add(new DemoData2(timesp, int.Parse(temp[1])));
+                //            prevTime = timesp;
+                //        }
+                //    }
+
+
+                //    demoPoints = DemoDatas2.Count();
+                //}
 #else
                 //string[] aa = File.ReadAllLines(demoFile + "x");
                 Stream stream = TitleContainer.OpenStream("Content/" + demoFile + "x");
@@ -350,8 +350,30 @@ namespace WindowsGame1
                 //balls.Add(myBall);
                 myTanker = new ColorTanker(new Vector2(100, 300), DemoDatas2.Where(x => x.index == 0).Count(), DemoDatas2.Where(x => x.index == 1).Count(), DemoDatas2.Where(x => x.index == 2).Count());
 
-                MusicSrc a = new MusicSrc(textures["player1"], new Vector2(250f, 330), new Vector2(), 0f, 0f,0, 0, 0.4f, 0.5f, this, new Vector4(0, 1, 0, 1));
+                MusicSrc a = new MusicSrc(textures["player1"], new Vector2(280f, 250), new Vector2(0), 0f, 0f,0, 0, 0.4f, 0.5f, this, new Vector4(0.3f, 1, 0.5f, 1));
                 musics.Add(a);
+                 a = new MusicSrc(textures["player1"], new Vector2(380f, 170), new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, this, new Vector4(0.7f, 0, 0, 1));
+                musics.Add(a);
+                a = new MusicSrc(textures["player1"], new Vector2(480f, 270), new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, this, new Vector4(0, 1, 0.5f, 1));
+                musics.Add(a);
+
+
+                Ball ball = new Ball(textures["player1"], new Vector2(220f, 420), new Vector2(0),0,0,1,new Vector4(1,0,0,1),null,256);
+                ball.collidable = true;
+                ball.color = ball.targetColor;
+                ball.maxScore = 256;
+                balls.Add(ball);
+                 ball = new Ball(textures["player1"], new Vector2(420f, 420), new Vector2(0), 0, 0, 1, new Vector4(0, 1, 0, 1), null, 256);
+                ball.collidable = true;
+                ball.color = ball.targetColor;
+                ball.maxScore = 256;
+                balls.Add(ball);
+                 ball = new Ball(textures["player1"], new Vector2(620f, 420), new Vector2(0), 0, 0, 1, new Vector4(0, 0, 1, 1), null, 256);
+                ball.collidable = true;
+                ball.color = ball.targetColor;
+                ball.maxScore = 256;
+                balls.Add(ball);
+              
                 //for (int i = 0; i < 3; i++)
                 //{
                 //    MusicSrc a;
@@ -758,10 +780,10 @@ namespace WindowsGame1
 
             }
 
-            if (PRELOAD2)
-            {
-                File.WriteAllLines(demoFile + "x", finalDemo, System.Text.Encoding.ASCII);
-            }
+            //if (PRELOAD2)
+            //{
+            //    File.WriteAllLines(demoFile + "x", finalDemo, System.Text.Encoding.ASCII);
+            //}
 #else
 
 #endif
