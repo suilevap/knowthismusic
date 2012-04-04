@@ -238,6 +238,11 @@ namespace WindowsGame1
                 Angle, origin, Size, SpriteEffects.None, 0f);
             spriteBatch.Draw(Texture, Position, null, new Color(mergeColor),
                 Angle, origin, Size*0.4f, SpriteEffects.None, 0f);
+            if (constructed)
+            {
+                origin = new Vector2(game.textures["rock"].Width / 2, game.textures["rock"].Height / 2);
+                spriteBatch.Draw(game.textures["rock"], Position, null, Color.White, Angle, origin, Size * 0.1f, SpriteEffects.None, 0f);
+            }
 
 
 

@@ -311,6 +311,7 @@ namespace WindowsGame1
             textures.Add("field", Content.Load<Texture2D>("field"));
             textures.Add("ball", Content.Load<Texture2D>("ball"));
             textures.Add("source", Content.Load<Texture2D>("source"));
+            textures.Add("rock", Content.Load<Texture2D>("rock"));
 
 
 
