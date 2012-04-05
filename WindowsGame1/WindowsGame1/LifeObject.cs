@@ -12,6 +12,13 @@ using Microsoft.Xna.Framework.Media;
 
 namespace WindowsGame1
 {
+     public enum LifeObjectBehavior
+     {
+         Sun,
+         Cloud,
+         Air,
+         Grass
+     }
    public class LifeObject
     {
         public Texture2D Texture { get; set; }
@@ -26,16 +33,17 @@ namespace WindowsGame1
         public float Size { get; set; }
         public float Size2 = 1;// Размер частицы
         public float Size2realtime = 0;
-        float sizeVelocity = 0;
+        //float sizeVelocity = 0;
         public float alpha = 1f;
         private Vector2 origin;
         public float range;
         public MusicSrc childMusicSrc;
         public bool active = false;
+        LifeObjectBehavior Behavior;
         
 
 
-        public LifeObject(Texture2D texture, Vector2 position, float size, Game1 game)
+        public LifeObject(Texture2D texture, Vector2 position, float size, Game1 game, LifeObjectBehavior behavior)
         {
 
             Texture = texture;
@@ -45,7 +53,7 @@ namespace WindowsGame1
             Angle = 0;
             AngularVelocity = 0;
             Size = size;
-
+            Behavior = behavior;
             
             
             color = GetColorFromTexture(texture);
@@ -103,7 +111,7 @@ namespace WindowsGame1
         {
                  
             if (active)
-            spriteBatch.Draw(Texture, Position, null, new Color(color), Angle, origin, Size , SpriteEffects.None, 0f);
+            spriteBatch.Draw(Texture, Position, null, Color.White, Angle, origin, Size , SpriteEffects.None, 0f);
             else
                 spriteBatch.Draw(TextureGrayscale, Position, null, Color.White, Angle, origin, Size, SpriteEffects.None, 0f);
             if (childMusicSrc != null)

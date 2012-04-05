@@ -310,6 +310,7 @@ namespace WindowsGame1
 
             textures.Add("player1", Content.Load<Texture2D>("player1"));
             textures.Add("player1circle", Content.Load<Texture2D>("player1circle"));
+            textures.Add("player1inactive", Content.Load<Texture2D>("player1inactive"));
             textures.Add("field", Content.Load<Texture2D>("field"));
             textures.Add("ball", Content.Load<Texture2D>("ball"));
             textures.Add("source", Content.Load<Texture2D>("source"));
@@ -355,7 +356,7 @@ namespace WindowsGame1
                 //myBall = new Ball(textures["player1"], new Vector2(600, 240), new Vector2(0), 0, 0, 1, ColorRandomizer(true), null);
                 //myBall.score = myBall.maxScore;
                 //balls.Add(myBall);
-                myTanker = new ColorTanker(new Vector2(100, 300), DemoDatas2.Where(x => x.index == 0).Count(), DemoDatas2.Where(x => x.index == 1).Count(), DemoDatas2.Where(x => x.index == 2).Count());
+                myTanker = new ColorTanker(new Vector2(100, 470), DemoDatas2.Where(x => x.index == 0).Count(), DemoDatas2.Where(x => x.index == 1).Count(), DemoDatas2.Where(x => x.index == 2).Count());
 
                 //MusicSrc a = new MusicSrc(textures["player1"], new Vector2(280f, 250), new Vector2(0), 0f, 0f,0, 0, 0.4f, 0.5f, this, new Vector4(0.3f, 1, 0.5f, 1));
                 //musics.Add(a);
@@ -364,9 +365,11 @@ namespace WindowsGame1
                 //a = new MusicSrc(textures["player1"], new Vector2(480f, 270), new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, this, new Vector4(0, 1, 0.5f, 1));
                 //musics.Add(a);
 
-                LifeObject lifeo = new LifeObject(textures["sun1"], new Vector2(100, 100), 1, this);
+                LifeObject lifeo = new LifeObject(textures["sun1"], new Vector2(100, 100), 1, this,LifeObjectBehavior.Sun);
                 lifeObjects.Add(lifeo);
-                lifeo = new LifeObject(textures["cloud1"], new Vector2(400, 160), 1, this);
+                lifeo = new LifeObject(textures["cloud1"], new Vector2(400, 160), 1, this, LifeObjectBehavior.Cloud);
+                lifeObjects.Add(lifeo);
+                lifeo = new LifeObject(textures["cloud1"], new Vector2(400, 240), 1, this, LifeObjectBehavior.Air);
                 lifeObjects.Add(lifeo);
 
 

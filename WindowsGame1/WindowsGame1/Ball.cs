@@ -57,7 +57,7 @@ namespace WindowsGame1
             
             parentMusicSrc = parentSource;
             targetColor = colorr;
-            color = new Vector4(1, 1, 1, 1f);
+            color = new Vector4(0);
             color.W = alpha;
             score = Score;
             origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
@@ -199,6 +199,10 @@ namespace WindowsGame1
             spriteBatch.DrawLine(Position, TargetPosition, Color.Black, 1);
             spriteBatch.Draw(Texture, TargetPosition, null, new Color(color), Angle, origin, 0.08f, SpriteEffects.None, 0f);
             spriteBatch.Draw(game.textures["player1circle"], Position, null, Color.White, Angle, origin, Size, SpriteEffects.None, 0f);
+            
+            if (color==new Vector4(0,0,0,1))
+                spriteBatch.Draw(game.textures["player1inactive"], Position, null, Color.White, Angle, origin, Size * Size2realtime, SpriteEffects.None, 0f);
+            else
             spriteBatch.Draw(Texture, Position, null, new Color(color), Angle, origin, Size * Size2realtime, SpriteEffects.None, 0f);
 
             if (!collidable)

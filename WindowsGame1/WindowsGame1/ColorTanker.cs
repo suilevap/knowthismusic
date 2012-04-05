@@ -24,7 +24,7 @@ namespace WindowsGame1
         public float veloB = 0;
         int rectWidth = 20;
         int zazor = 4;
-        int height = 200;
+        int height = 100;
         float friction = 0.96f;
         float strength = 0.002f;
 
