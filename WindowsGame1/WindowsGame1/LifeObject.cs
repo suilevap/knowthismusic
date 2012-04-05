@@ -1,0 +1,114 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.GamerServices;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
+
+namespace WindowsGame1
+{
+   public class LifeObject
+    {
+        public Texture2D Texture { get; set; }
+        public Texture2D TextureGrayscale;
+        public Vector2 Position { get; set; }
+        public Vector2 TargetPosition; // Позиция частицы
+        public Vector2 Velocity { get; set; }        // Скорость частицы
+        public float Angle { get; set; }            // Угол поворота частицы
+        public float AngularVelocity { get; set; }    // Угловая скорость частицы
+        public Vector4 targetColor;
+        public Vector4 color;// Цвет частицы
+        public float Size { get; set; }
+        public float Size2 = 1;// Размер частицы
+        public float Size2realtime = 0;
+        float sizeVelocity = 0;
+        public float alpha = 1f;
+        private Vector2 origin;
+        public float range;
+        public MusicSrc childMusicSrc;
+        public bool active = false;
+        
+
+
+        public LifeObject(Texture2D texture, Vector2 position, float size, Game1 game)
+        {
+
+            Texture = texture;
+            Position = position;
+            TargetPosition = position;
+            Velocity = new Vector2(0);
+            Angle = 0;
+            AngularVelocity = 0;
+            Size = size;
+
+            
+            
+            color = GetColorFromTexture(texture);
+            color.W = alpha;
+            TextureGrayscale = MakeGrayscale(texture, game);
+            origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
+            range = Texture.Width / 2 * Size * Size2realtime;
+
+            childMusicSrc = new MusicSrc(game.textures["player1"], position + (new Vector2(400, 240) - position)*0.3f, new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, game, color);
+            childMusicSrc.parentLifeObj.Add(this);
+            game.musics.Add(childMusicSrc);
+        }
+
+        public void Update(Game1 game)
+        {
+        }
+
+        Vector4 GetColorFromTexture(Texture2D textur)
+        {
+            Vector4 result=new Vector4(0);
+            Color[] retrievedColor = new Color[1];
+            Rectangle sourceRectangle = new Rectangle(0, 0, 1, 1);
+            textur.GetData<Color>(0,sourceRectangle,retrievedColor, 0, 1);
+            result = retrievedColor[0].ToVector4();
+            return result;
+        }
+
+        Texture2D MakeGrayscale(Texture2D textur,Game1 game)
+        {
+            Texture2D result = new Texture2D(game.spriteBatch.GraphicsDevice, textur.Width, textur.Height);
+            Color[] bitmap = new Color[textur.Width * textur.Height];
+
+            textur.GetData(bitmap);
+
+            for (int i = 0; i < textur.Width * textur.Height; i++)
+            {
+                //byte grayscale = (byte)(bitmap[i].R * 0.3f +
+                //       bitmap[i].G * 0.59f + bitmap[i].B * 0.11f);
+                //bitmap[i].R = grayscale;
+                //bitmap[i].G = grayscale;
+                //bitmap[i].B = grayscale;
+                if (bitmap[i]!=Color.Black)
+                {
+                    bitmap[i] = Color.Transparent;
+                    
+                   
+                }
+            }
+
+            result.SetData(bitmap);
+            return result;
+        }
+
+        public void Draw(SpriteBatchEx spriteBatch) // Прорисовка частички
+        {
+                 
+            if (active)
+            spriteBatch.Draw(Texture, Position, null, new Color(color), Angle, origin, Size , SpriteEffects.None, 0f);
+            else
+                spriteBatch.Draw(TextureGrayscale, Position, null, Color.White, Angle, origin, Size, SpriteEffects.None, 0f);
+            if (childMusicSrc != null)
+                spriteBatch.DrawLine(childMusicSrc.Position, Position, Color.Black, 1);
+        }
+
+    }
+}

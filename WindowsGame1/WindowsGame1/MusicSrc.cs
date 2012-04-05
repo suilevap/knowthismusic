@@ -26,6 +26,7 @@ namespace WindowsGame1
         float orbitAngle = 0;
         int orbitDirection = 1;
         bool constructed = false;
+        public List<LifeObject> parentLifeObj = new List<LifeObject>();
 
 
         float alpha = 1f;
@@ -127,6 +128,12 @@ namespace WindowsGame1
                 constructed = true;
             else
                 constructed = false;
+
+            if (constructed)
+            {
+                foreach (LifeObject a in parentLifeObj)
+                    a.active = true;
+            }
 
             float angadd = 0;
             foreach (Ball myball in myballs)

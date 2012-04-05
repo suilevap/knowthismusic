@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="Ball.cs" />
     <Compile Include="ColorTanker.cs" />
+    <Compile Include="LifeObject.cs" />
     <Compile Include="MusicSrc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />

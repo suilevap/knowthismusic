@@ -57,7 +57,7 @@ namespace WindowsGame1
             
             parentMusicSrc = parentSource;
             targetColor = colorr;
-            color = new Vector4(1, 1, 1, 1);
+            color = new Vector4(1, 1, 1, 1f);
             color.W = alpha;
             score = Score;
             origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
@@ -129,7 +129,8 @@ namespace WindowsGame1
 
             if (score > maxScore)
                 score = maxScore;
-            Size2 = (float)Math.Sqrt((float)score / maxScore) * 0.9f + 0.1f;
+            //Size2 = (float)Math.Sqrt((float)score / maxScore) * 0.9f + 0.1f;
+            Size2 = ((float)score / maxScore) * 1f + 0;
             if (isDragged(game))
             {
                 Vector2 dPos = game.cursor.position - game.cursor.prevposition;
@@ -191,14 +192,27 @@ namespace WindowsGame1
             return result;
         }
 
-        public void Draw(SpriteBatchEx spriteBatch) // Прорисовка частички
+        public void Draw(SpriteBatchEx spriteBatch, Game1 game) // Прорисовка частички
         {
-            if (parentMusicSrc!=null)
-            spriteBatch.DrawLine(parentMusicSrc.Position, TargetPosition, Color.Black, 1);
+            if (parentMusicSrc != null)
+                spriteBatch.DrawLine(parentMusicSrc.Position, TargetPosition, Color.Black, 1);
             spriteBatch.DrawLine(Position, TargetPosition, Color.Black, 1);
             spriteBatch.Draw(Texture, TargetPosition, null, new Color(color), Angle, origin, 0.08f, SpriteEffects.None, 0f);
-            spriteBatch.Draw(Texture, Position, null, Color.Black, Angle, origin, Size * Size2realtime/Size2, SpriteEffects.None, 0f);
+            spriteBatch.Draw(game.textures["player1circle"], Position, null, Color.White, Angle, origin, Size, SpriteEffects.None, 0f);
             spriteBatch.Draw(Texture, Position, null, new Color(color), Angle, origin, Size * Size2realtime, SpriteEffects.None, 0f);
+
+            if (!collidable)
+            {
+                
+                string output = string.Format("{0}", (int)(score * 255));
+
+                //Find the center of the string
+                Vector2 FontOrigin = game.font.MeasureString(output) / 2;
+                //Draw the string
+                spriteBatch.DrawString(game.font, output, Position, Color.Black, 0, FontOrigin, 1, SpriteEffects.None, 0);
+            }
+           
+            
         }
     }
 }
