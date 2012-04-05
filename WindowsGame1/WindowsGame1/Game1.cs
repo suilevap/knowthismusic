@@ -70,7 +70,7 @@ namespace WindowsGame1
 
     }
 
-    
+
 
     public struct powerAddition
     {
@@ -91,7 +91,7 @@ namespace WindowsGame1
     public class Game1 : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
-        SpriteBatchEx spriteBatch;
+        public SpriteBatchEx spriteBatch;
         private List<Texture2D> MelList;
         private Texture2D MouseIcon;
         private Song song;
@@ -100,9 +100,9 @@ namespace WindowsGame1
         private string songFile = "Minus";
         private TimeSpan TimeBetweenWrites = new TimeSpan(200000); // 1/frequency.
         //private DateTime startTime; //music start
-       // private DateTime lastWriteTime;
-        private List<MusicSrc> musics = new List<MusicSrc>();
-        private SpriteFont font;
+        // private DateTime lastWriteTime;
+        public List<MusicSrc> musics = new List<MusicSrc>();
+        public SpriteFont font;
 #if !WINDOWS_PHONE
         private string demoFile = Directory.GetCurrentDirectory() + "\\demo.txt";
 #else
@@ -137,10 +137,11 @@ namespace WindowsGame1
         public Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         //public Vector2 musicSourcePosition = new Vector2(400, 240);
         public List<Ball> balls = new List<Ball>();
-       // Ball myBall;
+        public List<LifeObject> lifeObjects = new List<LifeObject>();
+        // Ball myBall;
         public Ball ballToRemove = null;
         public MusicSource musicSource = new MusicSource(new Vector2(400, 240));
-        ColorTanker myTanker=null;
+        ColorTanker myTanker = null;
 
 
 
@@ -191,7 +192,7 @@ namespace WindowsGame1
 
             base.Initialize();
 
-           
+
 
 
             readyO = new Ready(readyTexture, new Vector2(400, 240), 1);
@@ -271,7 +272,7 @@ namespace WindowsGame1
                 }
 
                 demoPoints = DemoDatas2.Count();
-               
+
 #endif
 
 
@@ -308,10 +309,15 @@ namespace WindowsGame1
             soundEffects.Add(Content.Load<SoundEffect>("Miss2"));
 
             textures.Add("player1", Content.Load<Texture2D>("player1"));
+            textures.Add("player1circle", Content.Load<Texture2D>("player1circle"));
             textures.Add("field", Content.Load<Texture2D>("field"));
             textures.Add("ball", Content.Load<Texture2D>("ball"));
             textures.Add("source", Content.Load<Texture2D>("source"));
             textures.Add("rock", Content.Load<Texture2D>("rock"));
+            textures.Add("sun1", Content.Load<Texture2D>("sun1"));
+            textures.Add("cloud1", Content.Load<Texture2D>("cloud1"));
+
+
 
 
 
@@ -351,30 +357,35 @@ namespace WindowsGame1
                 //balls.Add(myBall);
                 myTanker = new ColorTanker(new Vector2(100, 300), DemoDatas2.Where(x => x.index == 0).Count(), DemoDatas2.Where(x => x.index == 1).Count(), DemoDatas2.Where(x => x.index == 2).Count());
 
-                MusicSrc a = new MusicSrc(textures["player1"], new Vector2(280f, 250), new Vector2(0), 0f, 0f,0, 0, 0.4f, 0.5f, this, new Vector4(0.3f, 1, 0.5f, 1));
-                musics.Add(a);
-                 a = new MusicSrc(textures["player1"], new Vector2(380f, 170), new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, this, new Vector4(0.7f, 0, 0, 1));
-                musics.Add(a);
-                a = new MusicSrc(textures["player1"], new Vector2(480f, 270), new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, this, new Vector4(0, 1, 0.5f, 1));
-                musics.Add(a);
+                //MusicSrc a = new MusicSrc(textures["player1"], new Vector2(280f, 250), new Vector2(0), 0f, 0f,0, 0, 0.4f, 0.5f, this, new Vector4(0.3f, 1, 0.5f, 1));
+                //musics.Add(a);
+                // a = new MusicSrc(textures["player1"], new Vector2(380f, 170), new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, this, new Vector4(0.7f, 0, 0, 1));
+                //musics.Add(a);
+                //a = new MusicSrc(textures["player1"], new Vector2(480f, 270), new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, this, new Vector4(0, 1, 0.5f, 1));
+                //musics.Add(a);
+
+                LifeObject lifeo = new LifeObject(textures["sun1"], new Vector2(100, 100), 1, this);
+                lifeObjects.Add(lifeo);
+                lifeo = new LifeObject(textures["cloud1"], new Vector2(400, 160), 1, this);
+                lifeObjects.Add(lifeo);
 
 
-                Ball ball = new Ball(textures["player1"], new Vector2(220f, 420), new Vector2(0),0,0,1,new Vector4(1,0,0,1),null,256);
+                Ball ball = new Ball(textures["player1"], new Vector2(220f, 420), new Vector2(0), 0, 0, 1, new Vector4(1, 0, 0, 1), null, 256);
                 ball.collidable = true;
                 ball.color = ball.targetColor;
                 ball.maxScore = 256;
                 balls.Add(ball);
-                 ball = new Ball(textures["player1"], new Vector2(420f, 420), new Vector2(0), 0, 0, 1, new Vector4(0, 1, 0, 1), null, 256);
+                ball = new Ball(textures["player1"], new Vector2(420f, 420), new Vector2(0), 0, 0, 1, new Vector4(0, 1, 0, 1), null, 256);
                 ball.collidable = true;
                 ball.color = ball.targetColor;
                 ball.maxScore = 256;
                 balls.Add(ball);
-                 ball = new Ball(textures["player1"], new Vector2(620f, 420), new Vector2(0), 0, 0, 1, new Vector4(0, 0, 1, 1), null, 256);
+                ball = new Ball(textures["player1"], new Vector2(620f, 420), new Vector2(0), 0, 0, 1, new Vector4(0, 0, 1, 1), null, 256);
                 ball.collidable = true;
                 ball.color = ball.targetColor;
                 ball.maxScore = 256;
                 balls.Add(ball);
-              
+
                 //for (int i = 0; i < 3; i++)
                 //{
                 //    MusicSrc a;
@@ -426,74 +437,74 @@ namespace WindowsGame1
 
 
 
-               // timeSpa = new TimeSpan();
-               //// timeSpa = DateTime.Now - startTime;
+                // timeSpa = new TimeSpan();
+                //// timeSpa = DateTime.Now - startTime;
 
-               // if (DateTime.Now - lastWriteTime >= TimeBetweenWrites)
-               // {
-               //     lastWriteTime = DateTime.Now;
+                // if (DateTime.Now - lastWriteTime >= TimeBetweenWrites)
+                // {
+                //     lastWriteTime = DateTime.Now;
 
-               //     if (PRELOAD)
-               //     {
+                //     if (PRELOAD)
+                //     {
 
-               //         DemoDatas.Add(new DemoData(timeSpa, visualizationDataMas));
-
-
-               //     }
-               //     else
-               //     {
-               //         if (PRELOAD2)
-               //         {
-               //             if (timeSpa > DemoDatas[demoPointer].timeStamp)
-               //             {
-
-               //                 if (demoPointer > 1)
-               //                     visualizationDataMasPrev = DemoDatas[demoPointer - 1].timePayload;
-
-               //                 int diapazon = 25;
-               //                 if (demoPointer > diapazon && demoPointer < demoPoints - diapazon - 1)
-               //                 {
-               //                     visualizationDataMasAvg = new float[128];
-               //                     for (int k = -diapazon; k < diapazon; k++)
-               //                     {
-               //                         for (int i = 0; i < 128; i++)
-               //                         {
-               //                             visualizationDataMasAvg[i] += DemoDatas[demoPointer + k].timePayload[i] / (diapazon * 2);
-               //                         }
-               //                     }
-               //                 }
-               //                 visualizationDataMas = DemoDatas[demoPointer].timePayload;
+                //         DemoDatas.Add(new DemoData(timeSpa, visualizationDataMas));
 
 
+                //     }
+                //     else
+                //     {
+                //         if (PRELOAD2)
+                //         {
+                //             if (timeSpa > DemoDatas[demoPointer].timeStamp)
+                //             {
 
-               //                 demoPointer++;
+                //                 if (demoPointer > 1)
+                //                     visualizationDataMasPrev = DemoDatas[demoPointer - 1].timePayload;
 
-               //             }
-
-
-               //         }
-               //         else
-               //         {
-               //             if (demoPointer < demoPoints)
-               //             {
-               //                 if (timeSpa > DemoDatas2[demoPointer].timeStamp)
-               //                 {
-               //                     activeIndex = DemoDatas2[demoPointer].index;
-               //                     if (demoPointer < demoPoints - 1)
-               //                     {
-
-               //                         demoPointer++;
-               //                     }
+                //                 int diapazon = 25;
+                //                 if (demoPointer > diapazon && demoPointer < demoPoints - diapazon - 1)
+                //                 {
+                //                     visualizationDataMasAvg = new float[128];
+                //                     for (int k = -diapazon; k < diapazon; k++)
+                //                     {
+                //                         for (int i = 0; i < 128; i++)
+                //                         {
+                //                             visualizationDataMasAvg[i] += DemoDatas[demoPointer + k].timePayload[i] / (diapazon * 2);
+                //                         }
+                //                     }
+                //                 }
+                //                 visualizationDataMas = DemoDatas[demoPointer].timePayload;
 
 
-               //                 }
-               //             }
+
+                //                 demoPointer++;
+
+                //             }
 
 
-               //         }
-               //     }
+                //         }
+                //         else
+                //         {
+                //             if (demoPointer < demoPoints)
+                //             {
+                //                 if (timeSpa > DemoDatas2[demoPointer].timeStamp)
+                //                 {
+                //                     activeIndex = DemoDatas2[demoPointer].index;
+                //                     if (demoPointer < demoPoints - 1)
+                //                     {
 
-               // }
+                //                         demoPointer++;
+                //                     }
+
+
+                //                 }
+                //             }
+
+
+                //         }
+                //     }
+
+                // }
 
                 // next points
                 //if (demoPointer + 10 < demoPoints)
@@ -560,10 +571,14 @@ namespace WindowsGame1
                 {
                     ball.Update(this);
                 }
+                foreach (LifeObject lifeobj in lifeObjects)
+                {
+                    lifeobj.Update(this);
+                }
                 if (ballToRemove != null)
                 {
-                    if (ballToRemove.parentMusicSrc!=null)
-                    ballToRemove.parentMusicSrc.NewBallCreate();
+                    if (ballToRemove.parentMusicSrc != null)
+                        ballToRemove.parentMusicSrc.NewBallCreate();
                     balls.Remove(ballToRemove);
                     ballToRemove = null;
                 }
@@ -635,25 +650,25 @@ namespace WindowsGame1
         public Vector4 ColorRandomizer(bool two)
         {
             Vector4 result;
-             int[] rgb =new int[3];
-                       int randMax = 5;
-                       int dominant = random.Next(2);
-                       rgb[dominant] = randMax;
-                       for (int i = 0; i < 3; i++)
-                       {
-                          if (i!=dominant)
-                              rgb[i]=random.Next(1,randMax);
-                          
-                       }
-                       if (two)
-                       {
-                           int toDel = random.Next(1, 2);
-                           int index = dominant + toDel;
-                           if (index > 2)
-                               index -= 3;
-                           rgb[index] = 0;
-                       }
-                       result = new Vector4((float)rgb[0] / randMax, (float)rgb[1] / randMax, (float)rgb[2] / randMax, 1);
+            int[] rgb = new int[3];
+            int randMax = 5;
+            int dominant = random.Next(2);
+            rgb[dominant] = randMax;
+            for (int i = 0; i < 3; i++)
+            {
+                if (i != dominant)
+                    rgb[i] = random.Next(1, randMax);
+
+            }
+            if (two)
+            {
+                int toDel = random.Next(1, 2);
+                int index = dominant + toDel;
+                if (index > 2)
+                    index -= 3;
+                rgb[index] = 0;
+            }
+            result = new Vector4((float)rgb[0] / randMax, (float)rgb[1] / randMax, (float)rgb[2] / randMax, 1);
 
             return result;
         }
@@ -671,14 +686,18 @@ namespace WindowsGame1
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
 
             if (myTanker != null)
-                myTanker.Draw(spriteBatch,font);
+                myTanker.Draw(spriteBatch, font);
             //spriteBatch.Draw(back_background, new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //spriteBatch.Draw(textures["field"], new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //Vector2 origin = new Vector2(textures["source"].Width / 2, textures["source"].Height / 2);
             //spriteBatch.Draw(textures["source"], musicSource.Position, null, Color.Aquamarine, musicSource.angle, origin, 0.9f, SpriteEffects.None, 1f);
+            foreach (LifeObject lifeObject in lifeObjects)
+            {
+                lifeObject.Draw(spriteBatch);
+            }
             foreach (Ball ball in balls)
             {
-                ball.Draw(spriteBatch);
+                ball.Draw(spriteBatch,this);
             }
 
             if (ready)
