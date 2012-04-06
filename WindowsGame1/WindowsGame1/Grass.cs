@@ -18,9 +18,9 @@ namespace WindowsGame1
             _length = length;
             _angles = new Elastic()
                           {
-                              Origin = new Vector2((float)(Math.PI / 2), (float)(Math.PI / 2)),
+                              Origin = new Vector2((float)(Math.PI / 2), (float)(0)),
                               Friction = friction,
-                              Position = new Vector2((float)(Math.PI / 2 - 0.02f), (float)(Math.PI / 2 + 0.04f)),
+                              Position = new Vector2((float)(Math.PI / 2 - 0.04f), (float)(Math.PI / 2 + 0.08f)),
                               Speed = new Vector2(),
                               K = k
                           };
@@ -32,14 +32,14 @@ namespace WindowsGame1
 
             Vector2 pos2;
             pos2.X = _position.X + (float) Math.Cos(_angles.Position.X)*_length.X;
-            pos2.Y = _position.Y + (float) Math.Sin(_angles.Position.X)*_length.X;
+            pos2.Y = _position.Y - (float) Math.Sin(_angles.Position.X)*_length.X;
 
             spriteBatch.DrawLine(_position, pos2, Color.Green, 3);
 
 
             Vector2 pos3;
             pos3.X = pos2.X + (float)Math.Cos(_angles.Position.X + _angles.Position.Y) * _length.Y;
-            pos3.Y = pos2.Y + (float)Math.Sin(_angles.Position.X + _angles.Position.Y) * _length.Y;
+            pos3.Y = pos2.Y - (float)Math.Sin(_angles.Position.X + _angles.Position.Y) * _length.Y;
 
             spriteBatch.DrawLine(pos2, pos3, Color.Green, 2);
 
