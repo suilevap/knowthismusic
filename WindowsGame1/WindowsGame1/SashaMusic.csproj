@@ -74,6 +74,9 @@
   <ItemGroup>
     <Compile Include="Ball.cs" />
     <Compile Include="ColorTanker.cs" />
+    <Compile Include="Elastic.cs" />
+    <Compile Include="Grass.cs" />
+    <Compile Include="GrassField.cs" />
     <Compile Include="LifeObject.cs" />
     <Compile Include="MusicSrc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
