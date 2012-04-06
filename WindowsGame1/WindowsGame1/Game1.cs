@@ -139,7 +139,8 @@ namespace WindowsGame1
         public List<Ball> balls = new List<Ball>();
         public List<LifeObject> lifeObjects = new List<LifeObject>();
         // Ball myBall;
-        public Ball ballToRemove = null;
+        public List<Ball> ballsToRemove = new List<Ball>();
+        public List<MusicSrc> MusicSrcsToRemove = new List<MusicSrc>();
         public MusicSource musicSource = new MusicSource(new Vector2(400, 240));
         ColorTanker myTanker = null;
 
@@ -365,11 +366,13 @@ namespace WindowsGame1
                 //a = new MusicSrc(textures["player1"], new Vector2(480f, 270), new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, this, new Vector4(0, 1, 0.5f, 1));
                 //musics.Add(a);
 
-                LifeObject lifeo = new LifeObject(textures["sun1"], new Vector2(100, 100), 1, this,LifeObjectBehavior.Sun);
+                LifeObject lifeo = new LifeObject(textures["sun1"], new Vector2(100, 100), 1, this,LifeObjectBehavior.Sun,-1);
                 lifeObjects.Add(lifeo);
-                lifeo = new LifeObject(textures["cloud1"], new Vector2(400, 160), 1, this, LifeObjectBehavior.Cloud);
+                lifeo = new LifeObject(textures["cloud1"], new Vector2(600, 140), 1, this, LifeObjectBehavior.Cloud,-2);
                 lifeObjects.Add(lifeo);
-                lifeo = new LifeObject(textures["cloud1"], new Vector2(400, 240), 1, this, LifeObjectBehavior.Air);
+                lifeo = new LifeObject(textures["cloud1"], new Vector2(400, 200), 1, this, LifeObjectBehavior.Air,0);
+                lifeObjects.Add(lifeo);
+                lifeo = new LifeObject(textures["cloud1"], new Vector2(200, 300), 1, this, LifeObjectBehavior.Grass,0);
                 lifeObjects.Add(lifeo);
 
 
@@ -578,13 +581,30 @@ namespace WindowsGame1
                 {
                     lifeobj.Update(this);
                 }
-                if (ballToRemove != null)
+
+                foreach (MusicSrc ballToRemove in MusicSrcsToRemove)
+                //if (ballToRemove != null)
+                {
+
+                    ballsToRemove.AddRange(ballToRemove.myballs);
+ 
+                    
+                    musics.Remove(ballToRemove);
+
+                }
+                MusicSrcsToRemove.Clear();
+
+                foreach (Ball ballToRemove in ballsToRemove)
+                //if (ballToRemove != null)
                 {
                     if (ballToRemove.parentMusicSrc != null)
-                        ballToRemove.parentMusicSrc.NewBallCreate();
+                        ballToRemove.parentMusicSrc.myballs.Remove(ballToRemove);
                     balls.Remove(ballToRemove);
-                    ballToRemove = null;
+                   
                 }
+                ballsToRemove.Clear();
+
+                
 
                 //MusicSourceUpdate();
             } //end of Ready
@@ -694,7 +714,7 @@ namespace WindowsGame1
             //spriteBatch.Draw(textures["field"], new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //Vector2 origin = new Vector2(textures["source"].Width / 2, textures["source"].Height / 2);
             //spriteBatch.Draw(textures["source"], musicSource.Position, null, Color.Aquamarine, musicSource.angle, origin, 0.9f, SpriteEffects.None, 1f);
-            foreach (LifeObject lifeObject in lifeObjects)
+            foreach (LifeObject lifeObject in lifeObjects.OrderByDescending(x=>x.Depth))
             {
                 lifeObject.Draw(spriteBatch);
             }

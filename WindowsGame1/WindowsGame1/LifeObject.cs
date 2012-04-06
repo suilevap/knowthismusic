@@ -40,10 +40,11 @@ namespace WindowsGame1
         public MusicSrc childMusicSrc;
         public bool active = false;
         LifeObjectBehavior Behavior;
+        public int Depth;
         
 
 
-        public LifeObject(Texture2D texture, Vector2 position, float size, Game1 game, LifeObjectBehavior behavior)
+        public LifeObject(Texture2D texture, Vector2 position, float size, Game1 game, LifeObjectBehavior behavior, int depth)
         {
 
             Texture = texture;
@@ -54,7 +55,7 @@ namespace WindowsGame1
             AngularVelocity = 0;
             Size = size;
             Behavior = behavior;
-            
+            Depth = depth;
             
             color = GetColorFromTexture(texture);
             color.W = alpha;
@@ -62,7 +63,18 @@ namespace WindowsGame1
             origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
             range = Texture.Width / 2 * Size * Size2realtime;
 
-            childMusicSrc = new MusicSrc(game.textures["player1"], position + (new Vector2(400, 240) - position)*0.3f, new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, game, color);
+           
+
+            if (Behavior == LifeObjectBehavior.Air)
+            {
+                color = Color.DeepSkyBlue.ToVector4();
+            }
+            if (Behavior == LifeObjectBehavior.Grass)
+            {
+                color = Color.ForestGreen.ToVector4();
+            }
+
+            childMusicSrc = new MusicSrc(game.textures["player1"], position, new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, game, color);
             childMusicSrc.parentLifeObj.Add(this);
             game.musics.Add(childMusicSrc);
         }
@@ -109,13 +121,28 @@ namespace WindowsGame1
 
         public void Draw(SpriteBatchEx spriteBatch) // Прорисовка частички
         {
-                 
-            if (active)
-            spriteBatch.Draw(Texture, Position, null, Color.White, Angle, origin, Size , SpriteEffects.None, 0f);
+
+            if (Behavior == LifeObjectBehavior.Air)
+            {
+                if (active)
+                    spriteBatch.DrawRectangle(new Vector2(0, 0), new Vector2(800, 250), new Color(color));
+ 
+            }
+            else if (Behavior == LifeObjectBehavior.Grass)
+            {
+                if (active)
+                    spriteBatch.DrawRectangle(new Vector2(0, 250), new Vector2(800, 480), new Color(color));
+
+            }
             else
-                spriteBatch.Draw(TextureGrayscale, Position, null, Color.White, Angle, origin, Size, SpriteEffects.None, 0f);
-            if (childMusicSrc != null)
-                spriteBatch.DrawLine(childMusicSrc.Position, Position, Color.Black, 1);
+            {
+                if (active)
+                    spriteBatch.Draw(Texture, Position, null, Color.White, Angle, origin, Size, SpriteEffects.None, 0f);
+                else
+                    spriteBatch.Draw(TextureGrayscale, Position, null, Color.White, Angle, origin, Size, SpriteEffects.None, 0f);
+            }
+            //if (childMusicSrc != null)
+            //  spriteBatch.DrawLine(childMusicSrc.Position, Position, Color.Black, 1);
         }
 
     }

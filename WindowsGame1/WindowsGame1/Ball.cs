@@ -179,7 +179,7 @@ namespace WindowsGame1
             bool result = false;
             if (game.cursor.pressed)
             {
-                if (game.cursor.prevposition.X > (Position.X - Texture.Width * Size * Size2 / 2) && game.cursor.prevposition.X < (Position.X + Texture.Width * Size * Size2 / 2) && game.cursor.prevposition.Y > (Position.Y - Texture.Height / 2 * Size * Size2) && game.cursor.prevposition.Y < (Position.Y + Texture.Height / 2 * Size * Size2))
+                if (game.cursor.prevposition.X > (Position.X - Texture.Width * Size  / 2) && game.cursor.prevposition.X < (Position.X + Texture.Width * Size   / 2) && game.cursor.prevposition.Y > (Position.Y - Texture.Height / 2 * Size ) && game.cursor.prevposition.Y < (Position.Y + Texture.Height / 2 * Size ))
                 {
                     if (game.cursor.draggedObject == null || game.cursor.draggedObject == this)
                     {
