@@ -49,6 +49,7 @@ namespace WindowsGame1
     {
         public Vector2 position;
         public Vector2 prevposition;
+        public Vector2 speed;
         public bool pressed;
         public bool justPressed;
         public object draggedObject;
@@ -393,9 +394,9 @@ namespace WindowsGame1
                 balls.Add(ball);
 
                 grass = new GrassField(
-                    new Rectangle(0,(int) (graphics.PreferredBackBufferHeight*0.75), graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight),
-                    256);
-
+                    new Rectangle(0,(int) (graphics.PreferredBackBufferHeight*0.85), graphics.PreferredBackBufferWidth, (int)(graphics.PreferredBackBufferHeight*0.25)),
+                    1024);
+                grass.Game = this;
                 //for (int i = 0; i < 3; i++)
                 //{
                 //    MusicSrc a;
@@ -624,7 +625,6 @@ namespace WindowsGame1
             cursor.justPressed = false;
             cursor.position = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
 
-
             if (Mouse.GetState().LeftButton == ButtonState.Pressed)
             {
                 if (cursor.pressed == false)
@@ -649,6 +649,8 @@ namespace WindowsGame1
                 cursor.pressed = false;
             }
 #endif
+            cursor.speed = cursor.position - cursor.prevposition;
+
             if (cursor.justPressed)
             { cursor.prevposition = cursor.position; }
             if (!cursor.pressed)
