@@ -32,7 +32,7 @@ namespace WindowsGame1
                 mnoz = -1;
             //musicSource.targetAngle = (float)Math.Atan2(direction.Y, direction.X); // try this way later
             float angle = mnoz * (float)Math.Acos(((end - start).X) / len);
-            Draw(txPixel, start, null, Color.Black, angle, new Vector2(0, 0), new Vector2(len, size), SpriteEffects.None, 1f);
+            Draw(txPixel, start, null, color, angle, new Vector2(0, 0), new Vector2(len, size), SpriteEffects.None, 1f);
 
 
         }

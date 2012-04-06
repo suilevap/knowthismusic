@@ -144,7 +144,7 @@ namespace WindowsGame1
         public MusicSource musicSource = new MusicSource(new Vector2(400, 240));
         ColorTanker myTanker = null;
 
-
+        GrassField grass;
 
 
 
@@ -165,8 +165,8 @@ namespace WindowsGame1
             graphics.IsFullScreen = true; // флаг полноэкранного приложения
 
 #else
-            graphics.PreferredBackBufferWidth = 600; // ширина приложения
-            graphics.PreferredBackBufferHeight = 750; // высота приложения
+            graphics.PreferredBackBufferWidth = 800; // ширина приложения
+            graphics.PreferredBackBufferHeight = 480; // высота приложения
             graphics.IsFullScreen = false; // флаг полноэкранного приложения
 #endif
 
@@ -391,6 +391,10 @@ namespace WindowsGame1
                 ball.color = ball.targetColor;
                 ball.maxScore = 256;
                 balls.Add(ball);
+
+                grass = new GrassField(
+                    new Rectangle(0,(int) (graphics.PreferredBackBufferHeight*0.75), graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight),
+                    256);
 
                 //for (int i = 0; i < 3; i++)
                 //{
@@ -710,6 +714,11 @@ namespace WindowsGame1
 
             if (myTanker != null)
                 myTanker.Draw(spriteBatch, font);
+
+            if (grass != null)
+            {
+                grass.Draw(spriteBatch, gameTime);
+            }
             //spriteBatch.Draw(back_background, new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //spriteBatch.Draw(textures["field"], new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //Vector2 origin = new Vector2(textures["source"].Width / 2, textures["source"].Height / 2);
