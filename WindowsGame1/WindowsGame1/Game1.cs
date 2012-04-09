@@ -144,6 +144,10 @@ namespace WindowsGame1
         public List<MusicSrc> MusicSrcsToRemove = new List<MusicSrc>();
         public MusicSource musicSource = new MusicSource(new Vector2(400, 240));
         ColorTanker myTanker = null;
+        DateTime forfps = DateTime.Now;
+        int frame = 0;
+        int fps;
+
 
         GrassField grass;
 
@@ -782,12 +786,19 @@ namespace WindowsGame1
 
                 //}
 
-                string output = "Score: " + score;
+                frame++;
+                if (frame == 30)
+                {
+                    frame = 0;
+                    fps = (int)(1000f / (DateTime.Now - forfps).TotalMilliseconds * 30);
+                    forfps = DateTime.Now;
+                }
+                string output = "FPS: " + fps;
 
                 // Find the center of the string
                 Vector2 FontOrigin = font.MeasureString(output) / 2;
                 // Draw the string
-                spriteBatch.DrawString(font, output, new Vector2(16f, 16f), Color.LightGreen);
+                spriteBatch.DrawString(font, output, new Vector2(700f, 10f), Color.Black);
                 // end of Font
 
                 //objects
