@@ -27,17 +27,16 @@ namespace WindowsGame1
         public void DrawLine(Vector2 start, Vector2 end, Color color, int size)
         {
             float len = (end - start).Length();
-            int mnoz = 1;
-            if ((end - start).Y < 0)
-                mnoz = -1;
-            //musicSource.targetAngle = (float)Math.Atan2(direction.Y, direction.X); // try this way later
-            float angle = mnoz * (float)Math.Acos(((end - start).X) / len);
+
+            Vector2 direction = (end - start);
+            float angle = (float)Math.Atan2(direction.Y, direction.X); // try this way later
+         
             Draw(txPixel, start, null, color, angle, new Vector2(0, 0), new Vector2(len, size), SpriteEffects.None, 1f);
         }
 
         public void DrawLine(Vector2 start, float angle, float length, Color color, int size)
         {
-            //musicSource.targetAngle = (float)Math.Atan2(direction.Y, direction.X); // try this way later
+           
             Draw(txPixel, start, null, color, angle, new Vector2(0, 0), new Vector2(length, size), SpriteEffects.None, 1f);
         }
 
