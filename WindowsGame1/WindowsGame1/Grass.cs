@@ -8,15 +8,15 @@ namespace WindowsGame1
 {
     class Grass
     {
-        private Elastic _angles;
-        private Vector2 _position;
-        private Vector2 _length;
+        private readonly Elastic _angles;
+        private readonly Vector2 _position;
+        private readonly Vector2 _length;
 
-        private Color _color;
+        private readonly Color _color;
 
         public Vector2 Position { get { return _position; } }
 
-        public Grass(Vector2 position, Vector2 length, Vector2 k, Color color, float friction = 0.05f)
+        public Grass(Vector2 position, Vector2 length, Vector2 k, Color color, float friction)
         {
             _position = position;
             _length = length;
@@ -35,11 +35,13 @@ namespace WindowsGame1
         {
             _angles.Update(time);
 
-            Vector2 pos2;
-            pos2.X = _position.X + (float) Math.Cos(_angles.Position.X)*_length.X;
-            pos2.Y = _position.Y + (float) Math.Sin(_angles.Position.X)*_length.X;
+            spriteBatch.DrawLine(_position, _angles.Position.X, _length.X, _color, 4);
 
-            spriteBatch.DrawLine(_position, pos2, _color, 4);
+            Vector2 pos2 = new Vector2
+                               {
+                                   X = _position.X + (float) Math.Cos(_angles.Position.X)*_length.X,
+                                   Y = _position.Y + (float) Math.Sin(_angles.Position.X)*_length.X
+                               };
 
             //Vector2 pos3;
             //pos3.X = pos2.X + (float)Math.Cos(_angles.Position.X + _angles.Position.Y) * _length.Y;

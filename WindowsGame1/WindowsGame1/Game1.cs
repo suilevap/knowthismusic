@@ -395,7 +395,7 @@ namespace WindowsGame1
 
                 grass = new GrassField(
                     new Rectangle(0,(int) (graphics.PreferredBackBufferHeight*0.85), graphics.PreferredBackBufferWidth, (int)(graphics.PreferredBackBufferHeight*0.25)),
-                    1024);
+                    256);
                 grass.Game = this;
                 //for (int i = 0; i < 3; i++)
                 //{
