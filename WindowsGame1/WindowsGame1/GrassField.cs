@@ -29,6 +29,7 @@ namespace WindowsGame1
                 grass.AddSpeed(new Vector2((float)(rnd.NextDouble()*Math.PI/2), (float)(rnd.NextDouble()*Math.PI/2)));
                 data.Add(grass);
             }
+            _rect = rect;
             data = data.OrderBy(x => x.Position.Y).ToList();
         }
 
@@ -42,13 +43,13 @@ namespace WindowsGame1
 
             foreach (var grass in data)
             {
-                if (sp != 0)
-                {
-                    if ((grass.Position - Game.cursor.position).LengthSquared() < 256 * 256)
-                    {
-                        grass.AddSpeed(speed * (1 - Math.Abs(grass.Position.X - Game.cursor.position.X) / 256));
-                    }
-                }
+                //if (sp != 0)
+                //{
+                //    if ((grass.Position - Game.cursor.position).LengthSquared() < 256 * 256)
+                //    {
+                //        grass.AddSpeed(speed * (1 - Math.Abs(grass.Position.X - Game.cursor.position.X) / 256));
+                //    }
+                //}
                 grass.Draw(spriteBatch, time);
             }
         }
