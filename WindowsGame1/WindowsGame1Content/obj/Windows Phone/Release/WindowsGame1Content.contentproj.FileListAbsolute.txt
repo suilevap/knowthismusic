@@ -1,1 +1,2 @@
 E:\code\gamedevelop\fromSasha\hhh\WindowsGame1\WindowsGame1Content\obj\Windows Phone\Release\ResolveAssemblyReference.cache
+D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1Content\obj\Windows Phone\Release\ResolveAssemblyReference.cache

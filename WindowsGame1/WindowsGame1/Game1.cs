@@ -371,14 +371,15 @@ namespace WindowsGame1
                 //a = new MusicSrc(textures["player1"], new Vector2(480f, 270), new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, this, new Vector4(0, 1, 0.5f, 1));
                 //musics.Add(a);
 
-                LifeObject lifeo = new LifeObject(textures["sun1"], new Vector2(100, 100), 1, this,LifeObjectBehavior.Sun,-1);
+                LifeObject lifeo = new LifeObject(textures["sun1"], new Vector2(100, 100), 1, this, LifeObjectBehavior.Sun, -1);
                 lifeObjects.Add(lifeo);
-                lifeo = new LifeObject(textures["cloud1"], new Vector2(600, 140), 1, this, LifeObjectBehavior.Cloud,-2);
+                lifeo = new LifeObject(textures["cloud1"], new Vector2(600, 140), 1, this, LifeObjectBehavior.Cloud, -2);
                 lifeObjects.Add(lifeo);
-                lifeo = new LifeObject(textures["cloud1"], new Vector2(400, 200), 1, this, LifeObjectBehavior.Air,0);
+                lifeo = new LifeObject(textures["cloud1"], new Vector2(400, 200), 1, this, LifeObjectBehavior.Air, 0);
                 lifeObjects.Add(lifeo);
-                lifeo = new LifeObject(textures["cloud1"], new Vector2(200, 300), 1, this, LifeObjectBehavior.Grass,0);
+                lifeo = new LifeObject(textures["cloud1"], new Vector2(200, 300), 1, this, LifeObjectBehavior.Grass, 0);
                 lifeObjects.Add(lifeo);
+                lifeObjects = lifeObjects.OrderByDescending(x => x.Depth).ToList();
 
 
                 Ball ball = new Ball(textures["player1"], new Vector2(220f, 420), new Vector2(0), 0, 0, 1, new Vector4(1, 0, 0, 1), null, 256);
@@ -397,9 +398,7 @@ namespace WindowsGame1
                 ball.maxScore = 256;
                 balls.Add(ball);
 
-                grass = new GrassField(
-                    new Rectangle(0,(int) (graphics.PreferredBackBufferHeight*0.85), graphics.PreferredBackBufferWidth, (int)(graphics.PreferredBackBufferHeight*0.25)),
-                    256);
+                grass = new GrassField(new Rectangle(0,(int) (graphics.PreferredBackBufferHeight*0.85), graphics.PreferredBackBufferWidth, (int)(graphics.PreferredBackBufferHeight*0.25)),256);
                 grass.Game = this;
                 //for (int i = 0; i < 3; i++)
                 //{
@@ -584,7 +583,7 @@ namespace WindowsGame1
 
                 foreach (Ball ball in balls)
                 {
-                    ball.Update(this);
+                    ball.Update(this,gameTime);
                 }
                 foreach (LifeObject lifeobj in lifeObjects)
                 {
@@ -729,7 +728,7 @@ namespace WindowsGame1
             //spriteBatch.Draw(textures["field"], new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //Vector2 origin = new Vector2(textures["source"].Width / 2, textures["source"].Height / 2);
             //spriteBatch.Draw(textures["source"], musicSource.Position, null, Color.Aquamarine, musicSource.angle, origin, 0.9f, SpriteEffects.None, 1f);
-            foreach (LifeObject lifeObject in lifeObjects.OrderByDescending(x=>x.Depth))
+            foreach (LifeObject lifeObject in lifeObjects)
             {
                 lifeObject.Draw(spriteBatch);
             }
