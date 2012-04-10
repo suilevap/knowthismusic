@@ -38,6 +38,9 @@ namespace WindowsGame1
         public float maxScore = 1;
         float friction = 0.9f;
         float strength = 0.05f;
+        float nStrength = 50;
+        Elastic positionElastic;
+        
         //List<Ball> collisions = new List<Ball>();
 
 
@@ -62,6 +65,15 @@ namespace WindowsGame1
             score = Score;
             origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
             range = Texture.Width / 2 * Size * Size2realtime;
+
+            positionElastic = new Elastic()
+           {
+               Origin = TargetPosition,
+               Friction = 5f,
+               Position = position,
+               Speed = new Vector2(),
+               K = new Vector2(nStrength, nStrength)
+           }; 
 
         }
         public void Collisions(Game1 game)
@@ -124,9 +136,9 @@ namespace WindowsGame1
             //}
         }
 
-        public void Update(Game1 game)
+        public void Update(Game1 game, GameTime gameTime)
         {
-
+            
             if (score > maxScore)
                 score = maxScore;
             //Size2 = (float)Math.Sqrt((float)score / maxScore) * 0.9f + 0.1f;
@@ -134,19 +146,31 @@ namespace WindowsGame1
             if (isDragged(game))
             {
                 Vector2 dPos = game.cursor.position - game.cursor.prevposition;
-                Velocity = (Velocity + dPos) / 2;
-                Position += dPos;
+               // Velocity = (Velocity + dPos) / 2;
+                //Position += dPos;
+                
+                positionElastic.Position += dPos;
+                positionElastic.Speed = (positionElastic.Speed + dPos * 50) / 2;
+                
             }
             else
             {
-
-                strength = 0.01f + (1 - Size2) * 0.02f;
-                Velocity += (TargetPosition - Position) * strength;
-                Position += Velocity;
+                positionElastic.K = new Vector2(nStrength + (1 - Size2) * nStrength / 5, 50f + (1 - Size2) * nStrength/5);
+                positionElastic.Origin = TargetPosition;
+                positionElastic.Update(gameTime);
+                
+                //strength = 0.01f + (1 - Size2) * 0.02f;
+                
+                
+                
+                //Velocity += (TargetPosition - Position) * strength;
+                //Position += Velocity;
                 Angle += AngularVelocity;
 
             }
-            Velocity = Velocity * friction;
+            //Velocity = Velocity * friction;
+
+            Position = positionElastic.Position;
 
             if (Size2realtime != Size2)
             {
@@ -195,9 +219,16 @@ namespace WindowsGame1
         public void Draw(SpriteBatchEx spriteBatch, Game1 game) // Прорисовка частички
         {
             if (parentMusicSrc != null)
-                spriteBatch.DrawLine(parentMusicSrc.Position, TargetPosition, Color.Black, 1);
-            spriteBatch.DrawLine(Position, TargetPosition, Color.Black, 1);
-            spriteBatch.Draw(Texture, TargetPosition, null, new Color(color), Angle, origin, 0.08f, SpriteEffects.None, 0f);
+                spriteBatch.DrawLine(parentMusicSrc.Position, TargetPosition , Color.Black, 1);
+            
+            if ((Position-TargetPosition).Length()>16)
+            {
+            float alph = ((Position - TargetPosition).Length()-16) / 96;
+            
+            spriteBatch.DrawLine(Position, TargetPosition, new Color(0,0,0,alph), 1);
+            spriteBatch.Draw(Texture, TargetPosition, null, new Color(0, 0, 0, alph), Angle, origin, 0.08f, SpriteEffects.None, 0f);
+        }
+          //  else
             spriteBatch.Draw(game.textures["player1circle"], Position, null, Color.White, Angle, origin, Size, SpriteEffects.None, 0f);
             
             if (color==new Vector4(0,0,0,1))

@@ -2,3 +2,4 @@ D:\Repos\SymbLoaderTest\WindowsGame1\WindowsGame1\WindowsGame1Content\obj\x86\Re
 D:\Repos\SymbLoaderTest\WindowsGame1_a\WindowsGame1\WindowsGame1Content\obj\x86\Release\ResolveAssemblyReference.cache
 E:\montag\WindowsGame1_a\WindowsGame1\WindowsGame1Content\obj\x86\Release\ResolveAssemblyReference.cache
 E:\code\gamedevelop\fromSasha\hhh\WindowsGame1\WindowsGame1Content\obj\x86\Release\ResolveAssemblyReference.cache
+D:\Repos\KnowThisSound\WindowsGame1\WindowsGame1Content\obj\x86\Release\ResolveAssemblyReference.cache
