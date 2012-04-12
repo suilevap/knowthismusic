@@ -91,7 +91,7 @@ namespace WindowsGame1
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
-        GraphicsDeviceManager graphics;
+        public GraphicsDeviceManager graphics;
         public SpriteBatchEx spriteBatch;
         private List<Texture2D> MelList;
         private Texture2D MouseIcon;
@@ -138,7 +138,8 @@ namespace WindowsGame1
         public Dictionary<string, Texture2D> textures = new Dictionary<string, Texture2D>();
         //public Vector2 musicSourcePosition = new Vector2(400, 240);
         public List<Ball> balls = new List<Ball>();
-        public List<LifeObject> lifeObjects = new List<LifeObject>();
+        public List<IDrawableUpdatable> lifeObjects = new List<IDrawableUpdatable>();
+        public List<IDrawableUpdatable> lifeObjectsToAdd = new List<IDrawableUpdatable>();
         // Ball myBall;
         public List<Ball> ballsToRemove = new List<Ball>();
         public List<MusicSrc> MusicSrcsToRemove = new List<MusicSrc>();
@@ -149,7 +150,7 @@ namespace WindowsGame1
         int fps;
 
 
-        GrassField grass;
+        
 
 
 
@@ -339,6 +340,12 @@ namespace WindowsGame1
             // TODO: Unload any non ContentManager content here
         }
 
+        public void AddIDrawableUpdatable(IDrawableUpdatable lifeo)
+        {
+            lifeObjectsToAdd.Add(lifeo);
+            
+        }
+
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -371,15 +378,13 @@ namespace WindowsGame1
                 //a = new MusicSrc(textures["player1"], new Vector2(480f, 270), new Vector2(0), 0f, 0f, 0, 0, 0.4f, 0.5f, this, new Vector4(0, 1, 0.5f, 1));
                 //musics.Add(a);
 
-                LifeObject lifeo = new LifeObject(textures["sun1"], new Vector2(100, 100), 1, this, LifeObjectBehavior.Sun, -1);
-                lifeObjects.Add(lifeo);
-                lifeo = new LifeObject(textures["cloud1"], new Vector2(600, 140), 1, this, LifeObjectBehavior.Cloud, -2);
-                lifeObjects.Add(lifeo);
-                lifeo = new LifeObject(textures["cloud1"], new Vector2(400, 200), 1, this, LifeObjectBehavior.Air, 0);
-                lifeObjects.Add(lifeo);
-                lifeo = new LifeObject(textures["cloud1"], new Vector2(200, 300), 1, this, LifeObjectBehavior.Grass, 0);
-                lifeObjects.Add(lifeo);
-                lifeObjects = lifeObjects.OrderByDescending(x => x.Depth).ToList();
+                AddIDrawableUpdatable( new LifeObject(textures["sun1"], new Vector2(100, 100), 1, this, LifeObjectBehavior.Sun, -1));
+                
+                AddIDrawableUpdatable(new LifeObject(textures["cloud1"], new Vector2(600, 140), 1, this, LifeObjectBehavior.Cloud, -2));
+                AddIDrawableUpdatable(new LifeObject(textures["cloud1"], new Vector2(400, 200), 1, this, LifeObjectBehavior.Air, 0));
+                AddIDrawableUpdatable(new LifeObject(textures["cloud1"], new Vector2(200, 280), 1, this, LifeObjectBehavior.Grass, 0));
+                
+               
 
 
                 Ball ball = new Ball(textures["player1"], new Vector2(220f, 420), new Vector2(0), 0, 0, 1, new Vector4(1, 0, 0, 1), null, 256);
@@ -398,8 +403,7 @@ namespace WindowsGame1
                 ball.maxScore = 256;
                 balls.Add(ball);
 
-                grass = new GrassField(new Rectangle(0,(int) (graphics.PreferredBackBufferHeight*0.85), graphics.PreferredBackBufferWidth, (int)(graphics.PreferredBackBufferHeight*0.25)),256);
-                grass.Game = this;
+                
                 //for (int i = 0; i < 3; i++)
                 //{
                 //    MusicSrc a;
@@ -585,9 +589,9 @@ namespace WindowsGame1
                 {
                     ball.Update(this,gameTime);
                 }
-                foreach (LifeObject lifeobj in lifeObjects)
+                foreach (IDrawableUpdatable lifeobj in lifeObjects)
                 {
-                    lifeobj.Update(this);
+                    lifeobj.Update(this,gameTime);
                 }
 
                 foreach (MusicSrc ballToRemove in MusicSrcsToRemove)
@@ -611,6 +615,13 @@ namespace WindowsGame1
                    
                 }
                 ballsToRemove.Clear();
+
+                if (lifeObjectsToAdd.Count()>0)
+                {
+                    lifeObjects.AddRange(lifeObjectsToAdd);
+                        lifeObjects = lifeObjects.OrderByDescending(x => x.Depth).ToList();
+                        lifeObjectsToAdd.Clear();
+                }
 
                 
 
@@ -720,17 +731,14 @@ namespace WindowsGame1
             if (myTanker != null)
                 myTanker.Draw(spriteBatch, font);
 
-            if (grass != null)
-            {
-                grass.Draw(spriteBatch, gameTime);
-            }
+            
             //spriteBatch.Draw(back_background, new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //spriteBatch.Draw(textures["field"], new Vector2(0, 0), null, new Color(1, 1, 1, 0.7f), 0f, new Vector2(0, 0), 1, SpriteEffects.None, 1f);
             //Vector2 origin = new Vector2(textures["source"].Width / 2, textures["source"].Height / 2);
             //spriteBatch.Draw(textures["source"], musicSource.Position, null, Color.Aquamarine, musicSource.angle, origin, 0.9f, SpriteEffects.None, 1f);
-            foreach (LifeObject lifeObject in lifeObjects)
+            foreach (IDrawableUpdatable lifeObject in lifeObjects)
             {
-                lifeObject.Draw(spriteBatch);
+                lifeObject.Draw(spriteBatch,gameTime);
             }
             foreach (Ball ball in balls)
             {
