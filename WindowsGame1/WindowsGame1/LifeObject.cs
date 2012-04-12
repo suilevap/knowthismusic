@@ -19,7 +19,16 @@ namespace WindowsGame1
          Air,
          Grass
      }
-   public class LifeObject
+
+     public interface IDrawableUpdatable
+     {
+          int Depth { get; set; } 
+          void Draw(SpriteBatchEx spriteBatch, GameTime time);
+          void Update(Game1 game, GameTime time);
+
+ 
+     }
+   public class LifeObject:IDrawableUpdatable
     {
         public Texture2D Texture { get; set; }
         public Texture2D TextureGrayscale;
@@ -40,7 +49,8 @@ namespace WindowsGame1
         public MusicSrc childMusicSrc;
         public bool active = false;
         LifeObjectBehavior Behavior;
-        public int Depth;
+        public int Depth { get; set; }
+        IDrawableUpdatable child;
         
 
 
@@ -79,8 +89,23 @@ namespace WindowsGame1
             game.musics.Add(childMusicSrc);
         }
 
-        public void Update(Game1 game)
+        public void Update(Game1 game, GameTime time)
         {
+            if (active)
+            {
+                if (Behavior == LifeObjectBehavior.Grass)
+                {
+                    if (child == null)
+                    {
+                        GrassField grass = new GrassField(new Rectangle(0, (int)(game.graphics.PreferredBackBufferHeight * 0.85), game.graphics.PreferredBackBufferWidth, (int)(game.graphics.PreferredBackBufferHeight * 0.25)), 256);
+                        grass.Game = game;
+                        grass.Depth = Depth;
+                        child = grass;
+                        game.AddIDrawableUpdatable(child);
+                    }
+                }
+ 
+            }
         }
 
         Vector4 GetColorFromTexture(Texture2D textur)
@@ -119,19 +144,19 @@ namespace WindowsGame1
             return result;
         }
 
-        public void Draw(SpriteBatchEx spriteBatch) // Прорисовка частички
+        public void Draw(SpriteBatchEx spriteBatch, GameTime time) // Прорисовка частички
         {
 
             if (Behavior == LifeObjectBehavior.Air)
             {
                 if (active)
-                    spriteBatch.DrawRectangle(new Vector2(0, 0), new Vector2(800, 250), new Color(color));
+                    spriteBatch.DrawRectangle(new Vector2(0, 0), new Vector2(800, 408), new Color(color));
  
             }
             else if (Behavior == LifeObjectBehavior.Grass)
             {
-                if (active)
-                    spriteBatch.DrawRectangle(new Vector2(0, 250), new Vector2(800, 480), new Color(color));
+                //if (active)
+                  //  spriteBatch.DrawRectangle(new Vector2(0, 250), new Vector2(800, 480), new Color(color));
 
             }
             else

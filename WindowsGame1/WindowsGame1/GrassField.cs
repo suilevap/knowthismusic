@@ -6,12 +6,13 @@ using Microsoft.Xna.Framework;
 
 namespace WindowsGame1
 {
-    class GrassField
+    class GrassField:IDrawableUpdatable
     {
 
         private List<Grass> data;
         private Rectangle _rect;
         public Game1 Game;
+        public int Depth { get; set; } 
 
         public GrassField(Rectangle rect, int n)
         {
@@ -33,9 +34,14 @@ namespace WindowsGame1
             data = data.OrderBy(x => x.Position.Y).ToList();
         }
 
+        public void Update(Game1 game, GameTime time)
+        {
+            
+        }
+
         public void Draw(SpriteBatchEx spriteBatch, GameTime time)
         {
-            spriteBatch.DrawRectangle(new Vector2(_rect.Left, _rect.Top + 32), new Vector2(_rect.Right, _rect.Bottom), Color.Green);
+            spriteBatch.DrawRectangle(new Vector2(_rect.Left, _rect.Top + 1), new Vector2(_rect.Right, _rect.Bottom), Color.Green);
 
             float sp = 1f+(Game.cursor.speed.X);
             Vector2 speed = new Vector2(sp, sp / 2);

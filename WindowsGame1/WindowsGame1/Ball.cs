@@ -49,7 +49,7 @@ namespace WindowsGame1
         public Ball(Texture2D texture, Vector2 position, Vector2 velocity,
             float angle, float angularVelocity, float size, Vector4 colorr, MusicSrc parentSource,float Score)
         {
-            // Установка переменных из конструктора
+            
             Texture = texture;
             Position = position;
             TargetPosition = position;
@@ -78,8 +78,7 @@ namespace WindowsGame1
         }
         public void Collisions(Game1 game)
         {
-            //collisions = new List<Ball>();
-           // Ball toRemove = null;
+            
             if (!collidable)
             {
             Ball collides = null;
@@ -90,26 +89,16 @@ namespace WindowsGame1
                     float distance = (a.Position - this.Position).Length();
                     if (distance < a.range + this.range && a.collidable && a.score>0 && this.score>0)
                     {
-                        //collisions.Add(a);
+                        
                         collides = a;
                         {
                             this.color = collides.color;
                             if (parentMusicSrc != null)
                                 parentMusicSrc.MergeColorUpdate();
-                            //this.score = resultScore;
+                            
 
                         }
-                        //if (this.score < a.score)
-                        //    toRemove = this;
-                        //else if (this.score > a.score)
-                        //    toRemove = a;
-                        //else
-                        //{
-                        //    if (this.Velocity.Length() > a.Velocity.Length())
-                        //        toRemove = this;
-                        //    else
-                        //        toRemove = a;
-                        //}
+                        
                         break;
                        
 
@@ -117,23 +106,7 @@ namespace WindowsGame1
                 }
             }
         }
-            //if (toRemove != null)
-            //{
-               // game.ballToRemove = toRemove;
-
-                //int biggerScore=Math.Max(collides.score, this.score);
-                //Vector4 resultColor = collides.color * (float)collides.score / biggerScore + this.color * (float)this.score / biggerScore;
-                //int resultScore = (int)Math.Floor((collides.score + this.score)*1.2f);
-                //resultColor.Normalize();
-                //if (toRemove == this)
-                //{
-                //    collides.color = resultColor;
-                //    collides.score = resultScore;
-                    
-                //}
-                //if (toRemove == collides)
-                
-            //}
+            
         }
 
         public void Update(Game1 game, GameTime gameTime)
@@ -160,8 +133,6 @@ namespace WindowsGame1
                 positionElastic.Update(gameTime);
                 
                 //strength = 0.01f + (1 - Size2) * 0.02f;
-                
-                
                 
                 //Velocity += (TargetPosition - Position) * strength;
                 //Position += Velocity;
@@ -240,7 +211,6 @@ namespace WindowsGame1
             {
                 
                 string output = string.Format("{0}", (int)(score * 255));
-
                 //Find the center of the string
                 Vector2 FontOrigin = game.font.MeasureString(output) / 2;
                 //Draw the string

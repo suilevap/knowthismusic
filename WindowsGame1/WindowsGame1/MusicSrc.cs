@@ -12,6 +12,7 @@ using Microsoft.Xna.Framework.Media;
 
 namespace WindowsGame1
 {
+
    public class MusicSrc
     {
         Texture2D Texture { get; set; }        // Текстура частицы
@@ -138,7 +139,7 @@ namespace WindowsGame1
                     float maxRange = 0;
                     foreach (Ball ba in myballs)
                     {
-                        float len=(ba.Position-Position).Length();
+                        float len = (ba.Position - Position).Length();
                         if (maxRange < len)
                             maxRange = len;
 
@@ -151,6 +152,10 @@ namespace WindowsGame1
                             a.active = true;
                     }
                 }
+            }
+            else
+            {
+                orbitRange = 70;
             }
 
             float angadd = 0;
