@@ -104,6 +104,15 @@ namespace WindowsGame1
                         game.AddIDrawableUpdatable(child);
                     }
                 }
+
+            }
+            else
+            {
+                if (child != null)
+                {
+                    game.RemoveIDrawableUpdatable(child);
+                    child = null;
+                }
  
             }
         }

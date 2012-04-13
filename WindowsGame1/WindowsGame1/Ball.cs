@@ -40,6 +40,8 @@ namespace WindowsGame1
         float strength = 0.05f;
         float nStrength = 50;
         Elastic positionElastic;
+        Texture2D textureCircle;
+        Texture2D textureCircleInactive;
         
         //List<Ball> collisions = new List<Ball>();
 
@@ -47,10 +49,12 @@ namespace WindowsGame1
         Random random = new Random(); // Генератор случайных чисел
 
         public Ball(Texture2D texture, Vector2 position, Vector2 velocity,
-            float angle, float angularVelocity, float size, Vector4 colorr, MusicSrc parentSource,float Score)
+            float angle, float angularVelocity, float size, Vector4 colorr, MusicSrc parentSource,float Score, Game1 game)
         {
             
             Texture = texture;
+            textureCircle = game.textures["player1circle"];
+            textureCircleInactive = game.textures["player1inactive"];
             Position = position;
             TargetPosition = position;
             Velocity = velocity;
@@ -114,8 +118,8 @@ namespace WindowsGame1
             
             if (score > maxScore)
                 score = maxScore;
-            //Size2 = (float)Math.Sqrt((float)score / maxScore) * 0.9f + 0.1f;
-            Size2 = ((float)score / maxScore) * 1f + 0;
+            Size2 = (float)Math.Sqrt((float)score / maxScore) * 1f;// + 0.1f;
+            //Size2 = ((float)score / maxScore) * 1f + 0;
             if (isDragged(game))
             {
                 Vector2 dPos = game.cursor.position - game.cursor.prevposition;
@@ -200,10 +204,10 @@ namespace WindowsGame1
             spriteBatch.Draw(Texture, TargetPosition, null, new Color(0, 0, 0, alph), Angle, origin, 0.08f, SpriteEffects.None, 0f);
         }
           //  else
-            spriteBatch.Draw(game.textures["player1circle"], Position, null, Color.White, Angle, origin, Size, SpriteEffects.None, 0f);
+            spriteBatch.Draw(textureCircle, Position, null, Color.White, Angle, origin, Size, SpriteEffects.None, 0f);
             
             if (color==new Vector4(0,0,0,1))
-                spriteBatch.Draw(game.textures["player1inactive"], Position, null, Color.White, Angle, origin, Size * Size2realtime, SpriteEffects.None, 0f);
+                spriteBatch.Draw(textureCircleInactive, Position, null, Color.White, Angle, origin, Size * Size2realtime, SpriteEffects.None, 0f);
             else
             spriteBatch.Draw(Texture, Position, null, new Color(color), Angle, origin, Size * Size2realtime, SpriteEffects.None, 0f);
 
