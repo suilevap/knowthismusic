@@ -140,6 +140,7 @@ namespace WindowsGame1
         public List<Ball> balls = new List<Ball>();
         public List<IDrawableUpdatable> lifeObjects = new List<IDrawableUpdatable>();
         public List<IDrawableUpdatable> lifeObjectsToAdd = new List<IDrawableUpdatable>();
+        public List<IDrawableUpdatable> lifeObjectsToRemove = new List<IDrawableUpdatable>();
         // Ball myBall;
         public List<Ball> ballsToRemove = new List<Ball>();
         public List<MusicSrc> MusicSrcsToRemove = new List<MusicSrc>();
@@ -346,6 +347,13 @@ namespace WindowsGame1
             
         }
 
+        public void RemoveIDrawableUpdatable(IDrawableUpdatable lifeo)
+        {
+            lifeObjectsToRemove.Add(lifeo);
+            
+
+        }
+
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -387,39 +395,24 @@ namespace WindowsGame1
                
 
 
-                Ball ball = new Ball(textures["player1"], new Vector2(220f, 420), new Vector2(0), 0, 0, 1, new Vector4(1, 0, 0, 1), null, 256);
+                Ball ball = new Ball(textures["player1"], new Vector2(220f, 420), new Vector2(0), 0, 0, 1, new Vector4(1, 0, 0, 1), null, 256,this);
                 ball.collidable = true;
                 ball.color = ball.targetColor;
                 ball.maxScore = 256;
                 balls.Add(ball);
-                ball = new Ball(textures["player1"], new Vector2(420f, 420), new Vector2(0), 0, 0, 1, new Vector4(0, 1, 0, 1), null, 256);
+                ball = new Ball(textures["player1"], new Vector2(420f, 420), new Vector2(0), 0, 0, 1, new Vector4(0, 1, 0, 1), null, 256, this);
                 ball.collidable = true;
                 ball.color = ball.targetColor;
                 ball.maxScore = 256;
                 balls.Add(ball);
-                ball = new Ball(textures["player1"], new Vector2(620f, 420), new Vector2(0), 0, 0, 1, new Vector4(0, 0, 1, 1), null, 256);
+                ball = new Ball(textures["player1"], new Vector2(620f, 420), new Vector2(0), 0, 0, 1, new Vector4(0, 0, 1, 1), null, 256, this);
                 ball.collidable = true;
                 ball.color = ball.targetColor;
                 ball.maxScore = 256;
                 balls.Add(ball);
 
                 
-                //for (int i = 0; i < 3; i++)
-                //{
-                //    MusicSrc a;
-                //    if (i == 1)
-                //        a = new MusicSrc(textures["player1"], new Vector2(250f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 1, 0, 1));
-
-                //    else if (i == 0)
-                //        a = new MusicSrc(textures["player1"], new Vector2(400f, 100), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(1, 0, 0, 1));
-                //    else
-                //        a = new MusicSrc(textures["player1"], new Vector2(550f, 330), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.4f, 0.9f, this, new Vector4(0, 0, 1f, 1));
-                //    //else
-                //    //     a = new MusicSrc(MelList[i], new Vector2(100f + (i-3) * 70, 600f+i*10), new Vector2(), 0f, 0f, (int)(128 * i / MelList.Count), (int)(128 * (i + 1) / MelList.Count) - 1, 0.5f, 0.5f);
-
-                //    musics.Add(a);
-
-                //}
+           
 
                 //MediaPlayer.Play(song);
                 //MediaPlayer.Volume = 1f;
@@ -437,148 +430,6 @@ namespace WindowsGame1
 
             if (ready)
             {
-
-                //int activeIndex = -1;
-
-                //if (PRELOAD)
-                //{
-                //    visualizationDataMas = new float[128];
-
-                //    MediaPlayer.GetVisualizationData(visualizationData);
-                //    for (int index = 0; index < 128; index++)
-                //    {
-                //        visualizationDataMas[index] = visualizationData.Frequencies[index];
-
-                //    }
-
-                //}
-
-
-
-                // timeSpa = new TimeSpan();
-                //// timeSpa = DateTime.Now - startTime;
-
-                // if (DateTime.Now - lastWriteTime >= TimeBetweenWrites)
-                // {
-                //     lastWriteTime = DateTime.Now;
-
-                //     if (PRELOAD)
-                //     {
-
-                //         DemoDatas.Add(new DemoData(timeSpa, visualizationDataMas));
-
-
-                //     }
-                //     else
-                //     {
-                //         if (PRELOAD2)
-                //         {
-                //             if (timeSpa > DemoDatas[demoPointer].timeStamp)
-                //             {
-
-                //                 if (demoPointer > 1)
-                //                     visualizationDataMasPrev = DemoDatas[demoPointer - 1].timePayload;
-
-                //                 int diapazon = 25;
-                //                 if (demoPointer > diapazon && demoPointer < demoPoints - diapazon - 1)
-                //                 {
-                //                     visualizationDataMasAvg = new float[128];
-                //                     for (int k = -diapazon; k < diapazon; k++)
-                //                     {
-                //                         for (int i = 0; i < 128; i++)
-                //                         {
-                //                             visualizationDataMasAvg[i] += DemoDatas[demoPointer + k].timePayload[i] / (diapazon * 2);
-                //                         }
-                //                     }
-                //                 }
-                //                 visualizationDataMas = DemoDatas[demoPointer].timePayload;
-
-
-
-                //                 demoPointer++;
-
-                //             }
-
-
-                //         }
-                //         else
-                //         {
-                //             if (demoPointer < demoPoints)
-                //             {
-                //                 if (timeSpa > DemoDatas2[demoPointer].timeStamp)
-                //                 {
-                //                     activeIndex = DemoDatas2[demoPointer].index;
-                //                     if (demoPointer < demoPoints - 1)
-                //                     {
-
-                //                         demoPointer++;
-                //                     }
-
-
-                //                 }
-                //             }
-
-
-                //         }
-                //     }
-
-                // }
-
-                // next points
-                //if (demoPointer + 10 < demoPoints)
-                //{
-                //    var a = DemoDatas2.Where(x => x.timeStamp < timeSpa.Add(zapas) && x.timeStamp > lastMaxTime).ToArray();
-                //    if (a.Count() > 0)
-                //    {
-                //        lastMaxTime = a.Max(x => x.timeStamp);
-                //        foreach (DemoData2 b in a)
-                //        {
-                //            musics[b.index].nextPoints.Add(b.timeStamp);
-                //            myTanker.Minus(b.index);
-                //            Vector2 direction = musics[b.index].Position - musicSource.Position;
-                //            direction.Normalize();
-
-                //            musicSource.targetAngle = (float)Math.Atan2(direction.Y, direction.X);
-
-                //        }
-                //    }
-
-                //}
-
-                // objects update
-                //if (!PRELOAD)
-                //{
-
-                //    if (PRELOAD2)
-                //    {
-                //        powers = new List<powerAddition>();
-                //        for (int index = 0; index < musics.Count; index++)
-                //        {
-                //            musics[index].Update(visualizationDataMas, visualizationDataMasAvg, visualizationDataMasPrev, this, index);
-                //        }
-
-                //        int mybeat = powers.OrderByDescending(x => x.power).ThenByDescending(y => y.addition).First().index;
-                //        if (musics[mybeat].power > 0)
-                //        {
-                //            musics[mybeat].Update2();
-                //            finalDemo.Add(timeSpa + ";" + mybeat);
-                //        }
-                //    }
-                //    else
-                //    {
-                //        if (activeIndex != -1)
-                //        {
-                //            if (!isGame)
-                //                musics[activeIndex].Update2();
-                //        }
-
-                //    }
-
-
-
-                //}
-
-
 
                 for (int index = 0; index < musics.Count; index++)
                 {
@@ -621,6 +472,15 @@ namespace WindowsGame1
                     lifeObjects.AddRange(lifeObjectsToAdd);
                         lifeObjects = lifeObjects.OrderByDescending(x => x.Depth).ToList();
                         lifeObjectsToAdd.Clear();
+                }
+                if (lifeObjectsToRemove.Count() > 0)
+                {
+                    foreach (IDrawableUpdatable Idu in lifeObjectsToRemove)
+                    {
+                        lifeObjects.Remove(Idu);
+                    }
+                    lifeObjects = lifeObjects.OrderByDescending(x => x.Depth).ToList();
+                    lifeObjectsToRemove.Clear();
                 }
 
                 

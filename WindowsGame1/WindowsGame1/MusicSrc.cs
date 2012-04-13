@@ -77,21 +77,21 @@ namespace WindowsGame1
         {
             if (color.X > 0)
             {
-                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(1, 0, 0, 1), this, (color.X));
+                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(1, 0, 0, 1), this, (color.X),gameobj);
                 myballs.Add(myball);
 
                 gameobj.balls.Add(myball);
             }
             if (color.Y > 0)
             {
-                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(0, 1, 0, 1), this, (color.Y ));
+                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(0, 1, 0, 1), this, (color.Y), gameobj);
                 myballs.Add(myball);
 
                 gameobj.balls.Add(myball);
             }
             if (color.Z > 0)
             {
-                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(0, 0, 1, 1), this, (color.Z));
+                Ball myball = new Ball(gameobj.textures["player1"], Position, new Vector2(0), 0, 0, 0.5f, new Vector4(0, 0, 1, 1), this, (color.Z), gameobj);
                 myballs.Add(myball);
 
                 gameobj.balls.Add(myball);
@@ -156,6 +156,7 @@ namespace WindowsGame1
             else
             {
                 orbitRange = 70;
+                
             }
 
             float angadd = 0;
@@ -268,11 +269,11 @@ namespace WindowsGame1
                 Angle, origin, Size, SpriteEffects.None, 0f);
             spriteBatch.Draw(Texture, Position, null, new Color(mergeColor),
                 Angle, origin, Size*0.4f, SpriteEffects.None, 0f);
-            if (constructed)
-            {
-                origin = new Vector2(game.textures["rock"].Width / 2, game.textures["rock"].Height / 2);
-                spriteBatch.Draw(game.textures["rock"], Position, null, Color.White, Angle, origin, Size * 0.1f, SpriteEffects.None, 0f);
-            }
+            //if (constructed)
+            //{
+            //    origin = new Vector2(game.textures["rock"].Width / 2, game.textures["rock"].Height / 2);
+            //    spriteBatch.Draw(game.textures["rock"], Position, null, Color.White, Angle, origin, Size * 0.1f, SpriteEffects.None, 0f);
+            //}
 
 
 
