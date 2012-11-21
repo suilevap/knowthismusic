@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{8be6af34-009a-479e-a277-7be86a56c2b8}</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>ctf1.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>ctf1</Name>
+    <RootNamespace>ctf1</RootNamespace>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <CommandLineArguments />
+    <InterpreterPath />
+    <InterpreterArguments />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="bootstrap.py" />
+    <Compile Include="client.py" />
+    <Compile Include="commander.py" />
+    <Compile Include="commands.py" />
+    <Compile Include="competition.py" />
+    <Compile Include="ctf1.py" />
+    <Compile Include="examples.py" />
+    <Compile Include="gameinfo.py" />
+    <Compile Include="mycmd.py" />
+    <Compile Include="pandsbot.py" />
+    <Compile Include="simulate.py" />
+    <Compile Include="vector2.py" />
+    <Compile Include="__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="NewFolder1\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bootstrap.pyc" />
+    <Content Include="client.bat" />
+    <Content Include="commander.pyc" />
+    <Content Include="commands.pyc" />
+    <Content Include="competition.bat" />
+    <Content Include="examples.pyc" />
+    <Content Include="gameinfo.pyc" />
+    <Content Include="README.txt" />
+    <Content Include="simulate.bat" />
+    <Content Include="vector2.pyc" />
+    <Content Include="__init__.pyc" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+</Project>
