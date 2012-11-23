@@ -60,23 +60,23 @@ class PandSBot(Commander):
                     bot.role=PandSBot.ROLE_ATTACKER
 
         for bot in self.game.bots_alive:
-            #if (bot.brain != None):
-            #    bot.brain.tick()
+            if (bot.brain != None):
+                bot.brain.tick()
             self.updateBotCommandQueue(bot)
         
-        defenders = self.botsInRole(PandSBot.ROLE_DEFENDER)
-        for bot in defenders:
-            if len(bot.visibleEnemies)>0 and bot.state!=BotInfo.STATE_SHOOTING:
-                self.clearCommands(bot)
-                #self.enqueCommand(bot,lambda s,b:Command_DefendDirection(s, b, b.position)) 
-                self.issue(commands.Defend, bot, bot.visibleEnemies[0].position-bot.position, description='AAA')
-            elif self.botFree(bot):
-                #self.issue(commands.Move, bot, self.freePos(pos), description = 'Go to my flag (DEFENDER)')
-                #self.issue(commands.Defend, bot, self.game.enemyTeam.flag.position-bot.position , description = 'Defend my flag (DEFENDER)')
-                self.clearCommands(bot)
-                self.enqueCommand(bot,Command_MoveToMyFlag) 
-                self.enqueCommand(bot,Command_DefendMyFlag) 
-          
+        #defenders = self.botsInRole(PandSBot.ROLE_DEFENDER)
+        #for bot in defenders:
+        #    if len(bot.visibleEnemies)>0 and bot.state!=BotInfo.STATE_SHOOTING:
+        #        self.clearCommands(bot)
+        #        #self.enqueCommand(bot,lambda s,b:Command_DefendDirection(s, b, b.position)) 
+        #        self.issue(commands.Defend, bot, bot.visibleEnemies[0].position-bot.position, description='AAA')
+        #    elif self.botFree(bot):
+        #        #self.issue(commands.Move, bot, self.freePos(pos), description = 'Go to my flag (DEFENDER)')
+        #        #self.issue(commands.Defend, bot, self.game.enemyTeam.flag.position-bot.position , description = 'Defend my flag (DEFENDER)')
+        #        self.clearCommands(bot)
+        #        self.enqueCommand(bot,Command_MoveToMyFlag) 
+        #        self.enqueCommand(bot,Command_DefendMyFlag) 
+
                         
         attackers = self.botsInRole(PandSBot.ROLE_ATTACKER)
         for bot in attackers:
@@ -156,6 +156,7 @@ def Command_MoveToMyFlag(commander, bot):
     pos = commander.game.team.flag.position
     pos = commander.level.findRandomFreePositionInBox([pos-Vector2(r,r), pos+Vector2(r,r)]) 
     commander.issue(commands.Move, bot, commander.freePos(pos), description = 'Go to my flag (DEFENDER)')
+    return True
 
 def Command_DefendMyFlag(commander, bot):
     commander.issue( commands.Defend, bot, commander.game.enemyTeam.flag.position-bot.position , description = 'Defend my flag (DEFENDER)')
@@ -193,8 +194,8 @@ def Command_AttackEnemyFlag(commander, bot):
 class BTBotTask(BTAction):
 
     def execute(self, context):
+
         commander, bot = context.executionContext
-        commander.log.info("Task run")
 
         if (bot.state == BotInfo.STATE_IDLE):
             if (context.currentRunningNodeId != self.id):
@@ -202,7 +203,12 @@ class BTBotTask(BTAction):
             else:
                 state = BTNode.STATUS_OK
         else:
-            state = BTNode.STATUS_RUNNING
+            if (context.currentRunningNodeId == self.id):
+                state = BTNode.STATUS_RUNNING
+            else:
+                state = BTNode.STATUS_FAILED
+
+        #commander.log.info("Task run "+str(state))
         return state
 
 
@@ -213,7 +219,7 @@ DefederBTTree = BTTree(
             BTBotTask(lambda commander,bot: commander.issue(commands.Defend, bot, bot.visibleEnemies[0].position-bot.position, description='AAA'))
         ),
         BTSequence(
-            #BTCondition(lambda commander,bot: (bot.poistion - commander.game.team.flag.position).length()>1),
+            BTCondition(lambda commander,bot: (bot.position - commander.game.team.flag.position).length()>1),
             BTBotTask(Command_MoveToMyFlag),
             BTBotTask(Command_DefendMyFlag))
         )

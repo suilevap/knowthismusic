@@ -17,8 +17,8 @@ from game.application import CaptureTheFlag
 
 
 # By default load these commanders.
-defaults = ['examples.Defender', 'examples.Greedy']#['pandsbot.PandSBot', 'examples.Greedy']
-
+defaults = ['pandsbot.PandSBot', 'examples.Greedy']
+#defaults = ['examples.Defender', 'examples.Greedy']#['pandsbot.PandSBot', 'examples.Greedy']
 
 def main(PreferedRunner, args, **kwargs):
     """
