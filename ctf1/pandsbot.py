@@ -198,22 +198,18 @@ class BTBotTask(BTAction):
 
         commander, bot = context.executionContext
 
-        if (bot.state == BotInfo.STATE_IDLE):
-            if (context.currentRunningNodeId != self.id):
-                state = BTAction.execute(self, context)
-            else:
+        if (context.currentRunningNodeId == self.id): 
+            if (bot.state == BotInfo.STATE_IDLE):
                 state = BTNode.STATUS_OK
-        else:
-            if (context.currentRunningNodeId == self.id):
+            else:
                 state = BTNode.STATUS_RUNNING
                 if (self.guardCondition != None):
                     condCheck = self.guardCondition(*context.executionContext)
                     if (not condCheck):
                         context.currentRunningNodeId = -1
                         state = BTNode.STATUS_OK
-                    
-            else:
-                state = BTNode.STATUS_FAIL
+        else:
+            state = BTAction.execute(self, context)
 
         #commander.log.info("Task run "+str(state))
         return state
