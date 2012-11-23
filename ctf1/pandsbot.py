@@ -10,14 +10,17 @@ from api import Commander
 from api import commands
 from api.vector2 import Vector2
 from api.gameinfo import *
+from bt import *
 
 #from commander import *
 #from commands import *
 #from ctf1.gameinfo import BotInfo
 #from ctf1 import commands
 #from ctf1.vector2 import Vector2
+#from ctf1.bt import *
 
 from collections import deque
+
 
 
 class PandSBot(Commander):
@@ -171,3 +174,33 @@ def Command_RunToMidPoint(commander, bot):
 def Command_AttackEnemyFlag(commander, bot):
     pos = commander.game.enemyTeam.flag.position 
     commander.issue( commands.Attack, bot, commander.freePos(pos), description = 'Go to enemy flag (ATTACKER)')
+
+
+    
+class BTBotTask(BTAction):
+
+    def execute(self, context):
+        commander, bot = context.executionContext
+        
+        if (bot.status == BotInfo.STATE_IDLE):
+            if (context.currentRunningNodeId != self.id):
+                state = super(BTTask, self).execute(context)
+            else:
+                state = BTNode.STATUS_OK
+        else:
+            state = BTNode.STATUS_RUNNING
+        return state
+
+
+DefederBTTree = BTTree(
+    BTSelector(
+        BTSequence(
+            BTCondition(lambda commander,bot: len(bot.visibleEnemies)>0 and bot.state!=BotInfo.STATE_SHOOTING),
+            BTBotTask(lambda commander,bot: commander.issue(commands.Defend, bot, bot.visibleEnemies[0].position-bot.position, description='AAA'))
+        ),
+        BTSequence(
+            BTCondition(lambda commander,bot: (bot.poistion - commander.game.team.flag.position).length()>10),
+            BTBotTask(Command_MoveToMyFlag),
+            BTBotTask(Command_DefendMyFlag))
+        )
+    )
