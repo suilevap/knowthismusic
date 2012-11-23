@@ -28,12 +28,12 @@ class BTContext:
         self.executionContext=executionContext
         self.currentChild=[0 for x in range(n)]
         self.currentRunningNodeId=-1
-        commander, bot = self.executionContext
-        commander.log.info("Context created") 
+        #commander, bot = self.executionContext
+        #commander.log.info("Context created") 
 
     def tick(self):
-        commander, bot = self.executionContext
-        commander.log.info("Context run") 
+        #commander, bot = self.executionContext
+        #commander.log.info("Context run") 
         
         self.root.execute(self)
         
@@ -62,10 +62,11 @@ class BTSequence(BTNode):
     """
 
     def execute(self, context):
-        commander, bot = context.executionContext
-        commander.log.info("Sequence run")  
 
         currentChild = context.currentChild[self.id]
+        #commander, bot = context.executionContext
+        #commander.log.info("Sequence run" + str(currentChild))  
+
 
         status = self.childs[currentChild].execute(context)
         while (status == BTNode.STATUS_OK):            
@@ -88,8 +89,8 @@ class BTSelector(BTNode):
      Sequence node for Behaviour Tree
     """
     def execute(self, context):
-        commander, bot = context.executionContext
-        commander.log.info("Selector run")  
+        #commander, bot = context.executionContext
+        #commander.log.info("Selector run")  
           
         currentChild=0
         status = self.childs[currentChild].execute(context)
@@ -115,8 +116,8 @@ class BTAction(BTNode):
         """
         Run node
         """    
-        commander, bot = context.executionContext
-        commander.log.info("Action run")    
+        #commander, bot = context.executionContext
+        #commander.log.info("Action run")    
 
         check = self.action(*context.executionContext);
         #for easier using, actions cannot be failed
@@ -140,6 +141,9 @@ class BTCondition(BTNode):
         """
         Run node
         """
+        #commander, bot = context.executionContext
+        #commander.log.info("Condition run")    
+
         check = self.condition(*context.executionContext);
         if (check):
             return BTNode.STATUS_OK
