@@ -17,7 +17,7 @@ from game.application import CaptureTheFlag
 
 
 # By default load these commanders.
-defaults = ['pandsbot.PandSBot', 'examples.Greedy']
+defaults = ['examples.Defender', 'examples.Greedy']#['pandsbot.PandSBot', 'examples.Greedy']
 
 
 def main(PreferedRunner, args, **kwargs):
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--console', action='store_true', default=False,            
                 help='Run the simulation in headless mode without opening a graphical window, logging information to the console instead.')
-    parser.add_argument('-m', '--map', default='map21',
+    parser.add_argument('-m', '--map', default='map20',
                 help='Specify which level map should be loaded, e.g. map00 or map21.  These are loaded from the .png and .ini file combination in #/assets/.')
     parser.add_argument('competitors', nargs='*',
                 help='The name of a script and class (e.g. mybot.Placeholder) implementing the Commander interface.  Files are exact, but classes match by substring.')
