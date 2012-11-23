@@ -15,18 +15,24 @@ class BTTree():
                 id = genId(child, id)
             return id;
 
-    def getNewContext(self, executionContext):
-        context = BTContext(executionContext, self.maxid)
+    def getNewContext(self, *executionContext):
+        context = BTContext(self.root, self.maxid, *executionContext)
         context.tree = self;
 
-    def execute(self, context):
-        if (context.tree == self):
-            root.execute(context)
+    #def execute(self, context):
+    #    if (context.tree == self):
+    #        root.execute(context)
 
 class BTContext:
-    def __init__(self, executionContext, n):
+    def __init__(self, root, n, *executionContext):
+        self.root = root
         self.executionContext=executionContext
         self.currentChild=[0 for x in range(n)]
+        self.currentRunningNodeId=-1
+
+
+    def RunTree(self):
+        root.execute(self)
         
 
 class BTNode():
@@ -37,7 +43,7 @@ class BTNode():
     STATUS_FAIL=2
     STATUS_RUNNING=3
 
-    def __init__(self, childs):
+    def __init__(self, *childs):
         self.childs=childs        
         self.id=0
 
@@ -45,6 +51,7 @@ class BTNode():
         """
         Run node
         """
+        pass
 
 class BTSequence(BTNode):
     """
@@ -60,13 +67,13 @@ class BTSequence(BTNode):
             if currentChild<len(self.childs):
                 status = self.childs[currentChild].execute(context)
             else:
-                self.currentChild = 0
+                currentChild = 0
                 break
 
         if (status == BTNode.STATUS_FAIL):
             currentChild=0
 
-        context.currentChild[self.id] = currentChild
+        context.currentChild[self.id] = currentChild        
         return status
 
 
@@ -99,11 +106,15 @@ class BTAction(BTNode):
         """
         Run node
         """
-        check = action(context);
+        
+        check = action(*context.executionContext);
         #for easier using, actions cannot be failed
         if (check):
+            #assume only one action can be running at one time
+            context.currentRunningNodeId = self.id
             return BTNode.STATUS_RUNNING
         else:
+            context.currentRunningNodeId = -1
             return BTNode.STATUS_OK
 
 class BTCondition(BTNode):
@@ -118,7 +129,7 @@ class BTCondition(BTNode):
         """
         Run node
         """
-        check = condition(context);
+        check = condition(*context.executionContext);
         if (check):
             return BTNode.STATUS_OK
         else:
