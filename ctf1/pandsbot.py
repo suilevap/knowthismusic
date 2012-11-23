@@ -55,9 +55,10 @@ class PandSBot(Commander):
             if bot.role==PandSBot.ROLE_NONE:
                 if (len(self.botsInRole(PandSBot.ROLE_DEFENDER))<=self.defenderPart*self.countBot):
                     bot.role=PandSBot.ROLE_DEFENDER
-                    bot.brain = DefederBTTree.getNewContext(self, bot)
+                    bot.brain = DefenderBTTree.getNewContext(self, bot)
                 else:
                     bot.role=PandSBot.ROLE_ATTACKER
+                    bot.brain = AttackerBTTree.getNewContext(self, bot)
 
         for bot in self.game.bots_alive:
             if (bot.brain != None):
@@ -77,26 +78,26 @@ class PandSBot(Commander):
         #        self.enqueCommand(bot,Command_MoveToMyFlag) 
         #        self.enqueCommand(bot,Command_DefendMyFlag) 
 
-                        
-        attackers = self.botsInRole(PandSBot.ROLE_ATTACKER)
-        for bot in attackers:
-            if not bot.flag and len(bot.visibleEnemies)>0 and bot.state!=BotInfo.STATE_SHOOTING:
-                self.clearCommands(bot)
-                #self.enqueCommand(bot,lambda s,b:Command_AttackBot(s,b, b)) 
-                self.issue(commands.Attack, bot, bot.visibleEnemies[0].position, description='BB')
-              
-            elif self.botFree(bot):
-                if bot.flag:
-                    # Tell the flag carrier to run home!
-                    target = self.game.team.flagScoreLocation
-                    self.clearCommands(bot)
-                    self.enqueCommand(bot, Command_RunHome)
-                else:
-                    pos = self.game.enemyTeam.flag.position 
-                    #self.issue(commands.Move, bot, self.freePos((self.game.team.flag.position+pos)/2), description = 'Run to enemy flag (ATTACKER)')
-                    self.clearCommands(bot)
-                    self.enqueCommand(bot, Command_RunToMidPoint)
-                    self.enqueCommand(bot, Command_AttackEnemyFlag)  
+        #                
+        #attackers = self.botsInRole(PandSBot.ROLE_ATTACKER)
+        #for bot in attackers:
+        #    if not bot.flag and len(bot.visibleEnemies)>0 and bot.state!=BotInfo.STATE_SHOOTING:
+        #        self.clearCommands(bot)
+        #        #self.enqueCommand(bot,lambda s,b:Command_AttackBot(s,b, b)) 
+        #        self.issue(commands.Attack, bot, bot.visibleEnemies[0].position, description='BB')
+        #      
+        #    elif self.botFree(bot):
+        #        if bot.flag:
+        #            # Tell the flag carrier to run home!
+        #            target = self.game.team.flagScoreLocation
+        #            self.clearCommands(bot)
+        #            self.enqueCommand(bot, Command_RunHome)
+        #        else:
+        #            pos = self.game.enemyTeam.flag.position 
+        #            #self.issue(commands.Move, bot, self.freePos((self.game.team.flag.position+pos)/2), description = 'Run to enemy flag (ATTACKER)')
+        #            self.clearCommands(bot)
+        #            self.enqueCommand(bot, Command_RunToMidPoint)
+        #            self.enqueCommand(bot, Command_AttackEnemyFlag)  
 
         ## for all bots which aren't currently doing anything
         #for bot in self.game.bots_available:
@@ -205,22 +206,51 @@ class BTBotTask(BTAction):
         else:
             if (context.currentRunningNodeId == self.id):
                 state = BTNode.STATUS_RUNNING
+                if (self.guardCondition != None):
+                    condCheck = self.guardCondition(*context.executionContext)
+                    if (not condCheck):
+                        context.currentRunningNodeId = -1
+                        state = BTNode.STATUS_OK
+                    
             else:
                 state = BTNode.STATUS_FAIL
 
         #commander.log.info("Task run "+str(state))
         return state
 
-
-DefederBTTree = BTTree(
+        
+DefenderBTTree = BTTree(
     BTSelector(
+        BTCondition(lambda commander,bot: bot.state==BotInfo.STATE_SHOOTING),#continue shooting if started
         BTSequence(
-            BTCondition(lambda commander,bot: len(bot.visibleEnemies)>0 and bot.state!=BotInfo.STATE_SHOOTING),
-            BTBotTask(lambda commander,bot: commander.issue(commands.Defend, bot, bot.visibleEnemies[0].position-bot.position, description='AAA'))
+            BTCondition(lambda commander,bot: len([x for x in bot.visibleEnemies if x.health>0])>0),
+            BTBotTask(lambda commander,bot: commander.issue(commands.Defend, bot, bot.visibleEnemies[0].position-bot.position, description='AAA'),
+                      lambda commander,bot: len([x for x in bot.visibleEnemies if x.health>0])>0 )
         ),
         BTSequence(
-            BTCondition(lambda commander,bot: (bot.position - commander.game.team.flag.position).length()>1),
+            BTCondition(lambda commander,bot: (bot.position - commander.game.team.flag.position).length()>5),
             BTBotTask(Command_MoveToMyFlag),
-            BTBotTask(Command_DefendMyFlag))
-        )
-    )
+            BTBotTask(Command_DefendMyFlag)
+        ),
+        BTBotTask(Command_DefendMyFlag)
+    ),
+)
+
+AttackerBTTree = BTTree(
+    BTSelector(
+        BTCondition(lambda commander,bot: bot.state==BotInfo.STATE_SHOOTING),#continue shooting if started
+        BTSequence(
+            BTCondition(lambda commander,bot: len([x for x in bot.visibleEnemies if x.health>0])>0 ),
+            BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, bot.visibleEnemies[0].position, description='AAA'),
+                      lambda commander,bot: len([x for x in bot.visibleEnemies if x.health>0])>0 )
+        ),
+        BTSequence(
+            BTCondition(lambda commander,bot: bot.flag),
+            BTBotTask(Command_RunHome),
+        ),
+        BTSequence(
+            BTBotTask(Command_RunToMidPoint),
+            BTBotTask(Command_AttackEnemyFlag),
+        ),
+    ),
+)
