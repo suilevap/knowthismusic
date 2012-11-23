@@ -23,6 +23,7 @@ from collections import deque
 
 
 
+
 class PandSBot(Commander):
     """
     Rename and modify this class to create your own commander and add mycmd.Placeholder
@@ -41,7 +42,7 @@ class PandSBot(Commander):
             bot.commandQueue = deque()
             bot.brain = None
         self.defenderPart = 0.25
-        self.countBot = len(self.game.bots)
+        self.countBot = len(self.game.team.members)
         
 
     def tick(self):
@@ -194,20 +195,26 @@ def Command_AttackEnemyFlag(commander, bot):
     
 class BTBotTask(BTAction):
 
+    def __init__(self, action, guardCondition = None):
+        BTAction.__init__(self, action)
+        self.guardCondition = guardCondition
+
+
     def execute(self, context):
 
         commander, bot = context.executionContext
 
-        if (context.currentRunningNodeId == self.id): 
-            if (bot.state == BotInfo.STATE_IDLE):
-                state = BTNode.STATUS_OK
-            else:
+        if (context.currentRunningNodeId == self.id):
+            if (bot.state != BotInfo.STATE_IDLE):
                 state = BTNode.STATUS_RUNNING
                 if (self.guardCondition != None):
-                    condCheck = self.guardCondition(*context.executionContext)
-                    if (not condCheck):
+                    condWhileCheck = self.guardCondition(*context.executionContext)
+                    if (not condWhileCheck):
                         context.currentRunningNodeId = -1
                         state = BTNode.STATUS_OK
+            else:
+                state = BTNode.STATUS_OK
+                context.currentRunningNodeId = -1
         else:
             state = BTAction.execute(self, context)
 
