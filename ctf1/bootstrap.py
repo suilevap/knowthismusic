@@ -21,7 +21,7 @@ SBX_BINARY_DIR = None
 # number.  More recent versions of The AI Sandbox may work, but ideally you
 # should use the update scripts or grab the newest versions from the
 # http://aisandbox.com/ download page.
-SBX_REQUIRED_VERSION = "0.20.3"
+SBX_REQUIRED_VERSION = "0.20.4"
 
 
 
@@ -159,7 +159,7 @@ def initialize():
     from paths to working directories and platform versions."""
 
     # Check for command line arguments if there are any.
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--sbxdir')
     parser.add_argument('--sbxbin')
     args, _ = parser.parse_known_args()
