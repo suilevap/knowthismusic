@@ -108,8 +108,9 @@ class BTAction(BTNode):
     """
     Atomic action
     """
-    def __init__(self, action):
+    def __init__(self, action, guardCondition= None):
         self.action = action  
+        self.guardCondition = guardCondition
         self.childs=[]      
 
     def execute(self, context):
@@ -118,6 +119,11 @@ class BTAction(BTNode):
         """    
         #commander, bot = context.executionContext
         #commander.log.info("Action run")    
+        
+        if (self.guardCondition != None):
+            condCheck = self.guardCondition(*context.executionContext)
+            if (not condCheck):
+                return BTNode.STATUS_OK
 
         check = self.action(*context.executionContext);
         #for easier using, actions cannot be failed
