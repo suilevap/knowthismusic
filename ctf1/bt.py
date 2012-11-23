@@ -67,7 +67,6 @@ class BTSequence(BTNode):
         #commander, bot = context.executionContext
         #commander.log.info("Sequence run" + str(currentChild))  
 
-
         status = self.childs[currentChild].execute(context)
         while (status == BTNode.STATUS_OK):            
             currentChild+=1
@@ -108,9 +107,9 @@ class BTAction(BTNode):
     """
     Atomic action
     """
-    def __init__(self, action, guardCondition= None):
+    def __init__(self, action ):#, guardCondition= None):
         self.action = action  
-        self.guardCondition = guardCondition
+        #self.guardCondition = guardCondition
         self.childs=[]      
 
     def execute(self, context):
@@ -120,14 +119,17 @@ class BTAction(BTNode):
         #commander, bot = context.executionContext
         #commander.log.info("Action run")    
         
-        if (self.guardCondition != None):
-            condCheck = self.guardCondition(*context.executionContext)
-            if (not condCheck):
-                return BTNode.STATUS_OK
+        #if (self.guardCondition != None):
+        #    condCheck = self.guardCondition(*context.executionContext)
+        #    if (not condCheck):
+        #        return BTNode.STATUS_OK
 
         check = self.action(*context.executionContext);
+        #context.currentRunningNodeId = self.id
+        #return BTNode.STATUS_RUNNING
+
         #for easier using, actions cannot be failed
-        if (check):
+        if (check or check==None):
             #assume only one action can be running at one time
             context.currentRunningNodeId = self.id
             return BTNode.STATUS_RUNNING
