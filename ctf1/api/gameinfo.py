@@ -304,7 +304,6 @@ class BotInfo(object):
     STATE_ATTACKING =  4
     STATE_CHARGING  =  5
     STATE_SHOOTING  =  6
-    STATE_TAKINGORDERS = 7
 
     def __init__(self, name):
         super(BotInfo, self).__init__()
@@ -326,7 +325,7 @@ class BotInfo(object):
         """
         self.state = BotInfo.STATE_UNKNOWN
         """
-        The last known state of this bots for enemies, STATE_UNKNOWN for bots that you have never seen. The possible states of an enemy bot: `STATE_UNKNOWN`, `STATE_IDLE`, `STATE_DEFENDING`, `STATE_MOVING`, `STATE_ATTACKING`, `STATE_CHARGING`, `STATE_SHOOTING`, `TAKING_ORDERS`
+        The last known state of this bots for enemies, STATE_UNKNOWN for bots that you have never seen. The possible states of an enemy bot: `STATE_UNKNOWN`, `STATE_IDLE`, `STATE_DEFENDING`, `STATE_MOVING`, `STATE_ATTACKING`, `STATE_CHARGING`, `STATE_SHOOTING`
         """
         self.position = None
         """
@@ -396,15 +395,13 @@ class MatchCombatEvent(object):
     TYPE_FLAG_PICKEDUP = 2
     TYPE_FLAG_DROPPED = 3
     TYPE_FLAG_CAPTURED = 4
-    TYPE_FLAG_RESTORED = 5
-    TYPE_RESPAWN = 6
         
     def __init__(self, type, subject, instigator, time):
         super(MatchCombatEvent, self).__init__()
 
         self.type = type                          
         """
-        The type of event (`TYPE_NONE`, `TYPE_KILLED`, `TYPE_FLAG_PICKEDUP`, `TYPE_FLAG_DROPPED`, `TYPE_FLAG_CAPTURED`, `TYPE_FLAG_RESTORED`, `TYPE_RESPAWN`)
+        The type of event (`TYPE_NONE`, `TYPE_KILLED`, `TYPE_FLAG_PICKEDUP`, `TYPE_FLAG_DROPPED`, `TYPE_FLAG_CAPTURED`)
         """
         self.subject = subject
         """
@@ -471,9 +468,8 @@ def toJSON(python_object):
 
     if isinstance(python_object, MatchCombatEvent):
         combatEvent = python_object
-        instigatorName = combatEvent.instigator.name if combatEvent.instigator else None
         return {'__class__': 'MatchCombatEvent',
-                '__value__': { 'type': combatEvent.type, 'subject': combatEvent.subject.name, 'instigator': instigatorName, 'time': combatEvent.time }}
+                '__value__': { 'type': combatEvent.type, 'subject': combatEvent.subject.name, 'instigator': combatEvent.instigator.name, 'time': combatEvent.time }}
 
     raise TypeError(repr(python_object) + ' is not JSON serializable')
 
@@ -638,12 +634,6 @@ def fixupReferences(obj, game):
         elif combatEvent.type == MatchCombatEvent.TYPE_FLAG_CAPTURED:
             combatEvent.instigator = game.bots[combatEvent.instigator]
             combatEvent.subject = game.flags[combatEvent.subject]
-        elif combatEvent.type == MatchCombatEvent.TYPE_FLAG_RESTORED:
-            assert combatEvent.instigator == None
-            combatEvent.subject = game.flags[combatEvent.subject]
-        elif combatEvent.type == MatchCombatEvent.TYPE_RESPAWN:
-            assert combatEvent.instigator == None
-            combatEvent.subject = game.bots[combatEvent.subject]
         else:
             assert False, "Unknown event type"
 
@@ -676,8 +666,8 @@ def mergeMatchInfo(gameInfo, newMatchInfo):
     matchInfo.timeRemaining     = newMatchInfo.timeRemaining
     matchInfo.timeToNextRespawn = newMatchInfo.timeToNextRespawn
     matchInfo.timePassed        = newMatchInfo.timePassed
-    fixupReferences(newMatchInfo, gameInfo)
     matchInfo.combatEvents.append(newMatchInfo.combatEvents)
+    fixupReferences(matchInfo, gameInfo)
 
 def mergeGameInfo(gameInfo, newGameInfo):
     for newFlag in newGameInfo.flags.values():
