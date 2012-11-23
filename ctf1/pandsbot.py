@@ -206,7 +206,7 @@ class BTBotTask(BTAction):
             if (context.currentRunningNodeId == self.id):
                 state = BTNode.STATUS_RUNNING
             else:
-                state = BTNode.STATUS_FAILED
+                state = BTNode.STATUS_FAIL
 
         #commander.log.info("Task run "+str(state))
         return state
