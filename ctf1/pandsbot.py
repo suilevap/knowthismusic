@@ -42,6 +42,11 @@ class PandSBot(Commander):
             bot.brain = None
         self.defenderPart = 0.25
         self.countBot = len(self.game.team.members)
+        self.lastTickTime=0
+        self.lastTickEvents=0
+        self.enemyBotsAlive=self.countBot;
+        self.debugInfo=""
+
         
 
     def tick(self):
@@ -49,6 +54,9 @@ class PandSBot(Commander):
         which includes game information, and self.level which includes information about the level."""
 
         #self.log.info("Commander tick") 
+        self.lastTickEvents=[x for x in self.game.match.combatEvents if x.time >= self.lastTickTime]
+        self.lastTickEventsAnalyze()
+        self.debugInfo=str(self.enemyBotsAlive)
 
         for bot in self.game.bots_alive:
         # define defenders
@@ -60,9 +68,15 @@ class PandSBot(Commander):
                     bot.role=PandSBot.ROLE_ATTACKER
                     bot.brain = AttackerBTTree.getNewContext(self, bot)
 
+                #if bot == self.game.bots_alive[0]:
+                #    bot.brain = DebuggerBTTree.getNewContext(self, bot)
+
         for bot in self.game.bots_alive:
             if (bot.brain != None):
                 bot.brain.tick()
+
+        self.lastTickTime=self.game.match.timePassed
+
     
     def shutdown(self):
         """Use this function to teardown your bot after the game is over, or perform an
@@ -80,6 +94,25 @@ class PandSBot(Commander):
 
     def freePos(self, pos):
         return self.level.findNearestFreePosition(pos)
+
+    def getVisibleAliveEnemies(self,bot):
+        return [x for x in bot.visibleEnemies if x.health>0]
+
+    def getNearestVisibleAliveEnemy(self,bot):
+        list = self.getVisibleAliveEnemies(bot)
+        return min(list, key=lambda enemy: (enemy.position-bot.position).length())
+
+    def lastTickEventsAnalyze(self):
+        for event in self.lastTickEvents:
+            if event.type==MatchCombatEvent.TYPE_RESPAWN:
+                self.enemyBotsAlive=self.countBot
+                print "Alive enemies: %d"%self.enemyBotsAlive
+            elif event.type==MatchCombatEvent.TYPE_KILLED and event.subject.team.name!=self.game.team.name:
+                self.enemyBotsAlive-=1
+                print "Alive enemies: %d"%self.enemyBotsAlive
+
+                 
+
 
 
 
@@ -131,23 +164,23 @@ class BTBotTask(BTAction):
         self.guardCondition = guardCondition
 
 
-    def execute(self, context):
+    def execute(self, context, currentPath, isPathLikePrev):
 
         commander, bot = context.executionContext
 
-        if (context.currentRunningNodeId == self.id):
+        if (context.prevPath == currentPath):
             if (bot.state != BotInfo.STATE_IDLE):
                 state = BTNode.STATUS_RUNNING
                 if (self.guardCondition != None):
                     condWhileCheck = self.guardCondition(*context.executionContext)
                     if (not condWhileCheck):
-                        context.currentRunningNodeId = -1
+                        context.prevPath = []
                         state = BTNode.STATUS_OK
             else:
                 state = BTNode.STATUS_OK
-                context.currentRunningNodeId = -1
+                context.prevPath = []
         else:
-            state = BTAction.execute(self, context)
+            state = BTAction.execute(self, context, currentPath, isPathLikePrev)
 
         #commander.log.info("Task run "+str(state))
         return state
@@ -156,10 +189,15 @@ class BTBotTask(BTAction):
 DefenderBTTree = BTTree(
     BTSelector(
         BTCondition(lambda commander,bot: bot.state==BotInfo.STATE_SHOOTING),#continue shooting if started
+         BTSequence(
+            BTCondition(lambda commander,bot: commander.enemyBotsAlive==0),
+            BTBotTask(Command_RunToMidPoint),
+            BTBotTask(Command_AttackEnemyFlag)
+        ),
         BTSequence(
-            BTCondition(lambda commander,bot: len([x for x in bot.visibleEnemies if x.health>0])>0),
-            BTBotTask(lambda commander,bot: commander.issue(commands.Defend, bot, bot.visibleEnemies[0].position-bot.position, description='AAA'),
-                      lambda commander,bot: len([x for x in bot.visibleEnemies if x.health>0])>0 )
+            BTCondition(lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0),
+            BTBotTask(lambda commander,bot: commander.issue(commands.Defend, bot, commander.getNearestVisibleAliveEnemy(bot).position-bot.position, description='Wait nearest enemy'),
+                      lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0 )
         ),
         BTSequence(
             BTCondition(lambda commander,bot: (bot.position - commander.game.team.flag.position).length()>5),
@@ -174,9 +212,9 @@ AttackerBTTree = BTTree(
     BTSelector(
         BTCondition(lambda commander,bot: bot.state==BotInfo.STATE_SHOOTING),#continue shooting if started
         BTSequence(
-            BTCondition(lambda commander,bot: len([x for x in bot.visibleEnemies if x.health>0])>0 ),
-            BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, bot.visibleEnemies[0].position, description='AAA'),
-                      lambda commander,bot: len([x for x in bot.visibleEnemies if x.health>0])>0 )
+            BTCondition(lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0),
+            BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, commander.getNearestVisibleAliveEnemy(bot).position, description='Atack nearest enemy'),
+                      lambda commander,bot:  len(commander.getVisibleAliveEnemies(bot))>0 )
         ),
         BTSequence(
             BTCondition(lambda commander,bot: bot.flag),
@@ -188,3 +226,9 @@ AttackerBTTree = BTTree(
         ),
     ),
 )
+
+DebuggerBTTree = BTTree(
+    BTSequence(BTBotTask(Command_MoveToMyFlag),
+               BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, bot.position, description="debug "+commander.debugInfo))
+              )
+    )        

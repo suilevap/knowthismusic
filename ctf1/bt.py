@@ -2,40 +2,41 @@
 
 class BTTree():
     def __init__(self, root):
-        self.maxId = self.__build(root)
+        #self.__build(root)
         self.root = root
 
 
     def __build(self, root):
-        def genId(node, id):
-            id += 1
-            node.id = id;        
+        def genId(node):
+            i =0     
             for child in node.childs:
-                id = genId(child, id)
+                child.id = "%s/%d"%(node.id, i)
+                i+=1
+                genId(child)
             return id;
+        root.id = "/"
+        genId(root)
 
-        id = genId(root, -1)
-        return id
 
     def getNewContext(self, *executionContext):
-        context = BTContext(self.root, self.maxId, *executionContext)
+        context = BTContext(self.root, *executionContext)
         context.tree = self;
         return context
 
 class BTContext:
-    def __init__(self, root, n, *executionContext):
+    def __init__(self, root, *executionContext):
         self.root = root
         self.executionContext=executionContext
-        self.currentChild=[0 for x in range(n)]
-        self.currentRunningNodeId=-1
+        #self.currentChild=[0 for x in range(n)]
+        self.prevPath = []
+        self.currentIdPath = []
         #commander, bot = self.executionContext
         #commander.log.info("Context created") 
 
     def tick(self):
         #commander, bot = self.executionContext
         #commander.log.info("Context run") 
-        
-        self.root.execute(self)
+        self.root.execute(self, [], len(self.prevPath)>0)
         
 
 class BTNode():
@@ -48,9 +49,9 @@ class BTNode():
 
     def __init__(self, *childs):
         self.childs=childs        
-        self.id=0
+        
 
-    def execute(self, context):
+    def execute(self, context, currentPath, isPathLikePrev):
         """
         Run node
         """
@@ -61,25 +62,32 @@ class BTSequence(BTNode):
      Sequence node for Behaviour Tree
     """
 
-    def execute(self, context):
+    def execute(self, context, currentPath, isPathLikePrev):
 
-        currentChild = context.currentChild[self.id]
+        currentChild = 0
+        if (isPathLikePrev):
+            prevPathChild = context.prevPath[len(currentPath)]
+            currentChild = prevPathChild
+        else:
+            prevPathChild = -1
+
         #commander, bot = context.executionContext
         #commander.log.info("Sequence run" + str(currentChild))  
 
-        status = self.childs[currentChild].execute(context)
+        status = self.childs[currentChild].execute(context, currentPath+[currentChild], isPathLikePrev)
         while (status == BTNode.STATUS_OK):            
             currentChild+=1
             if currentChild<len(self.childs):
-                status = self.childs[currentChild].execute(context)
+                status = self.childs[currentChild].execute(context, currentPath+[currentChild], False)
             else:
-                currentChild = 0
+                #currentChild = 0
                 break
 
-        if (status == BTNode.STATUS_FAIL):
-            currentChild=0
+        #if (status == BTNode.STATUS_FAIL):
+        #    currentChild=0
 
-        context.currentChild[self.id] = currentChild        
+        #context.currentChild[self.id] = currentChild   
+             
         return status
 
 
@@ -87,20 +95,23 @@ class BTSelector(BTNode):
     """
      Sequence node for Behaviour Tree
     """
-    def execute(self, context):
+    def execute(self, context, currentPath, isPathLikePrev):
         #commander, bot = context.executionContext
         #commander.log.info("Selector run")  
-          
+        if (isPathLikePrev):
+            prevPathChild = context.prevPath[len(currentPath)]
+        else:
+            prevPathChild = -1
+
         currentChild=0
-        status = self.childs[currentChild].execute(context)
+        status = self.childs[currentChild].execute(context, currentPath+[currentChild], currentChild==prevPathChild)
         while (status == BTNode.STATUS_FAIL):            
             currentChild+=1
             if currentChild<len(self.childs):
-                status = self.childs[currentChild].execute(context)
+                status = self.childs[currentChild].execute(context, currentPath+[currentChild], currentChild==prevPathChild)
             else:
-                currentChild = 0
-                break
-        context.currentChild[self.id] = currentChild        
+                #currentChild = 0
+                break    
         return status
 
 class BTAction(BTNode):
@@ -111,7 +122,7 @@ class BTAction(BTNode):
         self.action = action  
         self.childs=[]      
 
-    def execute(self, context):
+    def execute(self, context, currentPath, isPathLikePrev):
         """
         Run node
         """    
@@ -123,10 +134,10 @@ class BTAction(BTNode):
         #for easier using, actions cannot be failed
         if (check or check==None):
             #assume only one action can be running at one time
-            context.currentRunningNodeId = self.id
+            context.prevPath = currentPath
             return BTNode.STATUS_RUNNING
         else:
-            context.currentRunningNodeId = -1
+            context.prevPath = []
             return BTNode.STATUS_OK
 
 class BTCondition(BTNode):
@@ -137,7 +148,7 @@ class BTCondition(BTNode):
         self.condition = condition
         self.childs=[]
 
-    def execute(self, context):
+    def execute(self, context, currentPath, isPathLikePrev):
         """
         Run node
         """
