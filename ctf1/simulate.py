@@ -17,7 +17,7 @@ from game.application import CaptureTheFlag
 
 
 # By default load these commanders.
-defaults = ['pandsbot.PandSBot', 'examples.Greedy']
+defaults = ['pandsbot.PandSBot', 'examples.BalancedCommander']
 
 
 def main(PreferedRunner, args, **kwargs):
