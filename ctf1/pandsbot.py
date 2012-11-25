@@ -11,6 +11,7 @@ from api import commands
 from api.vector2 import Vector2
 from api.gameinfo import *
 from bt import *
+from role import *
 
 #from commander import *
 #from commands import *
@@ -30,15 +31,15 @@ class PandSBot(Commander):
     to the execution command you use to run the competition.
     """
 
-    ROLE_NONE   =  0
-    ROLE_DEFENDER =  1
-    ROLE_ATTACKER =  2
+    #ROLE_NONE   =  0
+    #ROLE_DEFENDER =  1
+    #ROLE_ATTACKER =  2
 
     def initialize(self):
         """Use this function to setup your bot before the game starts."""
         self.verbose = True    # display the command descriptions next to the bot labels
         for bot in self.game.team.members:            
-            bot.role=PandSBot.ROLE_NONE
+            bot.role=None
             bot.brain = None
         self.defenderPart = 0.25
         self.countBot = len(self.game.team.members)
@@ -46,6 +47,11 @@ class PandSBot(Commander):
         self.lastTickEvents=0
         self.enemyBotsAlive=self.countBot;
         self.debugInfo=""
+
+        self.roleDefender=Role(DefenderBTTree, self.defenderSuitabilityFunction)
+        self.roleAttacker=Role(AttackerBTTree, self.attackerSuitabilityFunction)
+
+        print "New commander"
 
         
 
@@ -57,16 +63,15 @@ class PandSBot(Commander):
         self.lastTickEvents=[x for x in self.game.match.combatEvents if x.time >= self.lastTickTime]
         self.lastTickEventsAnalyze()
         self.debugInfo=str(self.enemyBotsAlive)
+        self.reassignRoles()
 
         for bot in self.game.bots_alive:
         # define defenders
-            if bot.role==PandSBot.ROLE_NONE:
-                if (len(self.botsInRole(PandSBot.ROLE_DEFENDER))<=self.defenderPart*self.countBot):
-                    bot.role=PandSBot.ROLE_DEFENDER
-                    bot.brain = DefenderBTTree.getNewContext(self, bot)
+            if bot.role==None:
+                if (len(self.botsInRole(self.roleDefender))<=self.defenderPart*self.countBot):
+                    self.assignRole(bot, self.roleDefender);
                 else:
-                    bot.role=PandSBot.ROLE_ATTACKER
-                    bot.brain = AttackerBTTree.getNewContext(self, bot)
+                    self.assignRole(bot, self.roleAttacker);
 
                 #if bot == self.game.bots_alive[0]:
                 #    bot.brain = DebuggerBTTree.getNewContext(self, bot)
@@ -110,6 +115,45 @@ class PandSBot(Commander):
             elif event.type==MatchCombatEvent.TYPE_KILLED and event.subject.team.name!=self.game.team.name:
                 self.enemyBotsAlive-=1
                 print "Alive enemies: %d"%self.enemyBotsAlive
+
+    def reassignRoles(self):
+        maxBots=len(self.game.bots_alive)
+        enemies=self.enemyBotsAlive
+        
+        optimalDefenders=enemies*0.5
+        optimalAttackers=maxBots-optimalDefenders
+
+        if optimalAttackers<0:
+            optimalAttackers=0
+        defenders = self.botsInRole(self.roleDefender)
+        attackers = self.botsInRole(self.roleAttacker)
+
+        if len(defenders)<optimalDefenders:
+            avalaibleBots = self.roleDefender.botsSuitability(attackers)
+            n = min([len(avalaibleBots), int(optimalDefenders-len(defenders))])
+            for i in range(n):
+                self.assignRole(avalaibleBots[i], self.roleDefender)
+
+        elif len(attackers)<optimalAttackers:
+            avalaibleBots = self.roleDefender.botsSuitability(defenders)
+            n = min([len(avalaibleBots), int(optimalAttackers-len(attackers))])
+            for i in range(n):
+                self.assignRole(avalaibleBots[i], self.roleAttacker)
+
+    def assignRole(self, bot , role):
+        bot.role=role
+        bot.brain = bot.role.btTree.getNewContext(self, bot)
+
+    def defenderSuitabilityFunction(self, bot):
+        pos = self.game.team.flag.position
+        result = -(bot.position - pos).length()
+        return result;
+
+    def attackerSuitabilityFunction(self, bot):
+        pos = self.game.enemyTeam.flag.position
+        result = -(bot.position - pos).length()
+        return result;
+
 
                  
 
@@ -156,6 +200,10 @@ def Command_AttackEnemyFlag(commander, bot):
     commander.issue( commands.Attack, bot, commander.freePos(pos), description = 'Go to enemy flag (ATTACKER)')
     return True
 
+def Command_RunToEnemyFlag(commander, bot):
+    pos = commander.game.enemyTeam.flag.position 
+    commander.issue( commands.Move, bot, commander.freePos(pos), description = 'Run to enemy flag (ATTACKER)')
+    return True
     
 class BTBotTask(BTAction):
 
@@ -185,25 +233,48 @@ class BTBotTask(BTAction):
         #commander.log.info("Task run "+str(state))
         return state
 
+
+TakeFlag = BTSequence(
+    BTBotTask(Command_RunToMidPoint),
+    BTSelector(
+        BTSequence(
+            BTCondition(lambda commander,bot: commander.enemyBotsAlive==0),
+            BTBotTask(Command_RunToEnemyFlag, 
+                      lambda commander,bot: commander.enemyBotsAlive==0)
+        ),
+
+        BTBotTask(Command_AttackEnemyFlag)
+    )
+)
+
+ReturnFlag = BTSequence(
+    BTCondition(lambda commander,bot: bot.flag),
+    BTBotTask(Command_RunHome)
+)
+  
         
 DefenderBTTree = BTTree(
     BTSelector(
         BTCondition(lambda commander,bot: bot.state==BotInfo.STATE_SHOOTING),#continue shooting if started
-         BTSequence(
+        #or
+        ReturnFlag,
+        BTSequence(
             BTCondition(lambda commander,bot: commander.enemyBotsAlive==0),
-            BTBotTask(Command_RunToMidPoint),
-            BTBotTask(Command_AttackEnemyFlag)
+            TakeFlag
         ),
+        #or
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0),
             BTBotTask(lambda commander,bot: commander.issue(commands.Defend, bot, commander.getNearestVisibleAliveEnemy(bot).position-bot.position, description='Wait nearest enemy'),
                       lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0 )
         ),
+        #or
         BTSequence(
             BTCondition(lambda commander,bot: (bot.position - commander.game.team.flag.position).length()>5),
             BTBotTask(Command_MoveToMyFlag),
             BTBotTask(Command_DefendMyFlag)
         ),
+        #or
         BTBotTask(Command_DefendMyFlag)
     ),
 )
@@ -211,24 +282,17 @@ DefenderBTTree = BTTree(
 AttackerBTTree = BTTree(
     BTSelector(
         BTCondition(lambda commander,bot: bot.state==BotInfo.STATE_SHOOTING),#continue shooting if started
+
+        ReturnFlag,
+
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0),
             BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, commander.getNearestVisibleAliveEnemy(bot).position, description='Atack nearest enemy'),
                       lambda commander,bot:  len(commander.getVisibleAliveEnemies(bot))>0 )
         ),
-        BTSequence(
-            BTCondition(lambda commander,bot: bot.flag),
-            BTBotTask(Command_RunHome),
-        ),
-        BTSequence(
-            BTBotTask(Command_RunToMidPoint),
-            BTBotTask(Command_AttackEnemyFlag),
-        ),
+
+        TakeFlag
     ),
 )
 
-DebuggerBTTree = BTTree(
-    BTSequence(BTBotTask(Command_MoveToMyFlag),
-               BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, bot.position, description="debug "+commander.debugInfo))
-              )
-    )        
+
