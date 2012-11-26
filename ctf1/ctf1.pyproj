@@ -6,7 +6,7 @@
     <ProjectGuid>{8be6af34-009a-479e-a277-7be86a56c2b8}</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>MapAnalyze.py</StartupFile>
-    <SearchPath>D:\dev\AI\CTF\ourBot\ctf1\api\;D:\dev\AI\CTF\ourBot\ctf1</SearchPath>
+    <SearchPath>D:\dev\AI\CTF\ourBot\ctf1\api\;D:\dev\AI\CTF\ourBot\ctf1\;C:\Python27\Lib\site-packages</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>ctf1</Name>
@@ -15,6 +15,11 @@
     <CommandLineArguments />
     <InterpreterPath />
     <InterpreterArguments />
+    <DjangoSettingsModule />
+    <DebugStdLib>False</DebugStdLib>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <InterpreterId>2af0f10d-7135-4994-9156-5d01c9c11b7e</InterpreterId>
+    <InterpreterVersion>2.7</InterpreterVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
