@@ -169,7 +169,15 @@ def Command_MoveToMyFlag(commander, bot):
     return True
 
 def Command_DefendMyFlag(commander, bot):
-    commander.issue( commands.Defend, bot, commander.game.enemyTeam.flag.position-bot.position , description = 'Defend my flag (DEFENDER)')
+    dir = commander.game.enemyTeam.flag.position-bot.position;
+    dir.normalize()
+    n = len([b for b in commander.game.bots_alive if b.state==BotInfo.STATE_DEFENDING and (b.position-bot.position).length()<15])
+    for i in range(n):
+        dir.x=dir.y
+        dir.y=-dir.x
+
+
+    commander.issue( commands.Defend, bot, dir , description = 'Defend my flag (DEFENDER)')
     return True
 
 
@@ -265,8 +273,18 @@ DefenderBTTree = BTTree(
         #or
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0),
-            BTBotTask(lambda commander,bot: commander.issue(commands.Defend, bot, commander.getNearestVisibleAliveEnemy(bot).position-bot.position, description='Wait nearest enemy'),
-                      lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0 )
+            BTSelector(
+                BTSequence(
+                    BTCondition(lambda commander,bot: (commander.game.team.flag.position-bot.position).length()<10),
+                    BTBotTask(lambda commander,bot: commander.issue(commands.Defend, bot, commander.getNearestVisibleAliveEnemy(bot).position-bot.position, description='Wait nearest enemy'),
+                              lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0 )
+                    ) ,
+                BTSequence(
+                    BTCondition(lambda commander,bot: (commander.game.team.flag.position-bot.position).length()),
+                    BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, commander.getNearestVisibleAliveEnemy(bot).position, commander.getNearestVisibleAliveEnemy(bot).position,description='Attack nearest enemy'),
+                              lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0 )
+                    )
+                )
         ),
         #or
         BTSequence(
@@ -276,7 +294,7 @@ DefenderBTTree = BTTree(
         ),
         #or
         BTBotTask(Command_DefendMyFlag)
-    ),
+    )
 )
 
 AttackerBTTree = BTTree(
@@ -287,7 +305,7 @@ AttackerBTTree = BTTree(
 
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0),
-            BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, commander.getNearestVisibleAliveEnemy(bot).position, description='Atack nearest enemy'),
+            BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, commander.getNearestVisibleAliveEnemy(bot).position,commander.getNearestVisibleAliveEnemy(bot).position, description='Atack nearest enemy'),
                       lambda commander,bot:  len(commander.getVisibleAliveEnemies(bot))>0 )
         ),
 
