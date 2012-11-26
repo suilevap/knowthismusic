@@ -37,6 +37,7 @@
     <Compile Include="handshaking.py" />
     <Compile Include="mycmd.py" />
     <Compile Include="pandsbot.py" />
+    <Compile Include="role.py" />
     <Compile Include="simulate.py" />
     <Compile Include="vector2.py" />
     <Compile Include="__init__.py" />
