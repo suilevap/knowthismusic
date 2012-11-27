@@ -23,9 +23,6 @@ class MapAnalyzeVisibility(object):
                                         max([result[x + dx1][y + dy1][1]+1,result[x + dx2][y + dy2][1]+1]))
                     else:
                         result[x][y] = (-1,-1)
-            saveImage('min_'+str(dx1)+str(dy1)+str(dx2)+str(dy2), [ [(result[x][y][0]+1) for y in range(self.h)] for x in range(self.w)])
-            saveImage('max_'+str(dx1)+str(dy1)+str(dx2)+str(dy2), [ [(result[x][y][1]+1) for y in range(self.h)] for x in range(self.w)])
-
             return result
        
         finalResult =[
