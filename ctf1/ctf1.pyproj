@@ -6,7 +6,7 @@
     <ProjectGuid>{8be6af34-009a-479e-a277-7be86a56c2b8}</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <StartupFile>MapAnalyze.py</StartupFile>
-    <SearchPath>D:\dev\AI\CTF\ourBot\ctf1\api\;D:\dev\AI\CTF\ourBot\ctf1\;C:\Python27\Lib\site-packages</SearchPath>
+    <SearchPath>D:\dev\AI\CTF\ourBot\ctf1\api\;D:\dev\AI\CTF\ourBot\ctf1\</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>ctf1</Name>
