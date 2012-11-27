@@ -56,7 +56,10 @@ class PandSBot(Commander):
         self.roleAttacker=Role(AttackerBTTree, self.attackerSuitabilityFunction)
 
         map = self.level.blockHeights;
-        an = MapAnalyzeVisibility(map)
+        self.levelAnalysis = MapAnalyzeVisibility(map)
+        self.levelAnalysis.buildDirecionMap(self.game.enemyTeam.flag.position)
+        self.levelAnalysis.debug()
+
         #result = an.buildLOS()
 
 
@@ -163,6 +166,8 @@ class PandSBot(Commander):
         result = -(bot.position - pos).length()
         return result;
 
+    def dequeOrder(self):
+        return (None, -1)
 
                  
 
@@ -171,21 +176,24 @@ class PandSBot(Commander):
 
 
 def Command_MoveToMyFlag(commander, bot):
-    r = 5
+    r = 10
     pos = commander.game.team.flag.position
-    pos = commander.level.findRandomFreePositionInBox([pos-Vector2(r,r), pos+Vector2(r,r)]) 
+    sector =  commander.levelAnalysis.getSectorIndex(commander.game.enemyTeam.flag.position-bot.position)
+    pos = commander.freePos( commander.levelAnalysis.getBestPositionSector(pos, r, sector))
+    #pos = commander.freePos( commander.levelAnalysis.getBestPosition(pos, r))
+    #pos = commander.level.findRandomFreePositionInBox([pos-Vector2(r,r), pos+Vector2(r,r)]) 
     commander.issue(commands.Move, bot, commander.freePos(pos), description = 'Go to my flag (DEFENDER)')
     return True
 
 def Command_DefendMyFlag(commander, bot):
-    dir = commander.game.enemyTeam.flag.position-bot.position;
-    dir.normalize()
-    n = len([b for b in commander.game.bots_alive if b.state==BotInfo.STATE_DEFENDING and (b.position-bot.position).length()<15])
-    for i in range(n):
-        dir.x=dir.y
-        dir.y=-dir.x
+    #dir = commander.game.enemyTeam.flag.position-bot.position;
+    #dir.normalize()
+    #n = len([b for b in commander.game.bots_alive if b.state==BotInfo.STATE_DEFENDING and (b.position-bot.position).length()<15])
+    #for i in range(n):
+    #    dir.x=dir.y
+    #    dir.y=-dir.x
 
-
+    dir = commander.levelAnalysis.getBestDirection(bot.position)
     commander.issue( commands.Defend, bot, dir , description = 'Defend my flag (DEFENDER)')
     return True
 
@@ -241,6 +249,35 @@ class BTBotTask(BTAction):
                     if (not condWhileCheck):
                         context.prevPath = []
                         state = BTNode.STATUS_OK
+            else:
+                state = BTNode.STATUS_OK
+                context.prevPath = []
+        else:
+            state = BTAction.execute(self, context, currentPath, isPathLikePrev)
+
+        #commander.log.info("Task run "+str(state))
+        return state
+
+class BTBotOrder(BTAction):
+
+    def __init__(self):
+        self.priority = 0
+        BTAction.__init__(self, none)
+
+
+    def execute(self, context, currentPath, isPathLikePrev):
+
+        commander, bot = context.executionContext
+        action2,priority2 = commander.dequeOrder()
+        runNew = False
+        if (isPathLikePrev or context.prevPath != currentPath or priority2>self.priority):
+            self.action,self.priority = action2,priority2
+            runNew = True
+
+
+        if (isPathLikePrev and context.prevPath == currentPath and not runNew):
+            if (bot.state != BotInfo.STATE_IDLE):
+                state = BTNode.STATUS_RUNNING
             else:
                 state = BTNode.STATUS_OK
                 context.prevPath = []
@@ -314,6 +351,7 @@ AttackerBTTree = BTTree(
 
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0),
+            BTCondition(lambda commander,bot: commander.getNearestVisibleAliveEnemy(bot) not in bot.seenBy),
             BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, commander.getNearestVisibleAliveEnemy(bot).position,commander.getNearestVisibleAliveEnemy(bot).position, description='Atack nearest enemy'),
                       lambda commander,bot:  len(commander.getVisibleAliveEnemies(bot))>0 )
         ),
