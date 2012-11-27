@@ -57,13 +57,8 @@ class PandSBot(Commander):
 
         map = self.level.blockHeights;
         an = MapAnalyzeVisibility(map)
-        result = an.buildLOS()
+        #result = an.buildLOS()
 
-        i=0
-        for d in result:
-            saveImage('min_'+str(i), [ [(d[x][y][0]+1)for x in range(an.w)] for y in range(an.h)] )
-            saveImage('max_'+str(i), [ [(d[x][y][1]+1)for x in range(an.w)] for y in range(an.h)] )
-            i+=1
 
         print "New commander"
 

@@ -10,6 +10,22 @@ class MapAnalyzeVisibility(object):
         self.map = map
         self.w = len(self.map)
         self.h = len(self.map[0])
+        self.visibleSectors = self.buildLOS()
+        i=0
+        for d in self.visibleSectors:
+            saveImage('min_'+str(i), [ [(d[x][y][0]+1)for x in range(self.w)] for y in range(self.h)] )
+            saveImage('max_'+str(i), [ [(d[x][y][1]+1)for x in range(self.w)] for y in range(self.h)] )
+            i+=1
+        saveImage('all', [ [(self.visibleSectors[0][x][y][0]
+                                     +self.visibleSectors[1][x][y][0]
+                                     +self.visibleSectors[2][x][y][0]
+                                     +self.visibleSectors[3][x][y][0]
+                                     +self.visibleSectors[4][x][y][0]
+                                     +self.visibleSectors[5][x][y][0]
+                                     +self.visibleSectors[6][x][y][0]
+                                     +self.visibleSectors[7][x][y][0]
+                                     +8)/8 for x in range(self.w)] for y in range(self.h)] )
+
 
     def buildLOS(self):
 
