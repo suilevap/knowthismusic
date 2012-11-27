@@ -1,7 +1,9 @@
 from math import sqrt
+import PIL
+import numpy
+from PIL import Image
 
-
-class MapAnalyze(object):
+class MapAnalyzeVisibility(object):
     """description of class"""
 
     def __init__(self, map):
@@ -21,6 +23,9 @@ class MapAnalyze(object):
                                         max([result[x + dx1][y + dy1][1]+1,result[x + dx2][y + dy2][1]+1]))
                     else:
                         result[x][y] = (-1,-1)
+            saveImage('min_'+str(dx1)+str(dy1)+str(dx2)+str(dy2), [ [(result[x][y][0]+1) for y in range(self.h)] for x in range(self.w)])
+            saveImage('max_'+str(dx1)+str(dy1)+str(dx2)+str(dy2), [ [(result[x][y][1]+1) for y in range(self.h)] for x in range(self.w)])
+
             return result
        
         finalResult =[
@@ -33,6 +38,8 @@ class MapAnalyze(object):
                 buildLosDir(range(1,self.w), range(self.h-1-1,-1,-1), 0, 1, -1, 1),
                 buildLosDir(range(0,self.w-1), range(self.h-1-1,-1,-1), 0, 1, 1, 1),
                 buildLosDir(range(self.w-1-1, -1, -1), range(self.h-1-1,-1,-1), 1, 0, 1, 1)]
+
+
         return finalResult
 
 
@@ -46,17 +53,32 @@ def transpose(m):
             result[y][x] = m[x][y]
     return result
 
-if __name__ == '__main__':
-    image_array=[0]
-    
-    #scipy.misc.imsave('outfile.jpg', image_array)
-    map = [[0, 0, 0, 0, 0], 
-           [0, 2, 2, 0, 0], 
-           [0, 0, 0, 0, 0], 
-           [0, 0, 0, 0, 0]]
-    
-    an = MapAnalyze(transpose(map))
-    result = an.buildLOS()
-    r2 = [transpose(x) for x in result]
+def saveImage(name, data):
+    arr = numpy.array(data, dtype='byte')
+    img = PIL.Image.fromarray(arr, mode ='L')
+    img.save('D:\\tmp\\'+name+'.png') 
 
-    print r2
+#if __name__ == '__main__':
+#    image_array=[0]
+#    
+#    #scipy.misc.imsave('outfile.jpg', image_array)
+#    
+#    map = [[0, 0, 0, 0, 0], 
+#           [0, 255, 255, 0, 0], 
+#           [0, 0, 0, 0, 0], 
+#           [0, 0, 0, 0, 0]]
+#    
+#    map2 = [0, 0, 0, 0, 0, 
+#           0, 2, 2, 0, 0, 
+#           0, 0, 0, 0, 0, 
+#           0, 0, 0, 0, 0]
+#    
+
+#    an = MapAnalyzeVisibility(transpose(map))
+#    #arr = numpy.array(map, dtype="byte")
+#    #img = PIL.Image.fromarray(arr, mode ="L")
+#    #img.save('new_name.png') 
+#    result = an.buildLOS()
+#    r2 = [transpose(x) for x in result]
+
+#    print r2

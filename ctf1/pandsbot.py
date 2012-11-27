@@ -4,7 +4,8 @@
 
 # The commander can send 'Commands' to individual bots.  These are listed and
 # documented in commands.py from the ./api/ folder also.
-
+import sys
+sys.path.append("c:\\Python27\\Lib\\site-packages\\")
 
 from api import Commander
 from api import commands
@@ -12,6 +13,9 @@ from api.vector2 import Vector2
 from api.gameinfo import *
 from bt import *
 from role import *
+import MapAnalyze
+from MapAnalyze import *
+
 
 #from commander import *
 #from commands import *
@@ -51,6 +55,10 @@ class PandSBot(Commander):
         self.roleDefender=Role(DefenderBTTree, self.defenderSuitabilityFunction)
         self.roleAttacker=Role(AttackerBTTree, self.attackerSuitabilityFunction)
 
+        map = self.level.blockHeights;
+        an = MapAnalyzeVisibility(map)
+        result = an.buildLOS()
+ 
         print "New commander"
 
         
