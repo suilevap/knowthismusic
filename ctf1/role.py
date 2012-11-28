@@ -6,5 +6,9 @@ class Role(object):
     
     def botsSuitability(self, bots):
         return sorted(bots, key =self.suitabilityFunction, reverse = True)
+    
+    def dequeOrder(self):
+        return (None, -1)
 
-
+    def enqueOrder(self, action, priority):
+        pass
