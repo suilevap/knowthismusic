@@ -166,10 +166,6 @@ class PandSBot(Commander):
         result = -(bot.position - pos).length()
         return result;
 
-    def dequeOrder(self):
-        return (None, -1)
-
-                 
 
 
 
@@ -262,15 +258,16 @@ class BTBotOrder(BTAction):
 
     def __init__(self):
         self.priority = 0
-        BTAction.__init__(self, none)
+        BTAction.__init__(self, None)
 
 
     def execute(self, context, currentPath, isPathLikePrev):
 
         commander, bot = context.executionContext
-        action2,priority2 = commander.dequeOrder()
+        action2,priority2 = bot.role.dequeOrder()
         runNew = False
         if (isPathLikePrev or context.prevPath != currentPath or priority2>self.priority):
+            self.stop(context)
             self.action,self.priority = action2,priority2
             runNew = True
 
@@ -281,12 +278,21 @@ class BTBotOrder(BTAction):
             else:
                 state = BTNode.STATUS_OK
                 context.prevPath = []
-        else:
+                self.stop(context)
+        elif self.action != None:
             state = BTAction.execute(self, context, currentPath, isPathLikePrev)
+        else:
+            state = BTNode.STATUS_FAIL
 
         #commander.log.info("Task run "+str(state))
         return state
 
+    def stop(self, context):
+        if self.action != None:
+            commander, bot = context.executionContext
+            bot.role.enqueOrder(self.action, self.priority)
+            self.action = None
+            self.priority = -1
 
 TakeFlag = BTSequence(
     BTBotTask(Command_RunToMidPoint),
@@ -310,12 +316,15 @@ ReturnFlag = BTSequence(
 DefenderBTTree = BTTree(
     BTSelector(
         BTCondition(lambda commander,bot: bot.state==BotInfo.STATE_SHOOTING),#continue shooting if started
+
         #or
         ReturnFlag,
         BTSequence(
             BTCondition(lambda commander,bot: commander.enemyBotsAlive==0),
             TakeFlag
         ),
+        #or
+        BTBotOrder(),
         #or
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.getVisibleAliveEnemies(bot))>0),
@@ -346,6 +355,7 @@ DefenderBTTree = BTTree(
 AttackerBTTree = BTTree(
     BTSelector(
         BTCondition(lambda commander,bot: bot.state==BotInfo.STATE_SHOOTING),#continue shooting if started
+        BTBotOrder(),
 
         ReturnFlag,
 

@@ -2,20 +2,7 @@
 
 class BTTree():
     def __init__(self, root):
-        #self.__build(root)
         self.root = root
-
-
-    def __build(self, root):
-        def genId(node):
-            i =0     
-            for child in node.childs:
-                child.id = "%s/%d"%(node.id, i)
-                i+=1
-                genId(child)
-            return id;
-        root.id = "/"
-        genId(root)
 
 
     def getNewContext(self, *executionContext):
@@ -30,6 +17,7 @@ class BTContext:
         #self.currentChild=[0 for x in range(n)]
         self.prevPath = []
         self.currentIdPath = []
+        self.lastRunningNode=None
         #commander, bot = self.executionContext
         #commander.log.info("Context created") 
 
@@ -55,6 +43,9 @@ class BTNode():
         """
         Run node
         """
+        pass
+
+    def stop(self, context):
         pass
 
 class BTSequence(BTNode):
@@ -135,6 +126,9 @@ class BTAction(BTNode):
         if (check or check==None):
             #assume only one action can be running at one time
             context.prevPath = currentPath
+            if context.lastRunningNode != None:
+                context.lastRunningNode.stop(context)
+            context.lastRunningNode = self
             return BTNode.STATUS_RUNNING
         else:
             context.prevPath = []
