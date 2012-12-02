@@ -160,7 +160,7 @@ class BalancedCommander(Commander):
                 self.defender = bot
 
                 # Stand on a random position in a box of 4m around the flag.
-                targetPosition = self.game.team.flagScoreLocation
+                targetPosition = self.game.team.flagSpawnLocation
                 targetMin = targetPosition - Vector2(2.0, 2.0)
                 targetMax = targetPosition + Vector2(2.0, 2.0)
                 goal = self.level.findRandomFreePositionInBox([targetMin, targetMax])
