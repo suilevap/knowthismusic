@@ -48,8 +48,8 @@ class MapAnalyzeVisibility(object):
         x0 = int(pos.x)
         y0 = int(pos.y)
 
-        minX, minY = self.clamp(int(pos.x-r), 0, self.w-1), self.clamp(int(pos.y-r), 0, self.h-1)
-        maxX, maxY = self.clamp(int(pos.x+r), 0, self.w-1), self.clamp(int(pos.y+r), 0, self.h-1) 
+        minX, minY = self.clamp(int(pos.x-r), 0, self.w), self.clamp(int(pos.y-r), 0, self.h)
+        maxX, maxY = self.clamp(int(pos.x+r), 0, self.w), self.clamp(int(pos.y+r), 0, self.h) 
         for x in range(minX, maxX):
             for y in range(minY, maxY): 
                 delta = Vector2(x,y)-pos
@@ -71,8 +71,8 @@ class MapAnalyzeVisibility(object):
         r0Min = self.visibleSectors[sector][x0][y0][0]
         r0Max = self.visibleSectors[sector][x0][y0][1]
         r = r0Max
-        minX, minY = self.clamp(int(pos.x-r), 0, self.w-1), self.clamp(int(pos.y-r), 0, self.h-1)
-        maxX, maxY = self.clamp(int(pos.x+r), 0, self.w-1), self.clamp(int(pos.y+r), 0, self.h-1) 
+        minX, minY = self.clamp(int(pos.x-r), 0, self.w), self.clamp(int(pos.y-r), 0, self.h)
+        maxX, maxY = self.clamp(int(pos.x+r), 0, self.w), self.clamp(int(pos.y+r), 0, self.h) 
         for x in range(minX, maxX):
             for y in range(minY, maxY): 
                 delta = Vector2(x,y)-pos
@@ -157,10 +157,11 @@ class MapAnalyzeVisibility(object):
             result = False
             if (x1<0  or x1>=self.w or y1<0 or y1>=self.h):
                 return False
-            if (mapData[x1][y1]==0) and (parent[x1][y1]==None or distance[x1][y1]>d+delta):
+            fullDistance = d+delta*mapData[x1][y1]
+            if (mapData[x1][y1]!=-1) and (parent[x1][y1]==None or distance[x1][y1]>fullDistance):
                 parent[x1][y1] = (x,y)
-                distance[x1][y1] = d + delta
-                queue._put((d+delta+heuristic(x,y,x1,y1), (x1,y1)))
+                distance[x1][y1] = fullDistance
+                queue._put((fullDistance+heuristic(x,y,x1,y1), (x1,y1)))
 
                 if ((x1==xend) and (y1==yend)):
                     result = True
@@ -214,7 +215,7 @@ class MapAnalyzeVisibility(object):
                 x,y = visiblePoint
                 if (self.distanceField[x][y] > 0):
                     ranks[x][y] += rank/self.distanceField[x][y]
-            rank += 3/len(path)
+            rank += 1.0/len(path)
 
         #for x in range(0,self.w):
         #    for y in range(0,self.h):
@@ -234,8 +235,11 @@ class MapAnalyzeVisibility(object):
                     best = data[x][y]
         return result
 
+    def createMapForPathFinding(self):
+        return [ [(-1 if self.map[x][y] else 1)  for y in range(self.h)] for x in range(self.w)]
+
     def getBestBreakingPoints(self, start, end, r, n):
-        tmpMap =[ [self.map[x][y] for y in range(self.h)] for x in range(self.w)]
+        tmpMap = self.createMapForPathFinding()
         result = []
         for i in range(n):
             path = self.getPath(start, end, tmpMap)
@@ -251,9 +255,10 @@ class MapAnalyzeVisibility(object):
                     result.append((bestPoint, p))
                     break
             for x,y in visiblePoints:
-                tmpMap[x][y] = 2
-        savePath("allBreakingPoints", [p[0] for p in result], self.map)
-        savePath("allBreakingPointsControl", [p[1] for p in result], self.map)
+                if  tmpMap[x][y] > 0:
+                    tmpMap[x][y] += 16
+        savePath("allBreakingPoints", [p[0] for p in result], self.createMapForPathFinding())
+        savePath("allBreakingPointsControl", [p[1] for p in result], self.createMapForPathFinding())
 
         return result
 
@@ -268,8 +273,8 @@ class MapAnalyzeVisibility(object):
         return [self.directions[i] for i in range(0,8) if self.visibleSectors[i][x][y][0]>=dmin]
 
     def getBestPosition(self, pos, r):
-        minX, minY = self.clamp(int(pos.x-r), 0, self.w-1), self.clamp(int(pos.y-r), 0, self.h-1)
-        maxX, maxY = self.clamp(int(pos.x+r), 0, self.w-1), self.clamp(int(pos.y+r), 0, self.h-1)    
+        minX, minY = self.clamp(int(pos.x-r), 0, self.w), self.clamp(int(pos.y-r), 0, self.h)
+        maxX, maxY = self.clamp(int(pos.x+r), 0, self.w), self.clamp(int(pos.y+r), 0, self.h)    
         rangeX, rangeY = maxX - minX, maxY - minY
 
         if (rangeX == 0.0) or (rangeY == 0.0):
@@ -285,8 +290,8 @@ class MapAnalyzeVisibility(object):
         return bestPos
 
     def getBestPositionSector(self, pos, r, sector):
-        minX, minY = self.clamp(int(pos.x-r), 0, self.w-1), self.clamp(int(pos.y-r), 0, self.h-1)
-        maxX, maxY = self.clamp(int(pos.x+r), 0, self.w-1), self.clamp(int(pos.y+r), 0, self.h-1)    
+        minX, minY = self.clamp(int(pos.x-r), 0, self.w), self.clamp(int(pos.y-r), 0, self.h)
+        maxX, maxY = self.clamp(int(pos.x+r), 0, self.w), self.clamp(int(pos.y+r), 0, self.h)    
         rangeX, rangeY = maxX - minX, maxY - minY
 
         if (rangeX == 0.0) or (rangeY == 0.0):
@@ -306,26 +311,34 @@ class MapAnalyzeVisibility(object):
 
         def buildLosDir(rangeX, rangeY, dx1, dy1, dx2, dy2):
 
-            result =[ [(0,0) for y in range(self.h)] for x in range(self.w)]
+            result =[ [(0,0) for y in range(-1, self.h+1)] for x in range(-1,self.w+1)]
             for y in rangeY:
                 for x in rangeX:
+                    #to take into account borders
+                    xWithBorder = x +1
+                    yWithBorder = y + 1
                     if (self.map[x][y] <= 1):
-                        result[x][y] = (min([result[x + dx1][y + dy1][0]+1,result[x + dx2][y + dy2][0]+1]),
-                                        max([result[x + dx1][y + dy1][1]+1,result[x + dx2][y + dy2][1]+1]))
+                        result[xWithBorder][yWithBorder] = (
+                                        min([
+                                             result[xWithBorder + dx1][yWithBorder + dy1][0]+1,
+                                             result[xWithBorder + dx2][yWithBorder + dy2][0]+1]),
+                                        max([
+                                             result[xWithBorder + dx1][yWithBorder + dy1][1]+1,
+                                             result[xWithBorder + dx2][yWithBorder + dy2][1]+1]))
                     else:
-                        result[x][y] = (-1,-1)
-            return result
+                        result[xWithBorder][yWithBorder] = (-1,-1)
+            return [ result[x][1:self.h+1] for x in range(1,self.w+1)]
        
         finalResult =[
-                buildLosDir(range(self.w-1-1, -1, -1), range(1,self.h), 1, 0, 1, -1),
-                buildLosDir(range(0,self.w-1), range(1,self.h), 0, -1, 1, -1),
-                buildLosDir(range(1,self.w), range(1,self.h), 0, -1, -1, -1),
-                buildLosDir(range(1,self.w), range(1,self.h), -1, 0, -1, -1),
+                buildLosDir(range(self.w-1, -1, -1), range(0,self.h), 1, 0, 1, -1),
+                buildLosDir(range(0,self.w), range(0,self.h), 0, -1, 1, -1),
+                buildLosDir(range(0,self.w), range(0,self.h), 0, -1, -1, -1),
+                buildLosDir(range(0,self.w), range(0,self.h), -1, 0, -1, -1),
 
-                buildLosDir(range(1,self.w), range(self.h-1-1,-1,-1), -1, 0, -1, 1),
-                buildLosDir(range(1,self.w), range(self.h-1-1,-1,-1), 0, 1, -1, 1),
-                buildLosDir(range(0,self.w-1), range(self.h-1-1,-1,-1), 0, 1, 1, 1),
-                buildLosDir(range(self.w-1-1, -1, -1), range(self.h-1-1,-1,-1), 1, 0, 1, 1)]
+                buildLosDir(range(0,self.w), range(self.h-1,-1,-1), -1, 0, -1, 1),
+                buildLosDir(range(0,self.w), range(self.h-1,-1,-1), 0, 1, -1, 1),
+                buildLosDir(range(0,self.w), range(self.h-1,-1,-1), 0, 1, 1, 1),
+                buildLosDir(range(self.w-1, -1, -1), range(self.h-1,-1,-1), 1, 0, 1, 1)]
 
 
         return finalResult
@@ -393,15 +406,16 @@ def savePath(name, path,data):
     s = 16;
     w = len(data)
     h = len(data[0])
-    img = PIL.Image.new(mode="L", size=(w*s, h*s), color = 255)
+    img = PIL.Image.new(mode="RGB", size=(w*s, h*s), color = 0xFFFFFF)
     draw = ImageDraw.Draw(img)
-    for p in path:
-        draw.ellipse([(p.x*s-s/8,p.y*s-s/8),(p.x*s+s/8,p.y*s+s/8) ], fill=0)
-
+    
     for y in range(h):
         for x in range(w):
-            if data[x][y]>0:
-                draw.rectangle([(x*s-s/2,y*s-s/2),((x+1)*s-s/2,(y+1)*s-s/2)], fill = 64)
+            color = 0xFFFFFF-data[x][y] if data[x][y]>0 else 0
+            draw.rectangle([(x*s-s/2,y*s-s/2),((x+1)*s-s/2,(y+1)*s-s/2)], fill = color)
+    for p in path:
+        draw.ellipse([(p.x*s-s/4,p.y*s-s/4),(p.x*s+s/4,p.y*s+s/4) ], fill=0x00FF00)
+                    
     img.save('D:\\tmp\\'+name+'.png') 
     
 

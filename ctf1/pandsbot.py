@@ -66,7 +66,7 @@ class PandSBot(Commander):
         #self.levelAnalysis.getBreakingMap(path, self.level.firingDistance)
         ##result = an.buildLOS()
 
-        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(spawn, self.game.team.flag.position, self.level.firingDistance, self.countBot)
+        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(spawn, self.game.team.flag.position, self.level.firingDistance*2, self.countBot)
 
         print "New commander"
 
@@ -190,7 +190,7 @@ def Command_MoveToMyFlag(commander, bot):
     #pos = commander.freePos( commander.levelAnalysis.getBestPositionSector(pos, r/2, sector))
 
     bot.defendBreakingPoint = choice(commander.breakingPoints)
-    pos, dir = bot.defendBreakingPoint
+    pos, threatPoint = bot.defendBreakingPoint
     #allPoint = [breakingP for p in commander.breakingPoints if ]
     pos = commander.freePos(pos)
     commander.issue(commands.Move, bot, commander.freePos(pos), description = 'Go to my flag (DEFENDER)')
@@ -203,9 +203,9 @@ def Command_DefendMyFlag(commander, bot):
     #for i in range(n):
     #    dir.x=dir.y
     #    dir.y=-dir.x
-    pos, dir = bot.defendBreakingPoint
+    pos, threatPoint = bot.defendBreakingPoint
     #dir = commander.levelAnalysis.getBestDirection(bot.position)
-
+    dir = threatPoint-bot.position
     #commander.levelAnalysis.updateDanger(bot.position, dir)
     othersDir = commander.levelAnalysis.getAllDirections(bot.position, 2)
     dirs = [(dir,3)]+[(d, 2/len(othersDir)) for d in othersDir]
