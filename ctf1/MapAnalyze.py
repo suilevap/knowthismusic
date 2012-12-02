@@ -239,16 +239,22 @@ class MapAnalyzeVisibility(object):
         result = []
         for i in range(n):
             path = self.getPath(start, end, tmpMap)
+            savePath("path_iteration"+str(i), path, tmpMap)
             if len(path)<1:
                 break
             breakingMap = self.getBreakingMap(path, r)
             x,y = self.getTheBestPos(breakingMap)
             bestPoint = Vector2(x,y)
-            result.append(bestPoint)
             visiblePoints = self.getAllVisiblePoints(bestPoint, r)
+            for p in path:
+                if (int(p.x), int(p.y)) in (visiblePoints):
+                    result.append((bestPoint, p))
+                    break
             for x,y in visiblePoints:
                 tmpMap[x][y] = 2
-        savePath("allBreakingPoints", result, self.map)
+        savePath("allBreakingPoints", [p[0] for p in result], self.map)
+        savePath("allBreakingPointsControl", [p[1] for p in result], self.map)
+
         return result
 
     def getBestDirection(self, pos):

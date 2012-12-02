@@ -189,8 +189,9 @@ def Command_MoveToMyFlag(commander, bot):
     #pos = commander.level.findRandomFreePositionInBox([pos-Vector2(r,r), pos+Vector2(r,r)]) 
     #pos = commander.freePos( commander.levelAnalysis.getBestPositionSector(pos, r/2, sector))
 
-    pos = choice(commander.breakingPoints)
-
+    bot.defendBreakingPoint = choice(commander.breakingPoints)
+    pos, dir = bot.defendBreakingPoint
+    #allPoint = [breakingP for p in commander.breakingPoints if ]
     pos = commander.freePos(pos)
     commander.issue(commands.Move, bot, commander.freePos(pos), description = 'Go to my flag (DEFENDER)')
     return True
@@ -202,8 +203,9 @@ def Command_DefendMyFlag(commander, bot):
     #for i in range(n):
     #    dir.x=dir.y
     #    dir.y=-dir.x
+    pos, dir = bot.defendBreakingPoint
+    #dir = commander.levelAnalysis.getBestDirection(bot.position)
 
-    dir = commander.levelAnalysis.getBestDirection(bot.position)
     #commander.levelAnalysis.updateDanger(bot.position, dir)
     othersDir = commander.levelAnalysis.getAllDirections(bot.position, 2)
     dirs = [(dir,3)]+[(d, 2/len(othersDir)) for d in othersDir]
