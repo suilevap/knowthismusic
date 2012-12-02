@@ -26,7 +26,8 @@ from MapAnalyze import *
 
 from collections import deque
 
-
+from random import *
+from random import choice
 
 
 class PandSBot(Commander):
@@ -45,7 +46,7 @@ class PandSBot(Commander):
         for bot in self.game.team.members:            
             bot.role=None
             bot.brain = None
-        self.defenderPart = 0.25
+        self.defenderPart = 1
         self.countBot = len(self.game.team.members)
         self.lastTickTime=0
         self.lastTickEvents=0
@@ -59,9 +60,13 @@ class PandSBot(Commander):
         self.levelAnalysis = MapAnalyzeVisibility(map)
         self.levelAnalysis.buildDirecionMap(self.game.enemyTeam.flag.position)
         self.levelAnalysis.debug()
+        spawn = (self.game.enemyTeam.botSpawnArea[0]+self.game.enemyTeam.botSpawnArea[1])/2
+        #path = self.levelAnalysis.getPath(spawn, self.game.team.flag.position, self.levelAnalysis.map)
+        #self.levelAnalysis.getBreakingPoints(path)
+        #self.levelAnalysis.getBreakingMap(path, self.level.firingDistance)
+        ##result = an.buildLOS()
 
-        #result = an.buildLOS()
-
+        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(spawn, self.game.team.flag.position, self.level.firingDistance, self.countBot)
 
         print "New commander"
 
@@ -91,6 +96,9 @@ class PandSBot(Commander):
         for bot in self.game.bots_alive:
             if (bot.brain != None):
                 bot.brain.tick()
+
+        #self.levelAnalysis.updateDangerStep(self.game.bots_alive)
+        #saveImage('danger', self.levelAnalysis.dangerMap)
 
         self.lastTickTime=self.game.match.timePassed
 
@@ -132,7 +140,7 @@ class PandSBot(Commander):
         maxBots=len(self.game.bots_alive)
         enemies=self.enemyBotsAlive
         
-        optimalDefenders=enemies*0.5
+        optimalDefenders=enemies*1
         optimalAttackers=maxBots-optimalDefenders
 
         if optimalAttackers<0:
@@ -173,11 +181,17 @@ class PandSBot(Commander):
 
 def Command_MoveToMyFlag(commander, bot):
     r = 10
-    pos = commander.game.team.flag.position
-    sector =  commander.levelAnalysis.getSectorIndex(commander.game.enemyTeam.flag.position-bot.position)
-    pos = commander.freePos( commander.levelAnalysis.getBestPositionSector(pos, r, sector))
-    #pos = commander.freePos( commander.levelAnalysis.getBestPosition(pos, r))
+    #pos = commander.game.team.flag.position
+    #sector =  commander.levelAnalysis.getSectorIndex(commander.game.enemyTeam.flag.position-bot.position)+int((random()-0.5)*4)
+    #sector = sector%8
+
+    ##pos = commander.freePos( commander.levelAnalysis.getBestPosition(pos, r))
     #pos = commander.level.findRandomFreePositionInBox([pos-Vector2(r,r), pos+Vector2(r,r)]) 
+    #pos = commander.freePos( commander.levelAnalysis.getBestPositionSector(pos, r/2, sector))
+
+    pos = choice(commander.breakingPoints)
+
+    pos = commander.freePos(pos)
     commander.issue(commands.Move, bot, commander.freePos(pos), description = 'Go to my flag (DEFENDER)')
     return True
 
@@ -190,7 +204,10 @@ def Command_DefendMyFlag(commander, bot):
     #    dir.y=-dir.x
 
     dir = commander.levelAnalysis.getBestDirection(bot.position)
-    commander.issue( commands.Defend, bot, dir , description = 'Defend my flag (DEFENDER)')
+    #commander.levelAnalysis.updateDanger(bot.position, dir)
+    othersDir = commander.levelAnalysis.getAllDirections(bot.position, 2)
+    dirs = [(dir,3)]+[(d, 2/len(othersDir)) for d in othersDir]
+    commander.issue( commands.Defend, bot, dirs , description = 'Defend my flag (DEFENDER)')
     return True
 
 
