@@ -184,7 +184,7 @@ class MapAnalyzeVisibility(object):
             y = yend
             
             while (parent[x][y]!=(x,y)):
-                result.append(Vector2(x,y))
+                result.append(Vector2(x+0.5,y+0.5))
                 x,y = parent[x][y]
             result.reverse()
 
@@ -238,7 +238,7 @@ class MapAnalyzeVisibility(object):
     def createMapForPathFinding(self):
         return [ [(-1 if self.map[x][y] else 1)  for y in range(self.h)] for x in range(self.w)]
 
-    def getBestBreakingPoints(self, start, end, r, n):
+    def getBestBreakingPoints(self, start, end, rPrefered, rControl, n):
         tmpMap = self.createMapForPathFinding()
         result = []
         for i in range(n):
@@ -246,10 +246,10 @@ class MapAnalyzeVisibility(object):
             savePath("path_iteration"+str(i), path, tmpMap)
             if len(path)<1:
                 break
-            breakingMap = self.getBreakingMap(path, r)
+            breakingMap = self.getBreakingMap(path, rPrefered)
             x,y = self.getTheBestPos(breakingMap)
-            bestPoint = Vector2(x,y)
-            visiblePoints = self.getAllVisiblePoints(bestPoint, r)
+            bestPoint = Vector2(x+0.5,y+0.5)
+            visiblePoints = self.getAllVisiblePoints(bestPoint, rControl)
             for p in path:
                 if (int(p.x), int(p.y)) in (visiblePoints):
                     result.append((bestPoint, p))
@@ -257,9 +257,9 @@ class MapAnalyzeVisibility(object):
             for x,y in visiblePoints:
                 if  tmpMap[x][y] > 0:
                     tmpMap[x][y] += 16
-        savePath("allBreakingPoints", [p[0] for p in result], self.createMapForPathFinding())
-        savePath("allBreakingPointsControl", [p[1] for p in result], self.createMapForPathFinding())
-
+        #savePath("allBreakingPoints", [p[0] for p in result], self.createMapForPathFinding())
+        #savePath("allBreakingPointsControl", [p[1] for p in result], self.createMapForPathFinding())
+        savePath("allBreakingPoints", result, self.createMapForPathFinding())
         return result
 
     def getBestDirection(self, pos):
@@ -412,9 +412,21 @@ def savePath(name, path,data):
     for y in range(h):
         for x in range(w):
             color = 0xFFFFFF-data[x][y] if data[x][y]>0 else 0
-            draw.rectangle([(x*s-s/2,y*s-s/2),((x+1)*s-s/2,(y+1)*s-s/2)], fill = color)
+            draw.rectangle([(x*s,y*s),((x+1)*s,(y+1)*s)], fill = color)
+    i = 1
     for p in path:
-        draw.ellipse([(p.x*s-s/4,p.y*s-s/4),(p.x*s+s/4,p.y*s+s/4) ], fill=0x00FF00)
+        if isinstance(p, tuple):
+            p1 = p[0]
+            p2 = p[1]
+        else:
+            p1 = p
+            p2 = None
+
+        draw.ellipse([(p1.x*s-s/4,p1.y*s-s/4),(p1.x*s+s/4,p1.y*s+s/4) ], fill=0x00FF00)
+        draw.text((p1.x*s-s/8,p1.y*s-s/8), str(i), fill=0xFF0000)
+        if p2!=None:
+            draw.line([(p1.x*s,p1.y*s),(p2.x*s,p2.y*s)], fill=0x00FF00)
+        i+=1
                     
     img.save('D:\\tmp\\'+name+'.png') 
     
@@ -432,7 +444,7 @@ def savePathWithText(name, path,data):
     for y in range(h):
         for x in range(w):
             if data[x][y]>0:
-                draw.rectangle([(x*s-s/2,y*s-s/2),((x+1)*s-s/2,(y+1)*s-s/2)], fill = 64)
+                draw.rectangle([(x*s,y*s),((x+1)*s,(y+1)*s)], fill = 64)
     img.save('D:\\tmp\\'+name+'.png') 
     
 #if __name__ == '__main__':
