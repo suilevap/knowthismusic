@@ -66,7 +66,7 @@ class PandSBot(Commander):
         #self.levelAnalysis.getBreakingMap(path, self.level.firingDistance)
         ##result = an.buildLOS()
 
-        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(spawn, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, self.countBot)
+        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(spawn, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot*1.5))
 
         print "New commander"
 
