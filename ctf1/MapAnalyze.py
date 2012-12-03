@@ -157,7 +157,7 @@ class MapAnalyzeVisibility(object):
             result = False
             if (x1<0  or x1>=self.w or y1<0 or y1>=self.h):
                 return False
-            fullDistance = d+delta*mapData[x1][y1]
+            fullDistance = d+delta*mapData[x][y]
             if (mapData[x1][y1]!=-1) and (parent[x1][y1]==None or distance[x1][y1]>fullDistance):
                 parent[x1][y1] = (x,y)
                 distance[x1][y1] = fullDistance
@@ -209,13 +209,17 @@ class MapAnalyzeVisibility(object):
        
         ranks =[ [(0) for y in range(self.h)] for x in range(self.w)]
         rank = 1.0
+        i = 0;
         for p in path:
+            part = i*1.0/len(path)
+            rank = 1.0-abs(0.95-part)
+            i+=1
             points = self.getAllVisiblePoints(p, r)
             for visiblePoint in points:
                 x,y = visiblePoint
                 if (self.distanceField[x][y] > 0):
                     ranks[x][y] += rank/self.distanceField[x][y]
-            rank += 1.0/len(path)
+            #rank += 1.0/len(path)
 
         #for x in range(0,self.w):
         #    for y in range(0,self.h):
@@ -256,7 +260,9 @@ class MapAnalyzeVisibility(object):
                     break
             for x,y in visiblePoints:
                 if  tmpMap[x][y] > 0:
-                    tmpMap[x][y] += 16
+                    tmpMap[x][y] += 1280
+                    if tmpMap[x][y]>2550:
+                        tmpMap[x][y] = 2550
         #savePath("allBreakingPoints", [p[0] for p in result], self.createMapForPathFinding())
         #savePath("allBreakingPointsControl", [p[1] for p in result], self.createMapForPathFinding())
         savePath("allBreakingPoints", result, self.createMapForPathFinding())
