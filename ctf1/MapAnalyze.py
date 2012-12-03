@@ -276,29 +276,34 @@ class MapAnalyzeVisibility(object):
                     tmpMap[x][y] += 128
                     if tmpMap[x][y]>255:
                         tmpMap[x][y] = 255
+
+            for p in path:
+                if (int(p.x), int(p.y)) in (visiblePoints):
+                    result.append((bestPoint,[p]))
+                    break
         #savePath("allBreakingPoints", [p[0] for p in result], self.createMapForPathFinding())
         #savePath("allBreakingPointsControl", [p[1] for p in result], self.createMapForPathFinding())
-        tmpPoint = []
-        for path in allpaths:
-            tmpPoint += path
-        savePath("allPath", tmpPoint, self.createMapForPathFinding())
-        
-        ignorePoints = []
-        for i in range(n):
+        #tmpPoint = []
+        #for path in allpaths:
+        #    tmpPoint += path
+        #savePath("allPath", tmpPoint, self.createMapForPathFinding())
+        #
+        #ignorePoints = []
+        #for i in range(n):
 
-            breakingMap = self.getBreakingMap(allpaths, rPrefered, ignorePoints)
-            x,y = self.getTheBestPos(breakingMap)
-            bestPoint = Vector2(x+0.5,y+0.5)
-            visiblePoints = self.getAllVisiblePoints(bestPoint, rControl)
-            threatPoints = []
-            for path in allpaths:
-                for p in path:
-                    if (int(p.x), int(p.y)) in (visiblePoints):
-                        threatPoints.append( p)
-                        break
-            result.append((bestPoint,threatPoints))
-            ignorePoints += visiblePoints
-        
+        #    breakingMap = self.getBreakingMap(allpaths, rPrefered, ignorePoints)
+        #    x,y = self.getTheBestPos(breakingMap)
+        #    bestPoint = Vector2(x+0.5,y+0.5)
+        #    visiblePoints = self.getAllVisiblePoints(bestPoint, rControl)
+        #    threatPoints = []
+        #    for path in allpaths:
+        #        for p in path:
+        #            if (int(p.x), int(p.y)) in (visiblePoints):
+        #                threatPoints.append( p)
+        #                break
+        #    result.append((bestPoint,threatPoints))
+        #    ignorePoints += visiblePoints
+        #
         savePath("allBreakingPoints", result, self.createMapForPathFinding())
 
         return result

@@ -205,16 +205,16 @@ def Command_DefendMyFlag(commander, bot):
     #    dir.y=-dir.x
     pos, threatPoints = bot.defendBreakingPoint
     ##dir = commander.levelAnalysis.getBestDirection(bot.position)
-    #dir = threatPoint-bot.position
+    dirs = [(threatPoint-bot.position, 3) for threatPoint in threatPoints]
     ##commander.levelAnalysis.updateDanger(bot.position, dir)
-    #othersDir = commander.levelAnalysis.getAllDirections(bot.position, 4)
-    #dirs = [(dir,3)]+[(d, 1/len(othersDir)) for d in othersDir]
-    dirs = []
-    i = 0
-    for threatPoint in threatPoints :
-        part = i * 1.0 / len(threatPoints)
-        dirs.append((threatPoint-bot.position,1+(1-part)*3))
-        i +=1 
+    othersDir = commander.levelAnalysis.getAllDirections(bot.position, 4)
+    dirs += [(d, 3.0/len(othersDir)) for d in othersDir]
+    #dirs = []
+    #i = 0
+    #for threatPoint in threatPoints :
+    #    part = i * 1.0 / len(threatPoints)
+    #    dirs.append((threatPoint-bot.position,1+(1-part)*3))
+    #    i +=1 
     shuffle(dirs)
     commander.issue( commands.Defend, bot, dirs , description = 'Defend my flag (DEFENDER)')
     return True
