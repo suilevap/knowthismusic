@@ -64,46 +64,29 @@ class MapAnalyzeVisibility(object):
 
     
      
-    def updateDanger(self, pos, dir):
+    def updateDanger(self, pos, dir, r):
         sector = self.getSectorIndex(dir)
         x0 = int(pos.x)
         y0 = int(pos.y)
 
-        r0Min = self.visibleSectors[sector][x0][y0][0]
-        r0Max = self.visibleSectors[sector][x0][y0][1]
-        r = r0Max
-        minX, minY = self.clamp(int(pos.x-r), 0, self.w), self.clamp(int(pos.y-r), 0, self.h)
-        maxX, maxY = self.clamp(int(pos.x+r), 0, self.w), self.clamp(int(pos.y+r), 0, self.h) 
-        for x in range(minX, maxX):
-            for y in range(minY, maxY): 
-                delta = Vector2(x,y)-pos
-                sector2 = self.getSectorIndex(delta)
-                r2Min = self.visibleSectors[(sector2+4)%8][x][y][0]
-                d = max(abs(x0-x),abs(y0-y))
-
-                if (sector==sector2):
-                    if (r0Min>= d or r2Min>=d ):#or (r1Max<d and r2Max<d)):
-                        self.dangerMap[x][y]+=8
-
-                #r1Min = self.visibleSectors[sector2][x0][y0][0]
-                #r1Max = self.visibleSectors[sector2][x0][y0][1]
-
-                #r2Min = self.visibleSectors[(sector2+4)%8][x][y][0]
-                #r2Max = self.visibleSectors[(sector2+4)%8][x][y][1]
-
-                #if (r1Min>= d or r2Min>=d ):#or (r1Max<d and r2Max<d)):
-                #    self.dangerMap[x][y]+=8
+        points = self.getAllVisiblePoints(pos, r, sector, 1)
+        for visiblePoint in points:
+            x,y = visiblePoint
+            self.dangerMap[x][y] += 128
         
 
-    def updateDangerStep(self, bots):
+    def updateDangerStep(self, bots, r):
         for y in range(0, self.h):
             for x in range(0, self.w):
-                if self.dangerMap[x][y]>0:
-                    self.dangerMap[x][y]=1
                 if self.map[x][y]>0:
                     self.dangerMap[x][y]=-1
+                else:
+                    self.dangerMap[x][y]=1
         for bot in bots:
-            self.updateDanger(bot.position, bot.facingDirection)
+            self.updateDanger(bot.position, bot.facingDirection, r)
+
+    def getPathThroughDanger(self, start, end):
+        return self.getPath(start, end, self.dangerMap)
 
     def buildDirecionMap(self, dangerPos):
         self.bestDirectionsMap =[ [(0,0) for y in range(self.h)] for x in range(self.w)]
@@ -158,7 +141,7 @@ class MapAnalyzeVisibility(object):
             result = False
             if (x1<0  or x1>=self.w or y1<0 or y1>=self.h):
                 return False
-            fullDistance = d+delta*mapData[x][y]
+            fullDistance = d+delta*(mapData[x][y])
             if (mapData[x1][y1]!=-1) and (parent[x1][y1]==None or distance[x1][y1]>fullDistance):
                 parent[x1][y1] = (x,y)
                 distance[x1][y1] = fullDistance
@@ -250,7 +233,7 @@ class MapAnalyzeVisibility(object):
         return result
 
     def createMapForPathFinding(self):
-        return [ [(-1 if self.map[x][y] else 1)  for y in range(self.h)] for x in range(self.w)]
+        return [ [(-1 if self.map[x][y]>0 else 1)  for y in range(self.h)] for x in range(self.w)]
 
     def getBestBreakingPoints(self, start, end, rPrefered, rControl, n):
         pathMaxLength = 50
