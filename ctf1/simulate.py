@@ -9,6 +9,7 @@
 #################################################################################
 
 import bootstrap
+import random
 
 from aisbx import platform
 from aisbx import callstack
@@ -17,10 +18,13 @@ from game.application import CaptureTheFlag
 
 
 # By default load these commanders.
-defaults = ['pandsbot.PandSBot', 'examples.BalancedCommander']
+defaults = ['examples.BalancedCommander', 'mycmd.PlaceholderCommander']
+
+# Possible levels that can be used.
+levels = ['map00', 'map01', 'map10', 'map11', 'map20', 'map21', 'map30']
 
 
-def main(PreferedRunner, args, **kwargs):
+def main(PreferedRunner, args, accel, **kwargs):
     """
         Setup our custom demo application, as well as a window-mode runner,
         and launch it.  This function returns once the demo is over.
@@ -30,6 +34,8 @@ def main(PreferedRunner, args, **kwargs):
 
     while True:
         runner = PreferedRunner()
+        if accel:
+            runner.accelerate()
 
         if not args:
             args = defaults
@@ -61,22 +67,23 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--console', action='store_true', default=False,            
                 help='Run the simulation in headless mode without opening a graphical window, logging information to the console instead.')
-    parser.add_argument('-m', '--map', default='map21',
-                help='Specify which level map should be loaded, e.g. map00 or map21.  These are loaded from the .png and .ini file combination in #/assets/.')
+    parser.add_argument('-a', '--accelerate', action='store_true', default=False,
+                help='Step the simulation as fast as possible, whether or not a window is open.  Disable vsync in .cfg file for faster performance.')
+    parser.add_argument('-l', '--level', default=random.choice(levels),
+                help='Specify which level should be loaded, e.g. map00 or map21.  These are loaded from the .png and .ini file combination in #/assets/.')
     parser.add_argument('competitors', nargs='*',
                 help='The name of a script and class (e.g. mybot.Placeholder) implementing the Commander interface.  Files are exact, but classes match by substring.')
     args, _ = parser.parse_known_args()
 
     try:
         if args.console:
-            main(platform.ConsoleRunner, args.competitors, map=args.map)
+            main(platform.ConsoleRunner, args.competitors, accel=args.accelerate, level=args.level)
         else:
-            main(platform.WindowRunner, args.competitors, map=args.map)
+            main(platform.WindowRunner, args.competitors, accel=args.accelerate, level=args.level)
 
     except Exception as e:
-        print str(e)
+        print >> sys.stderr, str(e)
         tb_list = callstack.format(sys.exc_info()[2])
         for s in tb_list:
-            print s
+            print >> sys.stderr, s
         raise
-

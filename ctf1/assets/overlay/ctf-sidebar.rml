@@ -123,7 +123,7 @@
       tab-index: auto;
 
       background-decorator: image;
-      background-image: invader.tga 247px 0px 406px 45px;
+      background-image: widgets.png 247px 0px 406px 45px;
       }
 
       button:focus,
@@ -157,8 +157,8 @@
       padding: 10px 10px 0px;
 
       background-decorator: tiled-horizontal;
-      background-left-image: invader.tga 162px 192px 176px 223px;
-      background-center-image: invader.tga stretch 176px 192px 177px 223px;
+      background-left-image: widgets.png 162px 192px 176px 223px;
+      background-center-image: widgets.png stretch 176px 192px 177px 223px;
       }
 
       input.text,
@@ -204,7 +204,7 @@
       padding: 9px 10px 0px 10px;
 
       background-decorator: image;
-      background-image: invader.tga 162px 192px 307px 229px;
+      background-image: widgets.png 162px 192px 307px 229px;
       }
 
       select selectvalue:hover,
@@ -220,7 +220,7 @@
       height: 37px;
 
       icon-decorator: image;
-      icon-image: invader.tga 307px 192px 337px 229px;
+      icon-image: widgets.png 307px 192px 337px 229px;
       }
 
       select selectarrow:hover,
@@ -251,14 +251,14 @@
       datagrid datagridbody
       {
       background-decorator: tiled-box;
-      background-top-left-image: invader.tga 281px 275px 292px 284px;
-      background-top-right-image: invader.tga 294px 275px 305px 284px;
-      background-top-image: invader.tga stretch 292px 275px 293px 284px;
-      background-bottom-left-image: invader.tga 281px 285px 292px 296px;
-      background-bottom-right-image: invader.tga 294px 285px 305px 296px;
-      background-bottom-image: invader.tga stretch 292px 285px 293px 296px;
-      background-left-image: invader.tga stretch 281px 283px 292px 284px;
-      background-center-image: invader.tga stretch 292px 283px 293px 284px;
+      background-top-left-image: widgets.png 281px 275px 292px 284px;
+      background-top-right-image: widgets.png 294px 275px 305px 284px;
+      background-top-image: widgets.png stretch 292px 275px 293px 284px;
+      background-bottom-left-image: widgets.png 281px 285px 292px 296px;
+      background-bottom-right-image: widgets.png 294px 285px 305px 296px;
+      background-bottom-image: widgets.png stretch 292px 285px 293px 296px;
+      background-left-image: widgets.png stretch 281px 283px 292px 284px;
+      background-center-image: widgets.png stretch 292px 283px 293px 284px;
       }
 
       select selectbox option,
@@ -310,7 +310,7 @@
       input.radio
       {
       icon-decorator: image;
-      icon-image: invader.tga 407px 0px 437px 30px;
+      icon-image: widgets.png 407px 0px 437px 30px;
       }
 
       input.radio:hover
@@ -343,7 +343,7 @@
       input.checkbox
       {
       icon-decorator: image;
-      icon-image: invader.tga 407px 60px 437px 90px;
+      icon-image: widgets.png 407px 60px 437px 90px;
       }
 
       input.checkbox:hover
@@ -377,7 +377,7 @@
       input.range
       {
       icon-decorator: image;
-      icon-image: invader.tga 407px 60px 417px 90px;
+      icon-image: widgets.png 407px 60px 417px 90px;
       }
 
       input.range:hover
@@ -399,9 +399,9 @@
       padding: 5px 10px 0px 10px;
 
       background-decorator: tiled-horizontal;
-      background-left-image: invader.tga 127px 192px 143px 223px;
-      background-center-image: invader.tga stretch 143px 192px 145px 223px;
-      background-right-image: invader.tga 145px 192px 160px 223px;
+      background-left-image: widgets.png 127px 192px 143px 223px;
+      background-center-image: widgets.png stretch 143px 192px 145px 223px;
+      background-right-image: widgets.png 145px 192px 160px 223px;
       }
 
       datagrid datagridbody
@@ -424,7 +424,7 @@
       width: 17px;
 
       icon-decorator: image;
-      icon-image: invader.tga 3px 232px 20px 249px;
+      icon-image: widgets.png 3px 232px 20px 249px;
       }
 
       datagridexpand:hover
@@ -455,9 +455,9 @@
       scrollbarvertical slidertrack
       {
       background-decorator: tiled-vertical;
-      background-top-image: invader.tga 70px 199px 97px 201px;
-      background-center-image: invader.tga stretch 70px 201px 97px 202px;
-      background-bottom-image: invader.tga 70px 203px 97px 204px;
+      background-top-image: widgets.png 70px 199px 97px 201px;
+      background-center-image: widgets.png stretch 70px 201px 97px 202px;
+      background-bottom-image: widgets.png 70px 203px 97px 204px;
       }
 
       scrollbarvertical sliderbar
@@ -467,9 +467,9 @@
       min-height: 46px;
 
       background-decorator: tiled-vertical;
-      background-top-image: invader.tga 56px 152px 79px 175px;
-      background-center-image: invader.tga stretch 56px 175px 79px 175px;
-      background-bottom-image: invader.tga 56px 176px 79px 198px;
+      background-top-image: widgets.png 56px 152px 79px 175px;
+      background-center-image: widgets.png stretch 56px 175px 79px 175px;
+      background-bottom-image: widgets.png 56px 176px 79px 198px;
       }
 
       scrollbarvertical sliderbar:hover
@@ -492,7 +492,7 @@
       height: 24px;
 
       icon-decorator: image;
-      icon-image: invader.tga 0px 152px 27px 176px;
+      icon-image: widgets.png 0px 152px 27px 176px;
       }
 
       scrollbarvertical sliderarrowdec:hover,
@@ -513,7 +513,7 @@
       height: 24px;
 
       icon-decorator: image;
-      icon-image: invader.tga 28px 152px 55px 176px;
+      icon-image: widgets.png 28px 152px 55px 176px;
       }
 
       scrollbarhorizontal
@@ -533,9 +533,9 @@
       min-width: 90px;
       /*
       background-decorator: tiled-vertical;
-      background-top-image: invader.tga 70px 199px 97px 201px;
-      background-center-image: invader.tga stretch 70px 201px 97px 202px;
-      background-bottom-image: invader.tga 70px 203px 97px 204px;
+      background-top-image: widgets.png 70px 199px 97px 201px;
+      background-center-image: widgets.png stretch 70px 201px 97px 202px;
+      background-bottom-image: widgets.png 70px 203px 97px 204px;
       */
       }
 
@@ -545,9 +545,9 @@
       margin-top: 1px;
       height: 22px;
       background-decorator: tiled-vertical;
-      background-top-image: invader.tga 56px 152px 79px 175px;
-      background-center-image: invader.tga stretch 56px 175px 79px 175px;
-      background-bottom-image: invader.tga 56px 176px 79px 198px;
+      background-top-image: widgets.png 56px 152px 79px 175px;
+      background-center-image: widgets.png stretch 56px 175px 79px 175px;
+      background-bottom-image: widgets.png 56px 176px 79px 198px;
       }
 
       /*
@@ -572,7 +572,7 @@
       height: 24px;
 
       icon-decorator: image;
-      icon-image: invader.tga 2px 306px 25px 329px;
+      icon-image: widgets.png 2px 306px 25px 329px;
       }
 
       input.range sliderarrowdec:hover,
@@ -593,7 +593,7 @@
       height: 24px;
 
       icon-decorator: image;
-      icon-image: invader.tga 2px 278px 25px 301px;
+      icon-image: widgets.png 2px 278px 25px 301px;
       }
 
     </style>

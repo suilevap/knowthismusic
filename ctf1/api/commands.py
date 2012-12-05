@@ -8,7 +8,8 @@ class Defend(object):
     def __init__(self, botId, facingDirection = None, description = ''):
         super(Defend, self).__init__()
         assert isinstance(botId, str)
-        assert (facingDirection == None) or isinstance(facingDirection, Vector2) or isinstance(facingDirection, list)
+        assert (facingDirection == None) or isinstance(facingDirection, Vector2) or (isinstance(facingDirection, list) and len(facingDirection) > 0)
+
         self.botId = botId
         """
         The name of the bot
@@ -29,7 +30,15 @@ class Defend(object):
                     
         self.facingDirection = facingDirection
         """
-        The desired facing direction (Vector2) of the bot.
+        The desired facing direction(s) of the bot.
+        This parameter can be given in three forms:
+        If facingDirection is None then the bot will remain facing in its current facing direction.
+        If facingDirection is a Vector2 then the bot will turn to face the requested facing direction.
+        If facingDirection is a list of (Vector2, float) pairs then the list is a series of directions in which the bot
+        will look. For each element of the list the bot will face in that direction for the amount of time specified by
+        the second element of the pair (with a minimum time of 1 second). Once the bot has been through all of the elements
+        of the list it will continue iterating again from the beginning of the list.
+
         """
         self.description = description
         """
@@ -49,7 +58,7 @@ class Move(object):
         if isinstance(target, Vector2):
             target = [target];
         assert isinstance(botId, str)
-        assert isinstance(target, list)
+        assert isinstance(target, list) and len(target) > 0
         for t in target: assert isinstance(t, Vector2)
 
         self.botId = botId
@@ -79,7 +88,7 @@ class Attack(object):
         if isinstance(target, Vector2):
             target = [target];
         assert isinstance(botId, str)
-        assert isinstance(target, list)
+        assert isinstance(target, list) and len(target) > 0
         for t in target: assert isinstance(t, Vector2)
         assert lookAt == None or isinstance(lookAt, Vector2)
         self.botId = botId 
@@ -113,7 +122,7 @@ class Charge(object):
         if isinstance(target, Vector2):
             target = [target];
         assert isinstance(botId, str)
-        assert isinstance(target, list)
+        assert isinstance(target, list) and len(target) > 0
         for t in target: assert isinstance(t, Vector2)
 
         self.botId = botId 

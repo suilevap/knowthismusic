@@ -1,9 +1,10 @@
 import random
+import os
 
+from api import gameinfo
 from api import Commander
 from api import commands
 from api.vector2 import Vector2
-
 
 def contains(area, position):
     start, finish = area
@@ -95,7 +96,7 @@ class DefenderCommander(Commander):
                 if bot.flag:
                     # Return the flag home relatively quickly!
                     targetLocation = self.game.team.flagScoreLocation
-                    self.issue(commands.Move, bot, targetLocation, description = 'returning enemy flag!')
+                    self.issue(commands.Charge, bot, targetLocation, description = 'returning enemy flag!')
 
                 else:
                     # Find the enemy team's flag position and run to that.
@@ -118,7 +119,10 @@ class DefenderCommander(Commander):
                             self.issue(commands.Charge, bot, position, description = 'defending around flag')
                             break
                 else:
-                    self.issue(commands.Defend, bot, (targetPosition - bot.position), description = 'defending facing flag')
+                    their_flag = self.game.enemyTeam.flag.position
+                    their_base = self.level.botSpawnAreas[self.game.enemyTeam.name][0]
+                    their_score = self.game.enemyTeam.flagScoreLocation
+                    self.issue(commands.Defend, bot, [(p-bot.position, t) for p, t in [(targetPosition, 2.0), (their_flag, 1.0), (their_base, 1.0), (their_score, 1.0)]], description = 'defending by scanning')
 
 
 class BalancedCommander(Commander):
@@ -127,7 +131,7 @@ class BalancedCommander(Commander):
     def initialize(self):
         self.attacker = None
         self.defender = None
-        self.verbose = False
+        self.verbose = True
 
         # Calculate flag positions and store the middle.
         ours = self.game.team.flag.position
@@ -140,11 +144,11 @@ class BalancedCommander(Commander):
         self.right = Vector2(d.y, -d.x).normalized()
         self.front = Vector2(d.x, d.y).normalized()
 
+        self.panicMode = False
 
     # Add the tick function, called each update
     # This is where you can do any logic and issue new orders.
     def tick(self):
-
         if self.attacker and self.attacker.health <= 0:
             # the attacker is dead we'll pick another when available
             self.attacker = None
@@ -153,6 +157,23 @@ class BalancedCommander(Commander):
             # the defender is dead we'll pick another when available
             self.defender = None
 
+        if not self.game.team.flag.carrier:
+            self.panicMode = False
+        else:
+            if not self.panicMode:
+                self.panicMode = True
+                
+                targetPosition = (self.game.team.flag.position + self.game.enemyTeam.flagScoreLocation)/2.0
+                targetMin = targetPosition - Vector2(6.0, 6.0)
+                targetMax = targetPosition + Vector2(6.0, 6.0)
+                goal = self.level.findRandomFreePositionInBox([targetMin, targetMax])
+
+                for bot in self.game.bots_alive:           
+                    if bot == self.defender or bot == self.attacker:
+                        continue
+                    
+                    self.issue(commands.Attack, bot, goal, description = 'running to intercept', lookAt=targetPosition)
+        
         # In this example we loop through all living bots without orders (self.game.bots_available)
         # All other bots will wander randomly
         for bot in self.game.bots_available:           
@@ -160,7 +181,7 @@ class BalancedCommander(Commander):
                 self.defender = bot
 
                 # Stand on a random position in a box of 4m around the flag.
-                targetPosition = self.game.team.flagSpawnLocation
+                targetPosition = self.game.team.flag.position
                 targetMin = targetPosition - Vector2(2.0, 2.0)
                 targetMax = targetPosition + Vector2(2.0, 2.0)
                 goal = self.level.findRandomFreePositionInBox([targetMin, targetMax])
@@ -176,7 +197,7 @@ class BalancedCommander(Commander):
                 if bot.flag:
                     # Tell the flag carrier to run home!
                     target = self.game.team.flagScoreLocation
-                    self.issue(commands.Move, bot, target, description = 'running home')
+                    self.issue(commands.Charge, bot, target, description = 'running home')
                 else:
                     target = self.game.enemyTeam.flag.position
                     flank = self.getFlankingPosition(bot, target)
@@ -184,7 +205,7 @@ class BalancedCommander(Commander):
                         self.issue(commands.Attack, bot, target, description = 'attack from flank', lookAt=target)
                     else:
                         flank = self.level.findNearestFreePosition(flank)
-                        self.issue(commands.Move, bot, flank, description = 'running to flank')
+                        self.issue(commands.Charge, bot, flank, description = 'running to flank')
 
             else:
                 # All our other (random) bots
@@ -202,3 +223,4 @@ class BalancedCommander(Commander):
         flanks = [target + f * 16.0 for f in [self.left, self.right]]
         options = map(lambda f: self.level.findNearestFreePosition(f), flanks)
         return sorted(options, key = lambda p: (bot.position - p).length())[0]
+
