@@ -245,17 +245,18 @@ def Command_DefendMyFlag(commander, bot):
     #    dir.x=dir.y
     #    dir.y=-dir.x
     dirs = []
+    
     if bot.defendBreakingPoint != None:
         pos, threatPoints = bot.defendBreakingPoint
         dirs += [(threatPoint-bot.position, 4) for threatPoint in threatPoints]
     else:
         pos = bot.position, 
 
-
+    mainDir = dirs[0][0]
     ##dir = commander.levelAnalysis.getBestDirection(bot.position)
     ##commander.levelAnalysis.updateDanger(bot.position, dir)
    
-    othersDir = commander.levelAnalysis.getAllDirections(bot.position, 4)
+    othersDir = commander.levelAnalysis.getAllDirections(bot.position, 4, commander.levelAnalysis.getSectorIndex(mainDir), 1)
     dirs += [(d, 1) for d in othersDir]
     
     #dirs = []
