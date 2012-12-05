@@ -8,170 +8,91 @@
 #                   and education only.  For details, see the LICENSING file.
 ################################################################################
 
+import bootstrap
+
 import sys
 import os
-print os.getcwd()
-
+import glob
 from inspect import isclass
 import importlib
-import exceptions
 import time
 import socket
-import json
-import gc
+import logging
+
+from game import networkclient
 
 import api
-from api import commands
-from api import gameinfo
-from api import handshaking
 
-class DisconnectError(Exception):
-    pass
-
-class NetworkClient(object):
-    def __init__(self, conn, commanderCls):
-        super(NetworkClient, self).__init__()
-        self.conn = conn
-        self.inputBuffer = ''
-        self.commander = commanderCls()
-        # set the socket connection as non-blocking
-        self.conn.settimeout(0.0)
-
-    def performHandshaking(self):
-        # wait for the server to send its handshaking message
-        # TODO: timeout after 10 seconds
-        message = self.readLine()
-        assert message == '<connect>','Received unexpected message from the server. Expected connect message.'
-
-        connectServerJson = self.readLine()
-        connectServer = json.loads(connectServerJson, object_hook = handshaking.fromJSON)
-        if not connectServer.validate():
-            raise DisconnectError()
-
-        # send the handshaking message
-        connectClient = handshaking.ConnectClient(self.commander.name, "python")
-        connectClientJson =  json.dumps(connectClient, default = handshaking.toJSON)
-        message = "<connect>\n{}\n".format(connectClientJson)
-        self.conn.send(message)
-
-    def sendReady(self):
-        message = "<ready>\n"
-        self.conn.send(message)
-
-    def sendCommands(self):
-        for command in self.commander.commandQueue:
-            commandJson =  json.dumps(command, default = commands.toJSON)
-            message = "<command>\n{}\n".format(commandJson)
-            # print message
-            self.conn.send(message)
-        self.commander.clearCommandQueue()
-
-    def initializeCommanderGameData(self, levelInfoJson, gameInfoJson):
-        levelInfo = json.loads(levelInfoJson, object_hook=gameinfo.fromJSON)
-        gameInfo = json.loads(gameInfoJson, object_hook=gameinfo.fromJSON)
-        gameinfo.fixupGameInfoReferences(gameInfo)
-        self.commander.level = levelInfo
-        self.commander.game = gameInfo
-
-    def updateCommanderGameData(self, gameInfoJson):
-        gameInfo = json.loads(gameInfoJson, object_hook=gameinfo.fromJSON)
-        gameinfo.mergeGameInfo(self.commander.game, gameInfo)
-
-    def run(self):
-        self.performHandshaking()
-
-        initialized = False
-        tickRequired = False
-
-        while True:
-            while True:
-                message = self.readLineNonBlocking()
-                if message == '':
-                    break
-                elif message == '<initialize>':
-                    assert not initialized, 'Unexpected initialize message {}'.format(message)
-                    levelInfoJson = self.readLine()
-                    gameInfoJson = self.readLine()
-                    self.initializeCommanderGameData(levelInfoJson, gameInfoJson)
-                    self.commander.initialize()
-                    self.sendReady()
-                    initialized = True
-
-                elif message == '<tick>':
-                    assert initialized, 'Unexpected message {} while waiting for initialize'.format(message)
-                    gameInfoJson = self.readLine()
-                    self.updateCommanderGameData(gameInfoJson)
-                    tickRequired = True
-
-                elif message == '<shutdown>':
-                    assert initialized, 'Unexpected message {} while waiting for initialize'.format(message)
-                    self.commander.shutdown()
-                    return
-
-                else:
-                    assert False, 'Unknown message received: {}'.format(message)
-
-            if tickRequired:
-                self.commander.tick()
-                self.sendCommands()
-                tickRequired = False
-            else:
-                time.sleep(0.0001)
- 
-            # gc.collect()
- 
-
-    def readLineNonBlocking(self):
+logger = logging.getLogger(__name__)
+def flushLog(logger):
+    for h in logger.handlers:
         try:
-            while True:
-                data = self.conn.recv(4096)
-                self.inputBuffer += data
-        except socket.error, msg:
+            h.flush()
+        except:
             pass
-        line, sep, self.inputBuffer = self.inputBuffer.partition('\n')
-        if sep == '':
-            # if there is no newline character, leave all of the contents in the buffer
-            # and return an empty string
-            self.inputBuffer = line
-            line = ''
-        return line
 
-    def readLine(self):
-        while True:
-            line = self.readLineNonBlocking()
-            if line != '':
-                return line
-
-
-def getCommander(name):
+def getCommander(name, path):
     """Given a Commander name, import the module and return the class
     object so it can be instantiated for the competition."""
-    filename, _, classname = name.rpartition('.')
-    try:
-        module = importlib.import_module(filename)
-    except ImportError as e:
-        print >> sys.stderr,  "ERROR: While importing '%s', %s." % (name, e)
-        return
 
-    for c in dir(module):
-        # Check if this Commander was explicitly exported in the module.
-        if hasattr(module, '__all__') and not c in module.__all__: continue
-        # Discard private classes or the base class.
-        if c.startswith('__') or c == 'Commander': continue
-        # Match the class by the specified sub-name.
-        if classname is not None and classname not in c: continue
+    files = []
+    classname = None
+    if name:
+        filename, _, classname = name.rpartition('.')
+        files.append(filename)
+    else:
+        files = glob.glob(os.path.join(path, '*.py'))
 
-        # Now check it's the correct derived class...
-        cls = getattr(module, c)
+    logger.debug(files)
+    flushLog(logger)
+
+    modules = []
+    for file in files:
         try:
-            if isclass(cls) and issubclass(cls, api.Commander):
-                return cls
-        except TypeError:
+            modulename, _ = os.path.splitext(os.path.basename(file))
+            modules.append(importlib.import_module(modulename))
+        except (ImportError, SyntaxError) as e:
+            logger.error("ERROR: While importing '%s', %s." % (file, e))
+            flushLog(logger)
             pass
 
-    if not found:
-        print 'Unable to find commander {}'.format(request)
-        assert False
+    candidates = []
+    for module in modules:
+        for c in dir(module):
+            # Check if this Commander was explicitly exported in the module.
+            if hasattr(module, '__all__') and not c in module.__all__: continue
+            # Discard private classes or the base class.
+            if c.startswith('__') or c == 'Commander': continue
+            # Match the class by the specified sub-name.
+            if classname is not None and classname not in c: continue
+
+            # Now check it's the correct derived class...
+            cls = getattr(module, c)
+            try:
+                if isclass(cls) and issubclass(cls, api.Commander):
+                    candidates.append(cls)
+            except TypeError:
+                pass
+
+    if len(candidates) == 0:
+        if name:
+            logger.error('Error: Unable to find commander {} on path {}'.format(name, path))
+            flushLog(logger)
+        else:
+            logger.error('Error: Unable to find any commanders on path {}'.format(path))
+            flushLog(logger)
+        return None
+    elif len(candidates) > 1:
+        logger.error('Error: Found more than one commander: {}'.format([c.__name__ for c in candidates]))
+        flushLog(logger)
+        return None
+    else:
+        cls = candidates[0]
+        logger.debug('Found candidate {}'.format(cls.__name__))
+        flushLog(logger)
+        return cls
+
+
 
 
 def main(args):
@@ -179,30 +100,40 @@ def main(args):
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('commander')
+    parser.add_argument('--path', required=False, default='.') # optional path to look in for commanders
+    parser.add_argument('--name', required=False, default='network_client') # optional path for name of client
+    parser.add_argument('--serverHost', required=False, default='localhost')
+    parser.add_argument('--serverPort', type=int, required=False, default=41041)
+    parser.add_argument('commander', default=None, nargs='?') # optional commander name
     args, _ = parser.parse_known_args()
 
-    commanderCls = getCommander(args.commander)
+    if args.path:
+        sys.path.insert(0, args.path)
+
+    logger.addHandler(logging.StreamHandler(sys.stderr))
+    logger.addHandler(logging.FileHandler(os.path.join('output', args.name + '.log'), mode='w+'))
+    logger.setLevel(logging.DEBUG)
+    logger.debug(sys.argv)
+    flushLog(logger)
+
+    commanderCls = getCommander(args.commander, args.path)
     if not commanderCls:
-        print >> sys.stderr, "Unable to find commander {}".format(args.commander)
-        return
+        sys.exit(1)
 
-    HOST, PORT = 'localhost', 41041
-    print 'Connecting to {}:{}'.format(HOST, PORT)
-    for i in range(100):
-        try:
-            s = socket.create_connection((HOST, PORT))
-            print 'Connected!'
+    logger.debug('Connecting to {}:{}'.format(args.serverHost, args.serverPort))
+    flushLog(logger)
 
-            wrapper = NetworkClient(s, commanderCls)
-            wrapper.run()
-            break;
+    wrapper = networkclient.NetworkClient((args.serverHost, args.serverPort), commanderCls)
+    wrapper.run()
 
-        except socket.error, msg:
-            pass    
-    
-    else:
-        print >> sys.stderr, "Unable to connect to game server at {}:{}".format(HOST, PORT)        
+    try:
+        wrapper.run() 
+    except DisconnectError:
+        pass
+
+    logger.debug('Finished')
+    flushLog(logger)
+
 
 
 from traceback import extract_tb
@@ -224,8 +155,9 @@ if __name__ == '__main__':
     try:
         main(sys.argv[1:])
     except Exception as e:
-        print str(e)
+        logger.critical(str(e))
         tb_list = format(sys.exc_info()[2])
         for s in tb_list:
-            print s
+            logger.critical(s)
+        flushLog(logger)
         raise

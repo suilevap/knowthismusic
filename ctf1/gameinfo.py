@@ -73,6 +73,12 @@ class LevelInfo(object):
         The time (seconds) allowed for bot initialization before the start of the game.
         """
 
+        self.respawnTime = 0.0
+        """
+        The time (seconds) between bot respawns.
+        """
+
+
     def clamp(self, x, minValue, maxValue):
         return max(minValue, min(x, maxValue))
 
@@ -144,7 +150,7 @@ class LevelInfo(object):
 
         worldBounds = world.getBounds().getMaximum()
         levelInfo.width, levelInfo.height = int(worldBounds.x), int(worldBounds.z)
-        levelInfo.blockHeights = [ [worldBuilder.getAltitude(x,y) for y in range(0, levelInfo.height)] for x in range(0, levelInfo.width)]     
+        levelInfo.blockHeights = [ [worldBuilder.getAltitude(x,y) for y in xrange(levelInfo.height)] for x in xrange(levelInfo.width)]     
 
         levelInfo.teamNames = levelConfig.teamConfigs.keys()
         levelInfo.flagSpawnLocations = {}
@@ -433,7 +439,7 @@ def toJSON(python_object):
                                'flagSpawnLocations': level.flagSpawnLocations, 'flagScoreLocations': level.flagScoreLocations, 'botSpawnAreas': level.botSpawnAreas,
                                'characterRadius': level.characterRadius, 'FOVangle': level.FOVangle, 'firingDistance': level.firingDistance,
                                'walkingSpeed': level.walkingSpeed, 'runningSpeed': level.runningSpeed,
-                               'gameLength': level.gameLength, 'initializationTime': level.initializationTime }}
+                               'gameLength': level.gameLength, 'initializationTime': level.initializationTime , 'respawnTime': level.respawnTime }}
 
     if isinstance(python_object, GameInfo):
         game = python_object
@@ -510,6 +516,7 @@ def fromJSON(dct):
             level.runningSpeed = value['runningSpeed']
             level.gameLength = value['gameLength']
             level.initializationTime = value['initializationTime']
+            level.respawnTime = value['respawnTime']
             return level
 
         if dct['__class__'] == 'GameInfo':
@@ -677,7 +684,7 @@ def mergeMatchInfo(gameInfo, newMatchInfo):
     matchInfo.timeToNextRespawn = newMatchInfo.timeToNextRespawn
     matchInfo.timePassed        = newMatchInfo.timePassed
     fixupReferences(newMatchInfo, gameInfo)
-    matchInfo.combatEvents.append(newMatchInfo.combatEvents)
+    matchInfo.combatEvents.extend(newMatchInfo.combatEvents)
 
 def mergeGameInfo(gameInfo, newGameInfo):
     for newFlag in newGameInfo.flags.values():

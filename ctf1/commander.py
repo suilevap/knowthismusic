@@ -60,15 +60,16 @@ class Commander(object):
         self.commandQueue.append(CommandClass(bot.name, *args, **dct)) 
 
 
-    def __init__(self):
+    def __init__(self, nick, **kwargs):
         super(Commander, self).__init__()
 
+        self.nick = nick
         self.name = self.__class__.__name__
         """
         The name of this commander.
         """
 
-        self.log = logging.getLogger(self.name)         # TODO: This needs to correctly handle the proxy commander
+        self.log = logging.getLogger(self.name)
         """
         The logging object that should be used for debug printing.
         """
@@ -107,7 +108,6 @@ class Commander(object):
         """
 
         self.commandQueue = [] # the queue were issues commands are stored to be run later by the game
-
 
     # internal
     def setGameInfo(self, info):

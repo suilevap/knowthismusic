@@ -21,7 +21,7 @@ SBX_BINARY_DIR = None
 # number.  More recent versions of The AI Sandbox may work, but ideally you
 # should use the update scripts or grab the newest versions from the
 # http://aisandbox.com/ download page.
-SBX_REQUIRED_VERSION = "0.20.4"
+SBX_REQUIRED_VERSION = "0.20.5"
 
 
 
