@@ -43,7 +43,7 @@ class MapAnalyzeVisibility(object):
         self.dangerMap =[ [(0) for y in range(self.h)] for x in range(self.w)]
 
 
-    def getAllVisiblePoints(self, pos ,r ):
+    def getAllVisiblePoints(self, pos ,r, targetSector = -1, sectorsCount=0 ):
         result = []
         x0 = int(pos.x)
         y0 = int(pos.y)
@@ -54,11 +54,12 @@ class MapAnalyzeVisibility(object):
             for y in range(minY, maxY): 
                 delta = Vector2(x,y)-pos
                 sector = self.getSectorIndex(delta)
-                r0Min = self.visibleSectors[sector][x0][y0][0]
-                r1Min = self.visibleSectors[(sector+4)%8][x][y][0]
-                d = max(abs(x0-x),abs(y0-y))
-                if (r0Min>= d or r1Min>=d ):#or (r1Max<d and r2Max<d)):
-                    result.append((x,y))
+                if targetSector==-1 or abs(sector-targetSector)<=sectorsCount:
+                    r0Min = self.visibleSectors[sector][x0][y0][0]
+                    r1Min = self.visibleSectors[(sector+4)%8][x][y][0]
+                    d = max(abs(x0-x),abs(y0-y))
+                    if (r0Min>= d or r1Min>=d ):#or (r1Max<d and r2Max<d)):
+                        result.append((x,y))
         return result
 
     
@@ -215,16 +216,19 @@ class MapAnalyzeVisibility(object):
                 x,y=int(p.x), int(p.y)
                 part = i*1.0/len(path)
                 rank = 1.0-abs(1.0-part)
+                prevPoint = path[i-1]
                 i+=1
 
                 if ignorePoints!=None and (x,y) in ignorePoints:
                     continue
                 
-                points = self.getAllVisiblePoints(p, r)
+                points = self.getAllVisiblePoints(p, r, self.getSectorIndex(p-prevPoint), 1)
                 for visiblePoint in points:
                     x,y = visiblePoint
                     if (self.distanceField[x][y] > 0):
                         ranks[x][y] += rank/self.distanceField[x][y]
+
+
             #rank += 1.0/len(path)
 
         #for x in range(0,self.w):
@@ -264,7 +268,16 @@ class MapAnalyzeVisibility(object):
             breakingMap = self.getBreakingMap([path], rPrefered)
             x,y = self.getTheBestPos(breakingMap)
             bestPoint = Vector2(x+0.5,y+0.5)
-            visiblePoints = self.getAllVisiblePoints(bestPoint, rControl)
+
+            
+            for p in path:
+                if self.checkVisibility(bestPoint, p):
+                    bestPair = (bestPoint,[p])
+                    break
+            result.append(bestPair)
+            sector = self.getSectorIndex(bestPair[1][0]-bestPair[0])
+
+            visiblePoints = self.getAllVisiblePoints(bestPoint, rControl, sector, 1)
             for p in path:
                 x,y=int(p.x), int(p.y)               
                 if  tmpMap[x][y] > 0:
@@ -277,10 +290,7 @@ class MapAnalyzeVisibility(object):
                     if tmpMap[x][y]>255:
                         tmpMap[x][y] = 255
 
-            for p in path:
-                if (int(p.x), int(p.y)) in (visiblePoints):
-                    result.append((bestPoint,[p]))
-                    break
+
         #savePath("allBreakingPoints", [p[0] for p in result], self.createMapForPathFinding())
         #savePath("allBreakingPointsControl", [p[1] for p in result], self.createMapForPathFinding())
         #tmpPoint = []
@@ -307,6 +317,20 @@ class MapAnalyzeVisibility(object):
         savePath("allBreakingPoints", result, self.createMapForPathFinding())
 
         return result
+
+    def checkVisibility(self, pos1, pos2):
+        result = False
+        x1,y1 = int(pos1.x),int(pos1.y)
+        x2,y2 = int(pos2.x),int(pos2.y)
+        sector = self.getSectorIndex(pos2-pos1)
+        sector2 = (sector+4)%8
+        r0Min = self.visibleSectors[sector][x1][y1][0]
+        r1Min = self.visibleSectors[sector2][x2][y2][0]
+        d = max(abs(x2-x1),abs(y2-y1))
+        if (r0Min>= d or r1Min>=d ):
+            result = True
+        return result
+
 
     def getBestDirection(self, pos):
         x = int(pos.x)

@@ -70,7 +70,7 @@ class PandSBot(Commander):
         #self.levelAnalysis.getBreakingMap(path, self.level.firingDistance)
         ##result = an.buildLOS()
 
-        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(spawn, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2)
+        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(spawn, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
 
         # Calculate flag positions and store the middle.
         ours = self.game.team.flag.position
@@ -214,16 +214,22 @@ def Command_MoveToMyFlag(commander, bot):
     #pos = commander.level.findRandomFreePositionInBox([pos-Vector2(r,r), pos+Vector2(r,r)]) 
     #pos = commander.freePos( commander.levelAnalysis.getBestPositionSector(pos, r/2, sector))
     
-    #bot.defendBreakingPointIndex = -1
-    #freebreakingPointsIndex = set(range(len(commander.breakingPoints)))-set([bot.defendBreakingPointIndex for bot in commander.game.team.members])
-    #
-    #if len(freebreakingPointsIndex)>0: 
-    #    bot.defendBreakingPointIndex = min(freebreakingPointsIndex, key=lambda index: (commander.breakingPoints[index][0]-bot.position).length())
-    #    bot.defendBreakingPoint = commander.breakingPoints[bot.defendBreakingPointIndex]
-    #else:
-    #    bot.defendBreakingPoint = choice(commander.breakingPoints)
+    bot.defendBreakingPointIndex = -1
 
-    bot.defendBreakingPoint = choice(commander.breakingPoints)
+    
+    freebreakingPointsIndex = set(range(len(commander.breakingPoints)))
+
+    freebreakingPointsIndex -= set([b.defendBreakingPointIndex for b in commander.game.team.members if b.defendBreakingPointIndex>=0])
+    print freebreakingPointsIndex
+    if len(freebreakingPointsIndex)>0: 
+        bot.defendBreakingPointIndex = min(freebreakingPointsIndex, key=lambda index: (commander.breakingPoints[index][0]-bot.position).length())
+        bot.defendBreakingPoint = commander.breakingPoints[bot.defendBreakingPointIndex]
+        print [b.defendBreakingPointIndex for b in commander.game.team.members]
+    else:
+        print 'something wrong=('
+        bot.defendBreakingPoint = choice(commander.breakingPoints)
+
+    #bot.defendBreakingPoint = choice(commander.breakingPoints)
 
     pos, threatPoint = bot.defendBreakingPoint
     #allPoint = [breakingP for p in commander.breakingPoints if ]
