@@ -54,7 +54,7 @@ class MapAnalyzeVisibility(object):
             for y in range(minY, maxY): 
                 delta = Vector2(x,y)-pos
                 sector = self.getSectorIndex(delta)
-                if targetSector==-1 or abs(sector-targetSector)<=sectorsCount:
+                if targetSector==-1 or self.getSectorDiff(targetSector,sector)<=sectorsCount:
                     r0Min = self.visibleSectors[sector][x0][y0][0]
                     r1Min = self.visibleSectors[(sector+4)%8][x][y][0]
                     d = max(abs(x0-x),abs(y0-y))
@@ -337,10 +337,17 @@ class MapAnalyzeVisibility(object):
         y = int(pos.y)
         return self.directions[self.bestDirectionsMap[x][y]]
 
-    def getAllDirections(self, pos, dmin):
+    def getSectorDiff(self, sector1, sector2):
+        diff = abs(sector2 - sector1)
+        if diff>4:
+            diff -= 4
+        return diff
+
+    def getAllDirections(self, pos, dmin, targetSector = -1, targetSectorCount = 1):
         x = int(pos.x)
         y = int(pos.y)
-        return [self.directions[i] for i in range(0,8) if self.visibleSectors[i][x][y][0]>=dmin]
+        return [self.directions[i] for i in range(0,8)
+                if (targetSector == -1 or self.getSectorDiff(targetSector,i)<=targetSectorCount) and self.visibleSectors[i][x][y][0]>=dmin]
 
     def getBestPosition(self, pos, r):
         minX, minY = self.clamp(int(pos.x-r), 0, self.w), self.clamp(int(pos.y-r), 0, self.h)
