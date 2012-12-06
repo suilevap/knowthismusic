@@ -1,4 +1,4 @@
-from math import sqrt
+from math import sqrt, cos, sin
 import PIL
 import numpy
 from PIL import Image, ImageDraw
@@ -39,6 +39,8 @@ class MapAnalyzeVisibility(object):
 
         self.directions =[Vector2(1,0), Vector2(1,-1).normalized(), Vector2(0,-1), Vector2(-1,-1).normalized(), 
                           Vector2(-1,0), Vector2(-1,1).normalized(), Vector2(0,1), Vector2(1,1).normalized()]
+        angle = math.pi/8
+        self.directions=[rotateVector2(x,angle) for x in self.directions]
 
         self.dangerMap =[ [(0) for y in range(self.h)] for x in range(self.w)]
 
@@ -234,7 +236,7 @@ class MapAnalyzeVisibility(object):
 
     def createMapForPathFinding(self):
         return [ [(-1 if self.map[x][y]>0 else 1)  for y in range(self.h)] for x in range(self.w)]
-
+   
     def getBestBreakingPoints(self, start, end, rPrefered, rControl, n):
         pathMaxLength = 50
         tmpMap = self.createMapForPathFinding()
@@ -272,31 +274,6 @@ class MapAnalyzeVisibility(object):
                     tmpMap[x][y] += 128
                     if tmpMap[x][y]>255:
                         tmpMap[x][y] = 255
-
-
-        #savePath("allBreakingPoints", [p[0] for p in result], self.createMapForPathFinding())
-        #savePath("allBreakingPointsControl", [p[1] for p in result], self.createMapForPathFinding())
-        #tmpPoint = []
-        #for path in allpaths:
-        #    tmpPoint += path
-        #savePath("allPath", tmpPoint, self.createMapForPathFinding())
-        #
-        #ignorePoints = []
-        #for i in range(n):
-
-        #    breakingMap = self.getBreakingMap(allpaths, rPrefered, ignorePoints)
-        #    x,y = self.getTheBestPos(breakingMap)
-        #    bestPoint = Vector2(x+0.5,y+0.5)
-        #    visiblePoints = self.getAllVisiblePoints(bestPoint, rControl)
-        #    threatPoints = []
-        #    for path in allpaths:
-        #        for p in path:
-        #            if (int(p.x), int(p.y)) in (visiblePoints):
-        #                threatPoints.append( p)
-        #                break
-        #    result.append((bestPoint,threatPoints))
-        #    ignorePoints += visiblePoints
-        #
         savePath("allBreakingPoints", result, self.createMapForPathFinding())
 
         return result
@@ -429,6 +406,12 @@ class MapAnalyzeVisibility(object):
     def clamp(self, x, minValue, maxValue):
         return max(minValue, min(x, maxValue))
 
+
+def rotateVector2(v, angle):
+    c = cos(-angle)
+    s = sin(-angle)
+    result = Vector2(v.x*c-v.y*s,v.x*s+v.y*c)
+    return result
 
 def transpose(m):
     w = len(m)
