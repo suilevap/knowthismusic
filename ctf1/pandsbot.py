@@ -121,8 +121,8 @@ class PandSBot(Commander):
         self.visibleEnemies = [bot for bot in self.game.enemyTeam.members if len(bot.seenBy)>0 and bot.health>0]
         self.dangerEnemies = [bot for bot in self.game.enemyTeam.members 
                                if bot.health>0 and 
-                               (bot.seenlast<self.eventInvalidationTime or 
-                                (bot.state == BotInfo.STATE_DEFENDING and bot.seenlast<self.eventInvalidationTime*2))]
+                               ((self.game.match.timePassed-bot.seenlast)<self.eventInvalidationTime or 
+                                (bot.state == BotInfo.STATE_DEFENDING and (self.game.match.timePassed-bot.seenlast)<self.eventInvalidationTime*2))]
         #print self.dangerEnemies
         self.lastTickTime=self.game.match.timePassed
 
@@ -158,7 +158,7 @@ class PandSBot(Commander):
             return None
 
     def lastTickEventsAnalyze(self):
-        self.dangerEvents = [e for e in self.dangerEvents if e.time<self.eventInvalidationTime]
+        self.dangerEvents = [e for e in self.dangerEvents if (self.game.match.timePassed-e.time)<self.eventInvalidationTime]
  
         for event in self.lastTickEvents:
 
