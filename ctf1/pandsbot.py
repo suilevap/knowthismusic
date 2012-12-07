@@ -51,7 +51,7 @@ class PandSBot(Commander):
             bot.Enemy = None
 
 
-        self.defenderPart = 0
+        self.defenderPart = 0.5
         self.countBot = len(self.game.team.members)
         self.lastTickTime=0.0
         self.lastTickEvents=0
@@ -65,17 +65,17 @@ class PandSBot(Commander):
         self.levelAnalysis = MapAnalyzeVisibility(map)
         self.levelAnalysis.buildDirecionMap(self.game.enemyTeam.flag.position)
         self.levelAnalysis.debug()
-        spawn = (self.game.enemyTeam.botSpawnArea[0]+self.game.enemyTeam.botSpawnArea[1])/2
-        ourSpawn = (self.game.team.botSpawnArea[0]+self.game.team.botSpawnArea[1])/2
+        self.spawn = (self.game.enemyTeam.botSpawnArea[0]+self.game.enemyTeam.botSpawnArea[1])/2
+        self.ourSpawn = (self.game.team.botSpawnArea[0]+self.game.team.botSpawnArea[1])/2
 
         #path = self.levelAnalysis.getPath(spawn, self.game.team.flag.position, self.levelAnalysis.map)
         #self.levelAnalysis.getBreakingPoints(path)
         #self.levelAnalysis.getBreakingMap(path, self.level.firingDistance)
         ##result = an.buildLOS()
 
-        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(spawn, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
+        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(self.spawn, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
 
-        self.attackingPaths = self.levelAnalysis.getBestBreakingPoints(ourSpawn, self.game.enemyTeam.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
+        self.attackingPaths = self.levelAnalysis.getBestBreakingPoints(self.ourSpawn, self.game.enemyTeam.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
 
 
         # Calculate flag positions and store the middle.
@@ -93,6 +93,7 @@ class PandSBot(Commander):
         self.dangerEnemies =[]
         self.dangerEvents = []
         self.dangerMapUpdated = False
+        self.timeMap = self.generateTimeMap()
         print self.level.initializationTime
         print "New commander"
 
@@ -243,6 +244,14 @@ class PandSBot(Commander):
         path = self.levelAnalysis.getPathThroughDanger(start, end)
         return path
 
+    def generateTimeMap(self):
+        distMap = getDistanceMap(self.spawn, self.game.team.flag.position, self.levelAnalysis.pathMap)
+        saveImage('distMapOr', distMap)
+        
+        timeMap = computeMap(distMap, lambda v,x,y: v/self.level.runningSpeed)
+        saveImage('distMap', timeMap)
+        return timeMap
+
 
 def Command_MoveToBreakingPoint(commander, bot, breakingPoint):
     pos, threatPoints = breakingPoint[:2] #bot.defendBreakingPoint
@@ -353,7 +362,7 @@ def Command_RunToEnemyFlagFlank(commander, bot):
 def Command_RunToEnemyFlag(commander, bot):
     pos = commander.game.enemyTeam.flag.position
     pos, threat, tmpPath, map, index = choice(commander.attackingPaths)
-    path = commander.levelAnalysis.getPath(bot.position, commander.freePos(pos), map)
+    path = getPath(bot.position, commander.freePos(pos), map)
     if index > len(commander.attackingPaths)/2:
         command = commands.Charge
     else:
@@ -609,7 +618,7 @@ DefenderBTTree = BTTree(
         #or
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.visibleEnemies)>0),
-            BTBotTask(lambda commander,bot: Command_SetEnemy(commander,bot, commander.getNearest(bot,commander.visibleEnemies))),
+            BTCondition(lambda commander,bot: Condition_SetEnemy(commander,bot, commander.getNearest(bot,commander.visibleEnemies))),
             BTCondition(lambda commander,bot: bot.Enemy!= None and 
                         (bot.Enemy.position-bot.position).length()<commander.level.firingDistance 
                         and commander.botCanSeePos(bot, bot.Enemy.position)),

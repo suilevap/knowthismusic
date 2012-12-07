@@ -43,6 +43,7 @@ class MapAnalyzeVisibility(object):
         self.directions=[rotateVector2(x,angle) for x in self.directions]
 
         self.dangerMap =[ [(0) for y in range(self.h)] for x in range(self.w)]
+        self.pathMap = self.createMapForPathFinding()
 
 
     def getAllVisiblePoints(self, pos ,r, targetSector = -1, sectorsCount=0, useMax = False ):
@@ -92,7 +93,7 @@ class MapAnalyzeVisibility(object):
 
 
     def getPathThroughDanger(self, start, end):
-        return self.getPath(start, end, self.dangerMap)
+        return getPath(start, end, self.dangerMap)
 
     def buildDirecionMap(self, dangerPos):
         self.bestDirectionsMap =[ [(0,0) for y in range(self.h)] for x in range(self.w)]
@@ -127,60 +128,7 @@ class MapAnalyzeVisibility(object):
             return 6
         elif x>=0 and y>=0 and x>=y:
             return 7
-    
-    def getPath(self, start, end, mapData):
-        sq2 = math.sqrt(2)
-        distance =[ [(0) for y in range(self.h)] for x in range(self.w)]
-        parent =[ [None for y in range(self.h)] for x in range(self.w)]
-        queue = PriorityQueue()
-        xstart = int(start.x)
-        ystart = int(start.y)
-        xend = int(end.x)
-        yend = int(end.y)
-
-        def heuristic(x0,y0, x1,y1):
-            return math.sqrt((x0-x1)*(x0-x1)+(y0-y1)*(y0-y1))
-
-        def checkPos(d, x, y, dx ,dy, delta):
-            x1 =x+dx
-            y1 = y+dy
-            result = False
-            if (x1<0  or x1>=self.w or y1<0 or y1>=self.h):
-                return False
-            fullDistance = d+delta*(mapData[x][y])
-            if (mapData[x1][y1]!=-1) and (parent[x1][y1]==None or distance[x1][y1]>fullDistance):
-                parent[x1][y1] = (x,y)
-                distance[x1][y1] = fullDistance
-                queue._put((fullDistance+heuristic(x,y,x1,y1), (x1,y1)))
-
-                if ((x1==xend) and (y1==yend)):
-                    result = True
-            return result
-
-        pathFounded = False
-        if checkPos(0, xstart,ystart, 0,0, 0):
-            return [Vector2(x,y)]
-        while queue._qsize()>0:
-            prior,pos = queue._get()
-            x,y=pos
-            d = distance[x][y]
-            if (checkPos(d, x,y, 1,0, 1) or checkPos(d, x,y, -1,0, 1) or checkPos(d, x,y, 0,1, 1) or checkPos(d, x,y, 0,-1, 1) or
-                checkPos(d, x,y, 1,1, sq2) or checkPos(d, x,y, -1,1, sq2) or checkPos(d, x,y, 1,-1, sq2) or checkPos(d, x,y, -1,-1, sq2)):
-                pathFounded = True
-                break
-        result = []
-        if pathFounded:
-            x = xend
-            y = yend
-            
-            while (parent[x][y]!=(x,y)):
-                result.append(Vector2(x+0.5,y+0.5))
-                x,y = parent[x][y]
-            result.reverse()
-
-        savePathWithText('path',[(p, int(self.averageMin[int(p.x)][int(p.y)]))for p in result], self.map)
-        return result
-
+       
     def getBreakingPoints(self, path):
         result = []
         deltaIndex = 1
@@ -247,7 +195,7 @@ class MapAnalyzeVisibility(object):
         result = []
         allpaths = []
         for i in range(n):
-            path = self.getPath(start, end, tmpMap)
+            path = getPath(start, end, tmpMap)
             savePath("path_iteration"+str(i), path, tmpMap)
             if len(path)<1:
                 break
@@ -411,6 +359,76 @@ class MapAnalyzeVisibility(object):
     def clamp(self, x, minValue, maxValue):
         return max(minValue, min(x, maxValue))
 
+def getPath(start, end, mapData):
+    path,distmap = getPathWithDistanceMap(start, end, mapData)
+    return path
+
+def getDistanceMap(start, end, mapData):
+    path,distmap = getPathWithDistanceMap(start, end, mapData, False)
+    return distmap
+
+def getPathWithDistanceMap(start, end, mapData, finishWhenFoundPath = True):
+    sq2 = math.sqrt(2)
+    w = len(mapData)
+    h = len(mapData[0])
+    distance =[ [(0) for y in range(h)] for x in range(w)]
+    parent =[ [None for y in range(h)] for x in range(w)]
+    queue = PriorityQueue()
+    xstart = int(start.x)
+    ystart = int(start.y)
+    xend = int(end.x)
+    yend = int(end.y)
+
+    def heuristic(x0,y0, x1,y1):
+        return math.sqrt((x0-x1)*(x0-x1)+(y0-y1)*(y0-y1))
+
+    def checkPos(d, x, y, dx ,dy, delta):
+        x1 =x+dx
+        y1 = y+dy
+        result = False
+        if (x1<0  or x1>=w or y1<0 or y1>=h):
+            return False
+        fullDistance = d+delta*(mapData[x][y])
+        if (mapData[x1][y1]!=-1) and (parent[x1][y1]==None or distance[x1][y1]>fullDistance):
+            parent[x1][y1] = (x,y)
+            distance[x1][y1] = fullDistance
+            heursticD = fullDistance+heuristic(x,y,x1,y1)
+            queue._put((heursticD, (x1,y1)))
+
+            if ((x1==xend) and (y1==yend)):
+                result = True
+        return result
+
+    pathFounded = False
+    if checkPos(0, xstart,ystart, 0,0, 0):
+        return [Vector2(x,y)]
+    while queue._qsize()>0:
+        prior,pos = queue._get()
+        x,y=pos
+        d = distance[x][y]
+        if (checkPos(d, x,y, 1,0, 1) or checkPos(d, x,y, -1,0, 1) or checkPos(d, x,y, 0,1, 1) or checkPos(d, x,y, 0,-1, 1) or
+            checkPos(d, x,y, 1,1, sq2) or checkPos(d, x,y, -1,1, sq2) or checkPos(d, x,y, 1,-1, sq2) or checkPos(d, x,y, -1,-1, sq2)):
+            pathFounded = True
+            if (finishWhenFoundPath):
+                break
+    result = []
+    if pathFounded:
+        x = xend
+        y = yend
+            
+        while (parent[x][y]!=(x,y)):
+            result.append(Vector2(x+0.5,y+0.5))
+            x,y = parent[x][y]
+        result.reverse()
+
+    savePath('path',result, mapData)
+    return result, distance
+
+def computeMap(mapData, selector):
+    w = len(mapData)
+    h = len(mapData[0]) 
+    result = [[ selector(mapData[x][y], x,y) for y in range(h)] for x in range(w)]
+    return result
 
 def rotateVector2(v, angle):
     c = cos(-angle)
