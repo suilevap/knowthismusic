@@ -5,3 +5,4 @@ relre:.cachefile
 relre:ReSharper
 syntax: glob
 .vs10x
+*.pyc
