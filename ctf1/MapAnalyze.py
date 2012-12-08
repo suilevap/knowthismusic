@@ -35,6 +35,16 @@ class MapAnalyzeVisibility(object):
                                      self.visibleSectors[6][x][y][0],
                                      self.visibleSectors[7][x][y][0]])
                                      for y in range(self.h)] for x in range(self.w)]
+
+        self.maxField = [ [max([self.visibleSectors[0][x][y][0],
+                                     self.visibleSectors[1][x][y][0],
+                                     self.visibleSectors[2][x][y][0],
+                                     self.visibleSectors[3][x][y][0],
+                                     self.visibleSectors[4][x][y][0],
+                                     self.visibleSectors[5][x][y][0],
+                                     self.visibleSectors[6][x][y][0],
+                                     self.visibleSectors[7][x][y][0]])
+                                     for y in range(self.h)] for x in range(self.w)]
       
 
         self.directions =[Vector2(1,0), Vector2(1,-1).normalized(), Vector2(0,-1), Vector2(-1,-1).normalized(), 
@@ -62,7 +72,7 @@ class MapAnalyzeVisibility(object):
                     r1Min, r1Max = self.visibleSectors[(sector+4)%8][x][y]
 
                     d = max(abs(x0-x),abs(y0-y))
-                    if (r0Min>= d or r1Min>=d )or (useMax and (r0Min + r0Max)/2>=d and (r1Min + r1Max)/2>=d):
+                    if (r0Min>= d or r1Min>=d )or (useMax and r0Max>=d and r1Max>=d):
                         result.append((x,y))
         return result
 
@@ -89,7 +99,7 @@ class MapAnalyzeVisibility(object):
                     self.dangerMap[x][y]=1
         for bot in bots:
             self.updateDanger(bot.position, bot.facingDirection, r)
-        saveImage("DangerMap", self.dangerMap) 
+        #saveImage("DangerMap", self.dangerMap) 
 
 
     def getPathThroughDanger(self, start, end):
@@ -360,14 +370,15 @@ class MapAnalyzeVisibility(object):
         return max(minValue, min(x, maxValue))
 
 def getPath(start, end, mapData):
-    path,distmap = getPathWithDistanceMap(start, end, mapData)
+    path,distmap, parent = getPathWithPathDistanceMap(start, end, mapData, True)
     return path
 
-def getDistanceMap(start, end, mapData):
-    path,distmap = getPathWithDistanceMap(start, end, mapData, False)
+def getPathDistanceMap(start, end, mapData):
+    path,distmap, parent = getPathWithPathDistanceMap(start, end, mapData, False)
     return distmap
 
-def getPathWithDistanceMap(start, end, mapData, finishWhenFoundPath = True):
+
+def getPathWithPathDistanceMap(start, end, mapData, finishWhenFoundPath = True):
     sq2 = math.sqrt(2)
     w = len(mapData)
     h = len(mapData[0])
@@ -422,7 +433,7 @@ def getPathWithDistanceMap(start, end, mapData, finishWhenFoundPath = True):
         result.reverse()
 
     savePath('path',result, mapData)
-    return result, distance
+    return result, distance, parent
 
 def computeMap(mapData, selector):
     w = len(mapData)
