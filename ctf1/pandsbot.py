@@ -51,7 +51,7 @@ class PandSBot(Commander):
             bot.Enemy = None
 
 
-        self.defenderPart = 0.5
+        self.defenderPart = 0.0
         self.countBot = len(self.game.team.members)
         self.lastTickTime=0.0
         self.lastTickEvents=0
@@ -245,11 +245,26 @@ class PandSBot(Commander):
         return path
 
     def generateTimeMap(self):
-        distMap = getDistanceMap(self.spawn, self.game.team.flag.position, self.levelAnalysis.pathMap)
+        path, distMap, parentMap = getPathWithPathDistanceMap(self.spawn, self.game.team.flag.position, self.levelAnalysis.pathMap, False)
+        dirMap = computeMap(parentMap, 
+                            lambda v,x,y: 
+                                Vector2(v[0]-x, v[1]-y).normalized() 
+                                if v!=None and (x-v[0]!=0 or y-v[1]!=0) 
+                                else None)
+        saveImageVector('dirMap', dirMap)
+
+        fireStepMap = computeMap(distMap, lambda v,x,y: 
+                                 v - self.levelAnalysis.visibleSectors[self.levelAnalysis.getSectorIndex(dirMap[x][y])][x][y][1]
+                                 if dirMap[x][y] != None else v )
+
+
         saveImage('distMapOr', distMap)
         
         timeMap = computeMap(distMap, lambda v,x,y: v/self.level.runningSpeed)
         saveImage('distMap', timeMap)
+
+        timeMap5s = computeMap(timeMap, lambda v,x,y: 255 if v>5 else v)
+        saveImage('timeMap3s', timeMap5s)
         return timeMap
 
 
