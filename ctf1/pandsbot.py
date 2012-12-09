@@ -49,6 +49,8 @@ class PandSBot(Commander):
             bot.defendBreakingPoint=None
             bot.defendBreakingPointIndex=-1
             bot.Enemy = None
+            bot.enemyDefenders = []
+            bot.safePathFailedLastTime = False
 
 
         self.defenderPart = 0.0
@@ -165,6 +167,20 @@ class PandSBot(Commander):
     def getNearest(self,bot, list):
         if len(list)>0:
             return min(list, key=lambda item: (item.position-bot.position).length())
+        else:
+            return None
+
+    def getBestEnemy(self,bot, list):
+        def getEnemyInverstPriority(bot,enemy):
+            result = (bot.position-enemy.position).length()
+            if (bot in enemy.visibleEnemies):
+                result /= 2
+            if (bot in enemy.seenBy):
+                result /= 1.5
+            return result 
+
+        if len(list)>0:
+            return min(list, key=lambda item: getEnemyInverstPriority(bot, item))
         else:
             return None
 
@@ -405,8 +421,26 @@ def LookAtDangerEvent(commander, bot):
 
 def Command_AttackEnemyFromFlank(commander, bot):
     #print 'Attack from flank'
-    path = commander.getSafePath(bot.position, bot.Enemy.position)
-    commander.issue(commands.Attack, bot, path, bot.Enemy.position,description='Attack enemy from flank')
+    recalculatePath = True;
+    if (bot.safePathFailedLastTime):
+        recalculatePath = False;
+        for b in bot.enemyDefenders:
+            if b.state != BotInfo.STATE_DEFENDING:
+                recalculatePath = True;
+                break;
+    path =[]
+
+    if (recalculatePath):
+        path = commander.getSafePath(bot.position, bot.Enemy.position)
+  
+    if len(path)>1:
+        bot.safePathFailedLastTime = False
+        commander.issue(commands.Attack, bot, path, bot.Enemy.position,description='Attack enemy from flank')
+    else:
+        if not bot.safePathFailedLastTime:
+            bot.enemyDefenders = [b for b in commander.visibleEnemies if b.state == BotInfo.STATE_DEFENDING]
+        bot.safePathFailedLastTime = True
+        return False
 
 def Command_AttackEnemy(commander, bot):
     #print 'Attack direct'
@@ -530,6 +564,11 @@ ChaseFlagCarrier =BTSequence(
     )
 )
 
+AttackFromFlank = BTSelector('Attack from flank',
+    BTBotTask(Command_AttackEnemyFromFlank),
+    BTBotTask(lambda commander,bot:Command_DefendDirection(commander,bot,bot.Enemy.position-bot.position ))
+)
+
 SmartAttack = BTSequence('SmartAttack',
     BTCondition(lambda commander,bot: bot.Enemy!=None and bot.Enemy.health>0,
         BTSelector(
@@ -543,7 +582,8 @@ SmartAttack = BTSequence('SmartAttack',
                 BTSelector(
                     BTSequence('EnemyDefending',
                         BTCondition(lambda commander,bot: bot.Enemy.state == BotInfo.STATE_DEFENDING),
-                        BTBotTask(Command_AttackEnemyFromFlank )
+
+                        AttackFromFlank
                     ),
                     BTSequence('EnemyAttacking',
                         BTCondition(lambda commander,bot: bot.Enemy.state == BotInfo.STATE_ATTACKING),
@@ -565,7 +605,7 @@ SmartAttack = BTSequence('SmartAttack',
                             BTBotTask(Command_ChargeEnemyWithPrediction)
                         )
                     ),
-                    BTBotTask(Command_AttackEnemyFromFlank )
+                    AttackFromFlank
                 )
             ),
         
@@ -672,11 +712,12 @@ AttackerBTTree = BTTree(
         #BaseLogic,
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.visibleEnemies)>0),
-            BTCondition(lambda commander,bot: Condition_SetEnemy(commander,bot, commander.getNearest(bot,commander.visibleEnemies))),
+            BTCondition(lambda commander,bot: Condition_SetEnemy(commander,bot, commander.getBestEnemy(bot,commander.visibleEnemies)),
             #BTCondition(lambda commander,bot: bot.Enemy!= None and 
             #            (bot.Enemy.position-bot.position).length()<commander.level.firingDistance 
             #            and commander.botCanSeePos(bot, bot.Enemy.position)),
-            SmartAttack
+                SmartAttack
+            )
         ),
         ReactAtDanger,
         SupportFlagCarrier,

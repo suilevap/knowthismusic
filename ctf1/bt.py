@@ -27,7 +27,7 @@ class BTContext:
         #commander.log.info("Context run") 
         self.debugInfo = ''
         self.root.execute(self, [], len(self.prevPath)>0)
-        #print self.debugInfo
+        print self.debugInfo
 
         
 
@@ -155,8 +155,8 @@ class BTAction(BTNode):
             context.lastRunningNode = self
             return BTNode.STATUS_RUNNING
         else:
-            context.prevPath = []
-            return BTNode.STATUS_OK
+            #context.prevPath = []
+            return BTNode.STATUS_FAIL
 
 class BTCondition(BTNode):
     """
