@@ -3,6 +3,8 @@ import PIL
 import numpy
 from PIL import Image, ImageDraw
 from api.vector2 import Vector2
+from api.gameinfo import *
+
 from Queue import PriorityQueue 
 import math
 
@@ -72,13 +74,13 @@ class MapAnalyzeVisibility(object):
                     r1Min, r1Max = self.visibleSectors[(sector+4)%8][x][y]
 
                     d = max(abs(x0-x),abs(y0-y))
-                    if (r0Min>= d or r1Min>=d )or (useMax and r0Max>=d and r1Max>=d):
+                    if (r0Min>= d or r1Min>=d )or (useMax and r0Max>=d and r1Max>=d and Vector2(x0-x,y0-y).squaredLength()<=r*r):
                         result.append((x,y))
         return result
 
     
      
-    def updateDanger(self, pos, dir, r):
+    def updateDanger(self, pos, dir, r, cost = 196):
         sector = self.getSectorIndex(dir)
         x0 = int(pos.x)
         y0 = int(pos.y)
@@ -86,7 +88,12 @@ class MapAnalyzeVisibility(object):
         points = self.getAllVisiblePoints(pos, r, sector, 1, True)
         for visiblePoint in points:
             x,y = visiblePoint
-            self.dangerMap[x][y] += 196
+            if self.dangerMap[x][y]!=-1:
+                if cost != -1:
+                    self.dangerMap[x][y] += cost
+                else:
+                    self.dangerMap[x][y] = cost
+
 
         
 
@@ -98,8 +105,12 @@ class MapAnalyzeVisibility(object):
                 else:
                     self.dangerMap[x][y]=1
         for bot in bots:
-            self.updateDanger(bot.position, bot.facingDirection, r)
-        #saveImage("DangerMap", self.dangerMap) 
+            if bot.state == BotInfo.STATE_DEFENDING:
+                self.updateDanger(bot.position, bot.facingDirection, r, -1)
+            else:
+                self.updateDanger(bot.position, bot.facingDirection, r, 196)
+
+        saveImage("DangerMap", self.dangerMap) 
 
 
     def getPathThroughDanger(self, start, end):

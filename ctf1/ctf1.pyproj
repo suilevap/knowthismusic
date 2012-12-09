@@ -36,6 +36,7 @@
     <Compile Include="commander.py" />
     <Compile Include="commands.py" />
     <Compile Include="competition.py" />
+    <Compile Include="defender.py" />
     <Compile Include="examples.py" />
     <Compile Include="gameinfo.py" />
     <Compile Include="handshaking.py" />
