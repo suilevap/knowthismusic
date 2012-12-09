@@ -27,7 +27,7 @@ class BTContext:
         #commander.log.info("Context run") 
         self.debugInfo = ''
         self.root.execute(self, [], len(self.prevPath)>0)
-        print self.debugInfo
+        #print self.debugInfo
 
         
 
