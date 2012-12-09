@@ -499,76 +499,80 @@ def transpose(m):
     return result
 
 def saveImage(name, data):
-    data = transpose(data)
-    arr = numpy.array(data, dtype='byte')
-    
-    img = PIL.Image.fromarray(arr, mode ='L')
-    #img.transpose(FLIP_LEFT_RIGHT)
-    img.save('D:\\tmp\\'+name+'.png') 
-    #img.show()
+    pass
+    #data = transpose(data)
+    #arr = numpy.array(data, dtype='byte')
+    #
+    #img = PIL.Image.fromarray(arr, mode ='L')
+    ##img.transpose(FLIP_LEFT_RIGHT)
+    #img.save('D:\\tmp\\'+name+'.png') 
+    ##img.show()
 
 def saveImageVector(name, data):
-    s = 16;
-    w = len(data)
-    h = len(data[0])
-    img = PIL.Image.new(mode="L", size=(w*s, h*s), color = 255)
-    draw = ImageDraw.Draw(img)
-    for y in range(h):
-        for x in range(w):
-            if data[x][y]!=None:
-                draw.line([(x*s,y*s),((x+data[x][y].x/2)*s,(y+data[x][y].y/2)*s) ], fill=0)
-                draw.ellipse([(x*s-s/8,y*s-s/8),(x*s+s/8,y*s+s/8) ], fill=0)
+    pass
+    #s = 16;
+    #w = len(data)
+    #h = len(data[0])
+    #img = PIL.Image.new(mode="L", size=(w*s, h*s), color = 255)
+    #draw = ImageDraw.Draw(img)
+    #for y in range(h):
+    #    for x in range(w):
+    #        if data[x][y]!=None:
+    #            draw.line([(x*s,y*s),((x+data[x][y].x/2)*s,(y+data[x][y].y/2)*s) ], fill=0)
+    #            draw.ellipse([(x*s-s/8,y*s-s/8),(x*s+s/8,y*s+s/8) ], fill=0)
 
-    img.save('D:\\tmp\\'+name+'.png') 
+    #img.save('D:\\tmp\\'+name+'.png') 
 
 def savePath(name, path,data):
-    s = 16;
-    w = len(data)
-    h = len(data[0])
-    img = PIL.Image.new(mode="RGB", size=(w*s, h*s), color = 0xFFFFFF)
-    draw = ImageDraw.Draw(img)
-    
-    for y in range(h):
-        for x in range(w):
-            color = 0xFFFFFF-data[x][y] if data[x][y]>0 else 0
-            draw.rectangle([(x*s,y*s),((x+1)*s,(y+1)*s)], fill = color)
-    i = 1
-    for p in path:
-        if isinstance(p, tuple):
-            p1 = p[0]
-            if isinstance(p[1], list):
-                p2 = p[1]
-            else:
-                p2 = [p[1]]
-        else:
-            p1 = p
-            p2 = None
+    pass
+    #s = 16;
+    #w = len(data)
+    #h = len(data[0])
+    #img = PIL.Image.new(mode="RGB", size=(w*s, h*s), color = 0xFFFFFF)
+    #draw = ImageDraw.Draw(img)
+    #
+    #for y in range(h):
+    #    for x in range(w):
+    #        color = 0xFFFFFF-data[x][y] if data[x][y]>0 else 0
+    #        draw.rectangle([(x*s,y*s),((x+1)*s,(y+1)*s)], fill = color)
+    #i = 1
+    #for p in path:
+    #    if isinstance(p, tuple):
+    #        p1 = p[0]
+    #        if isinstance(p[1], list):
+    #            p2 = p[1]
+    #        else:
+    #            p2 = [p[1]]
+    #    else:
+    #        p1 = p
+    #        p2 = None
 
-        draw.ellipse([(p1.x*s-s/4,p1.y*s-s/4),(p1.x*s+s/4,p1.y*s+s/4) ], fill=0x00FF00)
-        draw.text((p1.x*s-s/8,p1.y*s-s/8), str(i), fill=0xFF0000)
-        if p2!=None:
-            for p3 in p2:
-                draw.line([(p1.x*s,p1.y*s),(p3.x*s,p3.y*s)], fill=0x00FF00)
-        i+=1
-                    
-    img.save('D:\\tmp\\'+name+'.png') 
+    #    draw.ellipse([(p1.x*s-s/4,p1.y*s-s/4),(p1.x*s+s/4,p1.y*s+s/4) ], fill=0x00FF00)
+    #    draw.text((p1.x*s-s/8,p1.y*s-s/8), str(i), fill=0xFF0000)
+    #    if p2!=None:
+    #        for p3 in p2:
+    #            draw.line([(p1.x*s,p1.y*s),(p3.x*s,p3.y*s)], fill=0x00FF00)
+    #    i+=1
+    #                
+    #img.save('D:\\tmp\\'+name+'.png') 
     
 
 def savePathWithText(name, path,data):
-    s = 16;
-    w = len(data)
-    h = len(data[0])
-    img = PIL.Image.new(mode="L", size=(w*s, h*s), color = 255)
-    draw = ImageDraw.Draw(img)
-    for p in path:
-        #draw.ellipse([(p.x*s-s/8,p.y*s-s/8),(p.x*s+s/8,p.y*s+s/8) ], fill=0)
-        draw.text((p[0].x*s-s/8,p[0].y*s-s/8), str(p[1]))
+    pass
+    #s = 16;
+    #w = len(data)
+    #h = len(data[0])
+    #img = PIL.Image.new(mode="L", size=(w*s, h*s), color = 255)
+    #draw = ImageDraw.Draw(img)
+    #for p in path:
+    #    #draw.ellipse([(p.x*s-s/8,p.y*s-s/8),(p.x*s+s/8,p.y*s+s/8) ], fill=0)
+    #    draw.text((p[0].x*s-s/8,p[0].y*s-s/8), str(p[1]))
 
-    for y in range(h):
-        for x in range(w):
-            if data[x][y]>0:
-                draw.rectangle([(x*s,y*s),((x+1)*s,(y+1)*s)], fill = 64)
-    img.save('D:\\tmp\\'+name+'.png') 
+    #for y in range(h):
+    #    for x in range(w):
+    #        if data[x][y]>0:
+    #            draw.rectangle([(x*s,y*s),((x+1)*s,(y+1)*s)], fill = 64)
+    #img.save('D:\\tmp\\'+name+'.png') 
     
 #if __name__ == '__main__':
 #    image_array=[0]
