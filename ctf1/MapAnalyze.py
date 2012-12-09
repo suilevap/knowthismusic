@@ -56,6 +56,7 @@ class MapAnalyzeVisibility(object):
 
         self.dangerMap =[ [(0) for y in range(self.h)] for x in range(self.w)]
         self.pathMap = self.createMapForPathFinding()
+        self.dangerMapStatic =[ [ -1 if self.map[x][y]>0 else 1 for y in range(self.h)] for x in range(self.w)]
 
 
     def getAllVisiblePoints(self, pos ,r, targetSector = -1, sectorsCount=0, useMax = False ):
@@ -68,47 +69,51 @@ class MapAnalyzeVisibility(object):
         for x in range(minX, maxX):
             for y in range(minY, maxY): 
                 delta = Vector2(x,y)-pos
-                sector = self.getSectorIndex(delta)
-                if targetSector==-1 or self.getSectorDiff(targetSector,sector)<=sectorsCount:
+                sectorFloat = self.getSectorIndexFloat(delta)
+                sector = int(sectorFloat)
+                if targetSector==-1 or self.getSectorDiff(targetSector,sectorFloat)<=sectorsCount:
                     r0Min, r0Max = self.visibleSectors[sector][x0][y0]
                     r1Min, r1Max = self.visibleSectors[(sector+4)%8][x][y]
 
                     d = max(abs(x0-x),abs(y0-y))
-                    if (r0Min>= d or r1Min>=d )or (useMax and r0Max>=d and r1Max>=d and Vector2(x0-x,y0-y).squaredLength()<=r*r):
+                    if (((r0Min>= d or r1Min>=d )
+                        or (useMax and r0Max>=d and r1Max>=d)) and ((x0-x)*(x0-x)+(y0-y)*(y0-y))<=r*r):
                         result.append((x,y))
         return result
 
     
+    def updateDangerStatic(self, pos, r, cost = 128):
+        self.updateMap(self.dangerMapStatic, pos, Vector2(0,0), 0, r, cost)
+
      
-    def updateDanger(self, pos, dir, r, cost = 196):
-        sector = self.getSectorIndex(dir)
+    def updateDanger(self, pos, dir, n, r, cost = 196):
+        self.updateMap(self.dangerMap, pos, dir, n, r, cost)
+
+
+    def updateMap(self, map, pos, dir, n, r, cost = 196):
+        if dir.x != 0 or dir.y!= 0:
+            sector = self.getSectorIndexFloat(dir)
+        else:
+            sector = -1
         x0 = int(pos.x)
         y0 = int(pos.y)
-
-        points = self.getAllVisiblePoints(pos, r, sector, 1, True)
+        points = self.getAllVisiblePoints(pos, r, sector, n, True)
         for visiblePoint in points:
             x,y = visiblePoint
-            if self.dangerMap[x][y]!=-1:
+            if map[x][y]!=-1 and (x!=x0 or y!=y0):
                 if cost != -1:
-                    self.dangerMap[x][y] += cost
+                    map[x][y] += cost
                 else:
-                    self.dangerMap[x][y] = cost
+                    map[x][y] = cost
 
-
-        
 
     def updateDangerStep(self, bots, r):
-        for y in range(0, self.h):
-            for x in range(0, self.w):
-                if self.map[x][y]>0:
-                    self.dangerMap[x][y]=-1
-                else:
-                    self.dangerMap[x][y]=1
+        self.dangerMap =[ [ self.dangerMapStatic[x][y] for y in range(self.h)] for x in range(self.w)]
         for bot in bots:
             if bot.state == BotInfo.STATE_DEFENDING:
-                self.updateDanger(bot.position, bot.facingDirection, r, -1)
+                self.updateDanger(bot.position, bot.facingDirection, 1, r, -1)
             else:
-                self.updateDanger(bot.position, bot.facingDirection, r, 196)
+                self.updateDanger(bot.position, bot.facingDirection, 1, r, 196)
 
         saveImage("DangerMap", self.dangerMap) 
 
@@ -149,6 +154,31 @@ class MapAnalyzeVisibility(object):
             return 6
         elif x>=0 and y>=0 and x>=y:
             return 7
+
+    def getSectorIndexFloat(self, delta):
+        x = delta.x
+        y = delta.y
+        if x ==0 and y ==0:
+            return 0
+
+        if x > 0 and y <= 0 and x>=-y:
+            return 0 + -y/x
+        elif x >= 0 and y < 0 and x<-y:
+            return 1 + (1-x/-y)
+        elif x <= 0 and y <0 and -x<-y:
+            return 2 + (-x/-y) 
+        elif x<0 and y<=0 and -x>=-y:
+            return 3 + (1-(-y/-x))
+        elif x<0 and y>=0 and -x>=y:
+            return 4 + y/-x
+        elif x<=0 and y>0 and -x<y:
+            return 5  +(1-(-x/y))
+        elif x>=0 and y>0 and x<y:
+            return 6 + x/y
+        elif x>0 and y>=0 and x>=y:
+            return 7 + (1-y/x)
+        else:
+            return 0
        
     def getBreakingPoints(self, path):
         result = []
@@ -210,12 +240,13 @@ class MapAnalyzeVisibility(object):
     def createMapForPathFinding(self):
         return [ [(-1 if self.map[x][y]>0 else 1)  for y in range(self.h)] for x in range(self.w)]
    
-    def getBestBreakingPoints(self, start, end, rPrefered, rControl, n):
+    def getBestBreakingPoints(self, startPoints, end, rPrefered, rControl, n):
         pathMaxLength = 50
         tmpMap = self.createMapForPathFinding()
         result = []
         allpaths = []
         for i in range(n):
+            start = startPoints[i%len(startPoints)]
             path = getPath(start, end, tmpMap)
             savePath("path_iteration"+str(i), path, tmpMap)
             if len(path)<1:
@@ -234,7 +265,7 @@ class MapAnalyzeVisibility(object):
                     bestPair = (bestPoint,[p], path, pathMap, i)
                     break
             result.append(bestPair)
-            sector = self.getSectorIndex(bestPair[1][0]-bestPair[0])
+            sector = self.getSectorIndexFloat(bestPair[1][0]-bestPair[0])
 
             visiblePoints = self.getAllVisiblePoints(bestPoint, rControl, sector, 1)
             #for p in path:
@@ -564,3 +595,4 @@ def savePathWithText(name, path,data):
 #    r2 = [transpose(x) for x in result]
 
 #    print r2
+

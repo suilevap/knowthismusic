@@ -43,6 +43,18 @@ class PandSBot(Commander):
     def initialize(self):
         """Use this function to setup your bot before the game starts."""
         self.verbose = True    # display the command descriptions next to the bot labels
+
+        # Calculate flag positions and store the middle.
+        ours = self.game.team.flag.position
+        theirs = self.game.enemyTeam.flag.position
+        self.middle = (theirs + ours) / 2.0
+
+        # Now figure out the flaking directions, assumed perpendicular.
+        d = (ours - theirs)
+        self.left = Vector2(-d.y, d.x).normalized()
+        self.right = Vector2(d.y, -d.x).normalized()
+        self.front = Vector2(d.x, d.y).normalized()
+
         for bot in self.game.team.members:            
             bot.role=None
             bot.brain = None
@@ -53,7 +65,7 @@ class PandSBot(Commander):
             bot.safePathFailedLastTime = False
 
 
-        self.defenderPart = 0.0
+        self.defenderPart = 0.5
         self.countBot = len(self.game.team.members)
         self.lastTickTime=0.0
         self.lastTickEvents=0
@@ -74,30 +86,25 @@ class PandSBot(Commander):
         #self.levelAnalysis.getBreakingPoints(path)
         #self.levelAnalysis.getBreakingMap(path, self.level.firingDistance)
         ##result = an.buildLOS()
+        self.attackingPaths = self.levelAnalysis.getBestBreakingPoints([self.ourSpawn], self.game.enemyTeam.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
 
-        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(self.spawn, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
+        ourFlanks = [self.freePos(self.game.team.flag.position + f * 16.0) for f in [self.left, self.right]]
+        startPoints = ourFlanks + [self.spawn]
+        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(startPoints, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
 
-        self.attackingPaths = self.levelAnalysis.getBestBreakingPoints(self.ourSpawn, self.game.enemyTeam.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
 
-
-        # Calculate flag positions and store the middle.
-        ours = self.game.team.flag.position
-        theirs = self.game.enemyTeam.flag.position
-        self.middle = (theirs + ours) / 2.0
-
-        # Now figure out the flaking directions, assumed perpendicular.
-        d = (ours - theirs)
-        self.left = Vector2(-d.y, d.x).normalized()
-        self.right = Vector2(d.y, -d.x).normalized()
-        self.front = Vector2(d.x, d.y).normalized()
         self.visibleEnemies =[]
         self.eventInvalidationTime = 2.0
         self.dangerEnemies =[]
         self.dangerEvents = []
         self.dangerMapUpdated = False
         self.timeMap = self.generateTimeMap()
-        print self.level.initializationTime
-        print "New commander"
+
+        self.enemyDefendersDelta = 0
+        self.enemyDefendersPrevious = 0
+
+        #print self.level.initializationTime
+        #print "New commander"
 
         
 
@@ -105,6 +112,23 @@ class PandSBot(Commander):
         """Override this function for your own bots.  Here you can access all the information in self.game,
         which includes game information, and self.level which includes information about the level."""
 
+
+        self.visibleEnemies = [bot for bot in self.game.enemyTeam.members if len(bot.seenBy)>0 and bot.health>0]
+        self.visibleEnemies2 = [[b.name for b in bot.visibleEnemies] for bot in self.game.team.members]
+
+        #print [b.health for b in self.visibleEnemies ]
+        #print self.visibleEnemies2
+
+        self.dangerEnemies = [bot for bot in self.game.enemyTeam.members 
+                               if bot.health>0 and 
+                               ((bot.seenlast)<self.eventInvalidationTime or 
+                                (bot.state == BotInfo.STATE_DEFENDING and (bot.seenlast)<self.eventInvalidationTime*2))]
+
+        self.enemyDefenders = [b for b in self.game.enemyTeam.members if b.state == BotInfo.STATE_DEFENDING and b.health>0] 
+        self.enemyDefendersDelta = len(self.enemyDefenders)-self.enemyDefendersPrevious
+        self.enemyDefendersPrevious = len(self.enemyDefenders)
+        #if self.enemyDefendersDelta!=0:
+        #    print self.enemyDefendersDelta
         self.dangerMapUpdated = False
 
         #self.log.info("Commander tick") 
@@ -130,12 +154,7 @@ class PandSBot(Commander):
 
         #self.levelAnalysis.updateDangerStep(self.game.bots_alive)
         #saveImage('danger', self.levelAnalysis.dangerMap)
-        self.visibleEnemies = [bot for bot in self.game.enemyTeam.members if len(bot.seenBy)>0 and bot.health>0]
-        print [b.health for b in self.visibleEnemies ]
-        self.dangerEnemies = [bot for bot in self.game.enemyTeam.members 
-                               if bot.health>0 and 
-                               ((bot.seenlast)<self.eventInvalidationTime or 
-                                (bot.state == BotInfo.STATE_DEFENDING and (bot.seenlast)<self.eventInvalidationTime*2))]
+      
         #print self.dangerEnemies
         self.lastTickTime=self.game.match.timePassed
 
@@ -191,13 +210,16 @@ class PandSBot(Commander):
 
             if event.type==MatchCombatEvent.TYPE_RESPAWN:
                 self.enemyBotsAlive=self.countBot
-                print "Alive enemies: %d"%self.enemyBotsAlive
+                #print "Alive enemies: %d"%self.enemyBotsAlive
             elif event.type==MatchCombatEvent.TYPE_KILLED:
                 if event.subject.team.name!=self.game.team.name:
                     self.enemyBotsAlive-=1
-                    print "Alive enemies: %d"%self.enemyBotsAlive
+                    #print "Alive enemies: %d"%self.enemyBotsAlive
                 else:
                     self.dangerEvents.append(event)
+                    #pos = e.instigator.position if e.instigator!=None else e.subject.position
+                    pos = event.subject.position
+                    self.levelAnalysis.updateDangerStatic(pos, 4, 196)
             elif event.type == MatchCombatEvent.TYPE_FLAG_PICKEDUP and event.subject.team.name==self.game.team.name:
                 self.dangerEvents.append(event)
 
@@ -253,9 +275,9 @@ class PandSBot(Commander):
 
     def getSafePath(self, start, end):
         if not self.dangerMapUpdated:
-            print 'dangerMapUpdated'
-            print self.dangerEnemies
-            self.levelAnalysis.updateDangerStep(self.dangerEnemies, self.level.firingDistance*1.25)
+            #print 'dangerMapUpdated'
+            #print self.dangerEnemies
+            self.levelAnalysis.updateDangerStep(self.dangerEnemies, self.level.firingDistance*1.0)
             self.dangerMapUpdated = True
         path = self.levelAnalysis.getPathThroughDanger(start, end)
         return path
@@ -309,11 +331,11 @@ def Command_MoveToMyFlag(commander, bot):
     freebreakingPointsIndex -= set([b.defendBreakingPointIndex for b in commander.game.team.members if b.defendBreakingPointIndex>=0])
     #print freebreakingPointsIndex
     if len(freebreakingPointsIndex)>0: 
-        bot.defendBreakingPointIndex = min(freebreakingPointsIndex, key=lambda index: (commander.breakingPoints[index][0]-bot.position).length())
+        bot.defendBreakingPointIndex = list(freebreakingPointsIndex)[0]#min(freebreakingPointsIndex, key=lambda index: (commander.breakingPoints[index][0]-bot.position).length())
         bot.defendBreakingPoint = commander.breakingPoints[bot.defendBreakingPointIndex]
         #print [b.defendBreakingPointIndex for b in commander.game.team.members]
     else:
-        print 'something wrong=('
+        #print 'something wrong=('
         bot.defendBreakingPoint = choice(commander.breakingPoints)
 
     #bot.defendBreakingPoint = choice(commander.breakingPoints)
@@ -321,7 +343,7 @@ def Command_MoveToMyFlag(commander, bot):
     pos, threatPoints = bot.defendBreakingPoint[:2]
     #allPoint = [breakingP for p in commander.breakingPoints if ]
     pos = commander.freePos(pos)
-    commander.issue(commands.Move, bot, commander.freePos(pos), description = 'Go to my flag (DEFENDER)')
+    commander.issue(commands.Charge, bot, commander.freePos(pos), description = 'Go to my flag (DEFENDER)')
     return True
 
 def Command_DefendMyFlag(commander, bot):
@@ -370,7 +392,7 @@ def Command_AttackBot(commander, bot, enemy):
 def Command_RunHome(commander, bot):
     target = commander.game.team.flagScoreLocation
     path = commander.getSafePath(bot.position, target)
-    commander.issue(  commands.Move, bot, path, description = 'Running home (ATTACKER)')
+    commander.issue(  commands.Charge, bot, path, description = 'Running home (ATTACKER)')
     return True
 
 
@@ -390,29 +412,53 @@ def Command_RunToEnemyFlagFlank(commander, bot):
     commander.issue( commands.Attack, bot, commander.freePos(pos), description = 'Run to enemy flag (ATTACKER)')
     return True
 
-def Command_RunToEnemyFlag(commander, bot):
+def Command_RunToEnemyFlagFlank2(commander, bot):
     pos = commander.game.enemyTeam.flag.position
     pos, threat, tmpPath, map, index = choice(commander.attackingPaths)
     path = getPath(bot.position, commander.freePos(pos), map)
-    if index > len(commander.attackingPaths)/2:
+    if index > len(commander.attackingPaths):#/2:
         command = commands.Charge
     else:
         command = commands.Attack
 
-    commander.issue( command, bot, path, description = 'Run to enemy flag (ATTACKER)')
+    commander.issue( command, bot, path, description = 'Flank to enemy flag (ATTACKER)')
     return True
 
+def Command_RunToEnemyFlag(commander, bot):
+    pos = commander.game.enemyTeam.flag.position
+    commander.issue( commands.Charge, bot, pos, description = 'Run to enemy flag (ATTACKER)')
+    return True
+
+
+
 def Condition_SetEnemy(commander, bot, enemy):
-    if bot.Enemy!=None:
-        print bot.Enemy.name+' health='+str(bot.Enemy.health)
-    if enemy!=None:
-        print bot.name + ' has enemy ' + enemy.name
+    #if bot.Enemy!=None:
+    #    print bot.Enemy.name+' health='+str(bot.Enemy.health)
+    #if enemy!=None:
+    #    print bot.name + ' has enemy ' + enemy.name
     bot.Enemy = enemy
+    return True
+
+def Condition_ReadyToAttack(commander, bot):
+    result = ((bot.state==BotInfo.STATE_SHOOTING or bot.state==BotInfo.STATE_TAKINGORDERS
+               or len([(b.position-bot.position).length()<commander.level.firingDistance for b in bot.visibleEnemies if b.health>0])>0))
+    return result
+
+def Condition_SetEnemyIfNotNone(commander, bot, enemy):
+    #if bot.Enemy!=None:
+    #    print bot.Enemy.name+' health='+str(bot.Enemy.health)
+    #if enemy!=None:
+    #    print bot.name + ' has enemy ' + enemy.name
+    if enemy != None:
+        bot.Enemy = enemy
     return True
 
 def LookAtDangerEvent(commander, bot):
     allSuspicious = [(e.instigator.position,e) if e.instigator!=None else (e.subject.position,e) for e in commander.dangerEvents]
-    suspicious = min(allSuspicious, key=lambda p:(bot.position-p[0]).length())
+    allSuspicious = [p for p in allSuspicious if p[0] != None]
+    if len(allSuspicious)==0:
+        return False
+    suspicious = min(allSuspicious, key=lambda p:(bot.position-p[0]).length() )
     if (bot.position - suspicious[0]).length()>commander.level.firingDistance*1.5:
         return False
     dir = suspicious[0] - bot.position
@@ -425,7 +471,7 @@ def Command_AttackEnemyFromFlank(commander, bot):
     if (bot.safePathFailedLastTime):
         recalculatePath = False;
         for b in bot.enemyDefenders:
-            if b.state != BotInfo.STATE_DEFENDING:
+            if b.health <= 0 or b.state != BotInfo.STATE_DEFENDING:
                 recalculatePath = True;
                 break;
     path =[]
@@ -437,8 +483,8 @@ def Command_AttackEnemyFromFlank(commander, bot):
         bot.safePathFailedLastTime = False
         commander.issue(commands.Attack, bot, path, bot.Enemy.position,description='Attack enemy from flank')
     else:
-        if not bot.safePathFailedLastTime:
-            bot.enemyDefenders = [b for b in commander.visibleEnemies if b.state == BotInfo.STATE_DEFENDING]
+        if recalculatePath:
+            bot.enemyDefenders = [b for b in commander.visibleEnemies if b.health > 0 and b.state == BotInfo.STATE_DEFENDING]
         bot.safePathFailedLastTime = True
         return False
 
@@ -447,12 +493,34 @@ def Command_AttackEnemy(commander, bot):
     commander.issue(commands.Attack, bot,bot.Enemy.position, bot.Enemy.position,description='Attack enemy directly')
 
 def Command_None(commander, bot):
+    #print 'Do nothing'
     return True
 
 def Command_ChargeEnemyWithPrediction(commander, bot):
     #print 'Charge with prediction'
     pos = bot.Enemy.position + bot.Enemy.facingDirection * commander.level.runningSpeed *2
     commander.issue(commands.Charge, bot, commander.freePos(pos),description='Charge enemy with prediction')
+
+def GetFriends(commander, bot):
+    result = []
+    distance = (bot.position - bot.Enemy.position).length()
+    if distance<commander.level.firingDistance+5:
+        for friend in commander.game.bots_alive:
+            if (friend!=bot 
+                and friend.Enemy in bot.seenBy 
+                and friend.Enemy in friend.visibleEnemies
+                and friend.state==BotInfo.STATE_DEFENDING 
+                and abs((friend.position-friend.Enemy.position).length()-distance)<1):
+
+                result.append(bot)
+    return result 
+
+def Command_MoveToSuppressEnemyPosition(commander, bot):
+    dir = bot.position - bot.Enemy.position
+    dir.normalize()
+    pos = bot.Enemy.position + dir * (commander.level.firingDistance+2)
+    commander.issue(commands.Charge, bot, commander.freePos(pos), description='Suppress Enemy')
+    return True
 
 class BTBotTask(BTAction):
 
@@ -522,10 +590,16 @@ class BTBotOrder(BTAction):
             self.action = None
             self.priority = -1
 
-TakeFlag = BTSequence(
-    BTCondition(lambda commander,bot: commander.game.enemyTeam.flag.carrier==None ),
-    BTBotTask(Command_RunToEnemyFlag, 
-        lambda commander,bot: commander.game.enemyTeam.flag.carrier==None)
+TakeFlag = BTSequence('TakeFlag',
+    BTCondition(lambda commander,bot: commander.game.enemyTeam.flag.carrier==None ,
+        BTSelector(
+            BTSequence(
+                BTCondition((lambda commander,bot: (commander.game.enemyTeam.flag.position-bot.position).length()>commander.level.width/2)),
+                BTBotTask(Command_RunToEnemyFlagFlank2)
+            ),
+            BTBotTask(Command_RunToEnemyFlag)
+        )
+    )
     #BTSelector(
     #    BTSequence(
     #        BTCondition(lambda commander,bot: commander.botCanSeePos(bot, commander.game.enemyTeam.flag.position) ),
@@ -553,9 +627,27 @@ ReturnFlag = BTSequence(
 SupportFlagCarrier =BTSequence(
     BTCondition(lambda commander,bot: commander.game.enemyTeam.flag.carrier != None and commander.game.enemyTeam.flag.carrier!=bot),
     BTSelector(
-        BTBotTask(lambda commander,bot: commander.issue(commands.Charge, bot, commander.game.enemyTeam.flag.position,description='Support carrier (ATTACKER)'))
-        
-    )
+        BTSequence(
+            BTCondition(lambda commander,bot: (commander.game.enemyTeam.flag.position-commander.game.team.flagScoreLocation).squaredLength()<(bot.position-commander.game.team.flagScoreLocation).squaredLength()),
+            BTBotTask(lambda commander,bot: commander.issue(commands.Charge, bot, commander.game.team.flagScoreLocation, description='Support carrier (ATTACKER)'))
+        ),
+        BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, commander.game.team.flagScoreLocation, description='Support carrier (ATTACKER)'))
+    ),
+    BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, commander.game.enemyTeam.flag.position, description='Support carrier (ATTACKER)'))
+
+)
+ReturnMyFlag =BTSequence(
+    BTCondition(lambda commander,bot: commander.game.team.flag.carrier != None),
+
+    BTSelector(
+        BTSequence(
+            BTCondition(lambda commander,bot: (commander.game.team.flag.position-commander.game.enemyTeam.flagScoreLocation).squaredLength()<(bot.position-commander.game.enemyTeam.flagScoreLocation).squaredLength()),
+            BTBotTask(lambda commander,bot: commander.issue(commands.Charge, bot, commander.game.team.flagScoreLocation, description='ReturnMyFlag (ATTACKER)'))
+        ),
+        BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, commander.game.enemyTeam.flagScoreLocation, description='ReturnMyFlag (ATTACKER)'))
+    ),
+    BTBotTask(lambda commander,bot: commander.issue(commands.Attack, bot, commander.game.team.flag.position, description='ReturnMyFlag (ATTACKER)')),
+
 )
 ChaseFlagCarrier =BTSequence(
     BTCondition(lambda commander,bot: commander.game.team.flag.carrier != None),
@@ -565,8 +657,19 @@ ChaseFlagCarrier =BTSequence(
 )
 
 AttackFromFlank = BTSelector('Attack from flank',
+    BTCondition(lambda commander, bot: commander.enemyDefendersDelta!=0,
+        BTBotTask(Command_None)
+    ),
     BTBotTask(Command_AttackEnemyFromFlank),
-    BTBotTask(lambda commander,bot:Command_DefendDirection(commander,bot,bot.Enemy.position-bot.position ))
+    BTSequence(
+        BTCondition(lambda commander,bot: bot.state==BotInfo.STATE_DEFENDING and len(GetFriends(commander,bot))>=len(bot.seenBy)),
+        BTBotTask(Command_AttackEnemy)
+    ),
+    BTSequence(
+        BTBotTask(Command_MoveToSuppressEnemyPosition),
+
+        BTBotTask(lambda commander,bot:Command_DefendDirection(commander,bot,bot.Enemy.position-bot.position ))
+    )
 )
 
 SmartAttack = BTSequence('SmartAttack',
@@ -588,8 +691,8 @@ SmartAttack = BTSequence('SmartAttack',
                     BTSequence('EnemyAttacking',
                         BTCondition(lambda commander,bot: bot.Enemy.state == BotInfo.STATE_ATTACKING),
                         BTBotTask(lambda commander,bot:Command_DefendDirection(commander,bot,bot.Enemy.position-bot.position ))
-                    ),
-                    BTBotTask(Command_AttackEnemy)
+                    )
+                    #BTBotTask(Command_AttackEnemy)
                 )
             ),
 
@@ -637,7 +740,7 @@ ReactAtDanger = BTSequence(
 DefenderBTTree = BTTree(
     BTSelector(
 
-        BTCondition(lambda commander,bot: bot.state==BotInfo.STATE_SHOOTING or bot.state==BotInfo.STATE_TAKINGORDERS ),#continue shooting if started
+        BTCondition(Condition_ReadyToAttack ),#continue shooting if started
         ReturnFlag,
         BaseLogic,
 
@@ -663,7 +766,7 @@ DefenderBTTree = BTTree(
                 )
         ),
         #or
-        ChaseFlagCarrier,
+        ReturnMyFlag,
         #or 
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.dangerEvents)>0),
@@ -673,27 +776,26 @@ DefenderBTTree = BTTree(
         #or
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.visibleEnemies)>0),
-            BTCondition(lambda commander,bot: Condition_SetEnemy(commander,bot, commander.getNearest(bot,commander.visibleEnemies))),
+            BTCondition(lambda commander,bot: Condition_SetEnemy(commander,bot, commander.getBestEnemy(bot,commander.visibleEnemies))),
             BTCondition(lambda commander,bot: bot.Enemy!= None and 
-                        (bot.Enemy.position-bot.position).length()<commander.level.firingDistance 
-                        and commander.botCanSeePos(bot, bot.Enemy.position)),
+                        (bot.Enemy.position-bot.position).length()<commander.level.firingDistance *2 and commander.botCanSeePos(bot, bot.Enemy.position)),
             SmartAttack
         ),
         #or
 
         BTSelector(
-            BTSequence(
-                BTCondition(lambda commander,bot: bot.state == BotInfo.STATE_IDLE and random()>0.5),
-                BTSelector(
-                    BTCondition(lambda commander,bot: (bot.position - commander.game.team.flag.position).length()<5),
-                    #or
-                    BTBotTask(Command_MoveToMyFlag)
-                ),
+            #BTSequence(
+            #    BTCondition(lambda commander,bot: bot.state == BotInfo.STATE_IDLE and random()>0.5),
+            #    BTSelector(
+            #        BTCondition(lambda commander,bot: (bot.position - commander.game.team.flag.position).length()<5),
+            #        #or
+            #        BTBotTask(Command_MoveToMyFlag)
+            #    ),
 
-                BTBotTask(lambda commander,bot: Command_MoveToBreakingPoint(commander, bot, choice(commander.breakingPoints))),
-                BTBotTask(lambda commander,bot: Command_MoveToBreakingPoint(commander, bot, choice(commander.breakingPoints))),
-                BTBotTask(lambda commander,bot: Command_MoveToBreakingPoint(commander, bot, choice(commander.breakingPoints))),
-            ),
+            #    BTBotTask(lambda commander,bot: Command_MoveToBreakingPoint(commander, bot, choice(commander.breakingPoints))),
+            #    BTBotTask(lambda commander,bot: Command_MoveToBreakingPoint(commander, bot, choice(commander.breakingPoints))),
+            #    BTBotTask(lambda commander,bot: Command_MoveToBreakingPoint(commander, bot, choice(commander.breakingPoints))),
+            #),
             BTSequence(
                 BTCondition(lambda commander,bot: (bot.position - commander.game.team.flag.position).length()>5),
                 BTBotTask(Command_MoveToMyFlag),
@@ -707,12 +809,12 @@ DefenderBTTree = BTTree(
 
 AttackerBTTree = BTTree(
     BTSelector(
-        BTCondition(lambda commander,bot: bot.state==BotInfo.STATE_SHOOTING),#continue shooting if started
+        BTCondition(Condition_ReadyToAttack),#continue shooting if started
         ReturnFlag,
         #BaseLogic,
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.visibleEnemies)>0),
-            BTCondition(lambda commander,bot: Condition_SetEnemy(commander,bot, commander.getBestEnemy(bot,commander.visibleEnemies)),
+            BTCondition(lambda commander,bot: Condition_SetEnemyIfNotNone(commander,bot, commander.getBestEnemy(bot,commander.visibleEnemies)),
             #BTCondition(lambda commander,bot: bot.Enemy!= None and 
             #            (bot.Enemy.position-bot.position).length()<commander.level.firingDistance 
             #            and commander.botCanSeePos(bot, bot.Enemy.position)),
@@ -720,8 +822,9 @@ AttackerBTTree = BTTree(
             )
         ),
         ReactAtDanger,
-        SupportFlagCarrier,
-        TakeFlag
+        TakeFlag,
+        ReturnMyFlag,
+        SupportFlagCarrier
     ),
 )
 

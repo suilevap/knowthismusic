@@ -19,7 +19,7 @@ class PlaceholderCommander(Commander):
 
     def initialize(self):
         """Use this function to setup your bot before the game starts."""
-        self.pos = self.game.team.flagScoreLocation
+        self.pos = self.game.team.flag.position
         if self.pos.x>self.level.width/2:
             self.pos.x=self.level.width-1
             self.dir = [Vector2(-1,0),Vector2(-1,-2),Vector2(-1,2)]
