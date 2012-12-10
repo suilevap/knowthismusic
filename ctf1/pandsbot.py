@@ -65,7 +65,7 @@ class PandSBot(Commander):
             bot.safePathFailedLastTime = False
 
 
-        self.defenderPart = 0.5
+        self.defenderPart = 0.4
         self.countBot = len(self.game.team.members)
         self.lastTickTime=0.0
         self.lastTickEvents=0
@@ -231,7 +231,7 @@ class PandSBot(Commander):
         maxBots=len(self.game.bots_alive)
         enemies=self.enemyBotsAlive
         
-        optimalDefenders=self.defenderPart*enemies
+        optimalDefenders=self.defenderPart*(enemies-len(self.enemyDefenders))
         optimalAttackers=maxBots-optimalDefenders
 
         if optimalAttackers<0:
