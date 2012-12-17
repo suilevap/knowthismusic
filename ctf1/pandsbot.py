@@ -102,17 +102,18 @@ class PandSBot(Commander):
 
         self.enemyDefendersDelta = 0
         self.enemyDefendersPrevious = 0
+        
 
         #print self.level.initializationTime
         #print "New commander"
-
+        self.dangerAtRespawn = 0;
+        self.updateDangerAtRespawn()
         
 
     def tick(self):
         """Override this function for your own bots.  Here you can access all the information in self.game,
         which includes game information, and self.level which includes information about the level."""
-
-
+       
         self.visibleEnemies = [bot for bot in self.game.enemyTeam.members if len(bot.seenBy)>0 and bot.health>0]
         self.visibleEnemies2 = [[b.name for b in bot.visibleEnemies] for bot in self.game.team.members]
 
@@ -203,13 +204,22 @@ class PandSBot(Commander):
         else:
             return None
 
+    def updateDangerAtRespawn(self):
+        if (self.spawn-self.ourSpawn).length()>self.level.firingDistance*2:
+            self.dangerAtRespawn = (self.countBot-self.enemyBotsAlive)/self.countBot
+        else:
+            self.dangerAtRespawn = 0.8
+        print 'danger:' + str(self.dangerAtRespawn)
+
     def lastTickEventsAnalyze(self):
         self.dangerEvents = [e for e in self.dangerEvents if (self.game.match.timePassed-e.time)<self.eventInvalidationTime]
  
         for event in self.lastTickEvents:
 
             if event.type==MatchCombatEvent.TYPE_RESPAWN:
-                self.enemyBotsAlive=self.countBot
+                if  self.enemyBotsAlive!=self.countBot:
+                    self.updateDangerAtRespawn()
+                    self.enemyBotsAlive=self.countBot
                 #print "Alive enemies: %d"%self.enemyBotsAlive
             elif event.type==MatchCombatEvent.TYPE_KILLED:
                 if event.subject.team.name!=self.game.team.name:
