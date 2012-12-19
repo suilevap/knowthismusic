@@ -69,7 +69,7 @@ class PandSBot(Commander):
         self.countBot = len(self.game.team.members)
         self.lastTickTime=0.0
         self.lastTickEvents=0
-        self.enemyBotsAlive=self.countBot;
+        self.enemyBotsAlive=0*self.countBot;
         self.debugInfo=""
 
         self.roleDefender=Role(DefenderBTTree, self.defenderSuitabilityFunction)
@@ -106,7 +106,8 @@ class PandSBot(Commander):
 
         #print self.level.initializationTime
         #print "New commander"
-        self.dangerAtRespawn = 0;
+        self.dangerAtRespawn = 0.0;
+        self.lastRespawnTime = 0;
         self.updateDangerAtRespawn()
         
 
@@ -205,11 +206,12 @@ class PandSBot(Commander):
             return None
 
     def updateDangerAtRespawn(self):
-        if (self.spawn-self.ourSpawn).length()>self.level.firingDistance*2:
-            self.dangerAtRespawn = (self.countBot-self.enemyBotsAlive)/self.countBot
-        else:
-            self.dangerAtRespawn = 0.8
-        print 'danger:' + str(self.dangerAtRespawn)
+        #if (self.spawn-self.ourSpawn).length()>self.level.firingDistance*2:
+        self.dangerAtRespawn = ((self.countBot-self.enemyBotsAlive)*1.0)/self.countBot
+        self.lastRespawnTime = self.game.match.timePassed;
+        #else:
+        #    self.dangerAtRespawn = 0.8
+        #print 'danger:' + str(self.dangerAtRespawn)
 
     def lastTickEventsAnalyze(self):
         self.dangerEvents = [e for e in self.dangerEvents if (self.game.match.timePassed-e.time)<self.eventInvalidationTime]
@@ -217,6 +219,7 @@ class PandSBot(Commander):
         for event in self.lastTickEvents:
 
             if event.type==MatchCombatEvent.TYPE_RESPAWN:
+
                 if  self.enemyBotsAlive!=self.countBot:
                     self.updateDangerAtRespawn()
                     self.enemyBotsAlive=self.countBot
@@ -294,23 +297,37 @@ class PandSBot(Commander):
 
     def generateTimeMap(self):
         path, distMap, parentMap = getPathWithPathDistanceMap(self.spawn, self.game.team.flag.position, self.levelAnalysis.pathMap, False)
-        dirMap = computeMap(parentMap, 
-                            lambda v,x,y: 
-                                Vector2(v[0]-x, v[1]-y).normalized() 
-                                if v!=None and (x-v[0]!=0 or y-v[1]!=0) 
-                                else None)
-        saveImageVector('dirMap', dirMap)
+        #dirMap = computeMap(parentMap, 
+        #                    lambda v,x,y: 
+        #                        Vector2(v[0]-x, v[1]-y).normalized() 
+        #                        if v!=None and (x-v[0]!=0 or y-v[1]!=0) 
+        #                        else None)
+        #saveImageVector('dirMap', dirMap)
 
-        fireStepMap = computeMap(distMap, lambda v,x,y: 
-                                 v - self.levelAnalysis.visibleSectors[self.levelAnalysis.getSectorIndex(dirMap[x][y])][x][y][1]
-                                 if dirMap[x][y] != None else v )
+        #fireStepMap = computeMap(distMap, lambda v,x,y: 
+        #                         v - self.levelAnalysis.visibleSectors[self.levelAnalysis.getSectorIndex(dirMap[x][y])][x][y][1]
+        #                         if dirMap[x][y] != None else v )
 
 
         saveImage('distMapOr', distMap)
         
-        timeMap = computeMap(distMap, lambda v,x,y: v/self.level.runningSpeed)
+        timeMap = computeMap(distMap, lambda v,x,y: (v-self.level.firingDistance) /self.level.runningSpeed)
         saveImage('distMap', timeMap)
 
-        timeMap5s = computeMap(timeMap, lambda v,x,y: 255 if v>5 else v)
-        saveImage('timeMap3s', timeMap5s)
+        #timeMap5s = computeMap(timeMap, lambda v,x,y: 255 if v>5 else v)
+        #saveImage('timeMap3s', timeMap5s)
         return timeMap
+
+    def IsPosSafeNow(self, pos):
+        if self.enemyBotsAlive == 0:
+            return True
+        if self.dangerAtRespawn<0.3:
+            return False
+
+        deltaTime = self.game.match.timePassed - self.lastRespawnTime;
+        
+        x,y = int(pos.x), int(pos.y)
+        safeTime = self.timeMap[x][y]
+        isSafe = safeTime>deltaTime
+
+        return isSafe
