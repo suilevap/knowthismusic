@@ -203,7 +203,7 @@ class MapAnalyzeVisibility(object):
             for p in path:
                 x,y=int(p.x), int(p.y)
                 part = i*1.0/len(path)
-                rank = 1.0-abs(1.0-part)
+                rank = 1.0-abs(0.75-part)
                 prevPoint = path[i-1]
                 i+=1
 
@@ -282,6 +282,13 @@ class MapAnalyzeVisibility(object):
         savePath("allBreakingPoints", result, self.createMapForPathFinding())
 
         return result
+
+    def getMaxD(self, pos1, pos2):
+        x1,y1 = int(pos1.x),int(pos1.y)
+        #x2,y2 = int(pos2.x),int(pos2.y)
+        sector = self.getSectorIndex(pos2-pos1)
+        r0Min = self.visibleSectors[sector][x1][y1][0]
+        return r0Min
 
     def checkVisibility(self, pos1, pos2):
         result = False
