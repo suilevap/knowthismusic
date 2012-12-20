@@ -89,7 +89,7 @@ class PandSBot(Commander):
         self.attackingPaths = self.levelAnalysis.getBestBreakingPoints([self.ourSpawn], self.game.enemyTeam.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
 
         ourFlanks = [self.freePos(self.game.team.flag.position + f * 16.0) for f in [self.left, self.right]]
-        startPoints = ourFlanks + [self.spawn]
+        startPoints = [self.spawn]+ourFlanks
         self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(startPoints, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
 
 
@@ -219,6 +219,12 @@ class PandSBot(Commander):
         for event in self.lastTickEvents:
 
             if event.type==MatchCombatEvent.TYPE_RESPAWN:
+                bot = event.subject
+                if bot in self.game.enemyTeam.members:
+                    bot.position = self.level.findRandomFreePositionInBox(self.game.enemyTeam.botSpawnArea)
+                    bot.seenLast = 0
+                    bot.health = 100
+                    bot.facingDirection = Vector2((random()-0.5),random()-0.5)
 
                 if  self.enemyBotsAlive!=self.countBot:
                     self.updateDangerAtRespawn()
@@ -331,3 +337,6 @@ class PandSBot(Commander):
         isSafe = safeTime>deltaTime
 
         return isSafe
+
+    def distToNextRespawn(self):
+        return self.game.match.timeToNextRespawn*self.level.runningSpeed
