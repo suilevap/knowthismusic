@@ -58,6 +58,30 @@ class MapAnalyzeVisibility(object):
         self.pathMap = self.createMapForPathFinding()
         self.dangerMapStatic =[ [ -1 if self.map[x][y]>0 else 1 for y in range(self.h)] for x in range(self.w)]
 
+        self.cornerPoints = []
+        for y in range(self.h):
+            for x in range(self.w):
+                if self.isCorner(x,y):
+                    self.cornerPoints.append(Vector2(x+0.5,y+0.5))
+                
+
+    def getNearestCornerPointInRange(self, pos, r):
+        best = r;
+        result = None
+        for p in self.cornerPoints:
+            d  = (p-pos).length()
+            if d<best:
+                result = p
+                best = d
+        return result
+
+    def getCornerPointInVisibility(self, pos, r):
+        points = self.getAllVisiblePoints(pos,r)
+        for p in points:
+            x,y = p[0], p[1]
+            if self.isCorner(x,y):
+                return Vector2(x+0.5, y+0.5)
+        return None
 
     def getAllVisiblePoints(self, pos ,r, targetSector = -1, sectorsCount=0, useMax = False ):
         result = []
@@ -84,6 +108,7 @@ class MapAnalyzeVisibility(object):
     
     def updateDangerStatic(self, pos, r, cost = 128):
         self.updateMap(self.dangerMapStatic, pos, Vector2(0,0), 0, r, cost)
+
 
      
     def updateDanger(self, pos, dir, n, r, cost = 196):
@@ -179,6 +204,22 @@ class MapAnalyzeVisibility(object):
             return 7 + (1-y/x)
         else:
             return 0
+    
+    def getInvSector(self, sector):
+        return (sector+4)%8
+
+    def isCorner(self, x,y):
+        a = 1
+        #right = max([self.visibleSectors[0][x][y][1],self.visibleSectors[7][x][y][1]])<=a
+        #up = max([self.visibleSectors[1][x][y][1],self.visibleSectors[2][x][y][1]])<=a
+        #left = max([self.visibleSectors[3][x][y][1],self.visibleSectors[4][x][y][1]])<=a
+        #down = max([self.visibleSectors[5][x][y][1],self.visibleSectors[6][x][y][1]])<=a
+        right = self.distanceField[x+1][y]<0 if x<self.w-1 else True
+        up = self.distanceField[x][y-1]<0 if y>0 else True
+        left = self.distanceField[x-1][y]<0 if x>0 else True
+        down = self.distanceField[x][y+1]<0 if y<self.h-1 else True
+
+        return (left and up) or (up and right) or (right and down) or (down and left)
        
     def getBreakingPoints(self, path):
         result = []
@@ -194,7 +235,7 @@ class MapAnalyzeVisibility(object):
         savePathWithText('pathDelta',result, self.map)
         return result
 
-    def getBreakingMap(self, paths, r, ignorePoints = None):
+    def getBreakingMap(self, paths, r, allPaths = [],ignorePoints = None):
        
         ranks =[ [(0) for y in range(self.h)] for x in range(self.w)]
         rank = 1.0
@@ -203,20 +244,39 @@ class MapAnalyzeVisibility(object):
             for p in path:
                 x,y=int(p.x), int(p.y)
                 part = i*1.0/len(path)
-                rank = 1.0-abs(0.75-part)
+                rank = 1.0-abs(0.95-part)
                 prevPoint = path[i-1]
                 i+=1
 
                 if ignorePoints!=None and (x,y) in ignorePoints:
                     continue
                 
-                points = self.getAllVisiblePoints(p, r, self.getSectorIndex(p-prevPoint), 1)
+                points = self.getAllVisiblePoints(p, r, self.getInvSector(self.getSectorIndexFloat(p-prevPoint)), 2)
                 for visiblePoint in points:
                     x,y = visiblePoint
-                    if (self.distanceField[x][y] > 0):
-                        ranks[x][y] += rank/self.distanceField[x][y]
+                    if (self.distanceField[x][y] >= 0):
+                        d = rank/(self.distanceField[x][y]+1)
+                        if self.isCorner(x,y):
+                            d *= 16
+                        ranks[x][y] = max([ranks[x][y] ,d])
 
 
+        for path in allPaths:
+            i = 0;
+            for p in path:
+                x,y=int(p.x), int(p.y)
+                part = i*1.0/len(path)
+                prevPoint = path[i-1]
+                i+=1
+
+                if ignorePoints!=None and (x,y) in ignorePoints:
+                    continue
+                
+                points = self.getAllVisiblePoints(p, r, self.getSectorIndexFloat(p-prevPoint), 1)
+                for visiblePoint in points:
+                    x,y = visiblePoint
+                    if (self.distanceField[x][y] >= 0):
+                        ranks[x][y] /= 1.25
             #rank += 1.0/len(path)
 
         #for x in range(0,self.w):
@@ -254,7 +314,7 @@ class MapAnalyzeVisibility(object):
 
             allpaths.append(path[-pathMaxLength:])
 
-            breakingMap = self.getBreakingMap([path], rPrefered)
+            breakingMap = self.getBreakingMap([path], rPrefered, allpaths)
             x,y = self.getTheBestPos(breakingMap)
             bestPoint = Vector2(x+0.5,y+0.5)
 
@@ -280,6 +340,7 @@ class MapAnalyzeVisibility(object):
                     if tmpMap[x][y]>255:
                         tmpMap[x][y] = 255
         savePath("allBreakingPoints", result, self.createMapForPathFinding())
+        saveImage('corners', [ [ 0 if self.distanceField[x][y]<0 else 124 if self.isCorner(x,y) else 255 for x in range(self.w)] for y in range(self.h)] )
 
         return result
 
