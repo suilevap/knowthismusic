@@ -190,6 +190,8 @@ def Command_DefendCurrentPosition(commander, bot):
     return True
 
 def Command_MoveToDefendControlPosition(commander, bot):
+    if pos==None:
+        return False
     pos = commander.levelAnalysis.getNearestCornerPointInRange(pos, commander.distToNextRespawn())
     if pos==None:
         return False
@@ -198,6 +200,8 @@ def Command_MoveToDefendControlPosition(commander, bot):
 
 def Command_MoveToDefendPosition(commander, bot, pos):
     #pos = commander.levelAnalysis.getCornerPointInVisibility(pos, commander.level.firingDistance)
+    if pos==None:
+        return False
     pos = commander.levelAnalysis.getNearestCornerPointInRange(pos,  commander.level.firingDistance*2)
 
     if pos==None:
