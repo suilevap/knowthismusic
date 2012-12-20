@@ -461,7 +461,7 @@ def GetInterceptPoint(commander, bot, start, end):
     points = [p for p in path if (p-start).length()>(p-bot.position).length() ]
     #pos = max(path, key = lambda p:(p-start).length()-(p-bot.position).length())
     if len(points)==0:
-        return False
+        return end
     pos = points[0]
 
     return pos
