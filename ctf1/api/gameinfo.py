@@ -430,11 +430,11 @@ class MatchCombatEvent(object):
         """
         self.subject = subject
         """
-        The name of the flag/bot that this event is about
+        The FlagInfo/BotInfo object of the flag/bot that this event is about
         """
         self.instigator = instigator
         """
-        The name of the bot which instigated this event
+        The BotInfo object of the bot which instigated this event
         """
         self.time = time
         """
