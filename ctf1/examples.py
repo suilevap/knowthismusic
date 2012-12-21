@@ -32,15 +32,36 @@ class RandomCommander(Commander):
                         + [self.level.findRandomFreePositionInBox(self.level.area)]
             )
             # Pick random movement style between going fast or moving carefully.
-            commandType = random.choice([commands.Attack, commands.Charge])
+            cmd = random.choice([commands.Attack, commands.Charge])
             if target:
-                self.issue(commandType, bot, target, description = 'random')
+                self.issue(cmd, bot, target, description = 'random')
+
+
+        # These bots were given an Attack order, but encountered defensive resistance and are waiting...
+        for bot in self.game.bots_holding:
+            cmd = random.choice([commands.Attack, commands.Charge, None])
+            params = {'description': 'random (after holding)'}
+
+            # If attacking, pick an enemy and strafe around a bit to break the holding pattern. 
+            if cmd == commands.Attack:
+                params['lookAt'] = random.choice([b.position for b in bot.visibleEnemies])
+                target = self.level.findRandomFreePositionInBox((bot.position-5.0, bot.position+5.0))
+
+            # Can also charge one of the visible enemies to try to break the pattern...
+            elif cmd == commands.Charge:
+                target = random.choice([b.position for b in bot.visibleEnemies])
+
+            if cmd:
+                self.issue(cmd, bot, target, **params)
 
 
 class GreedyCommander(Commander):
     """
     Always sends everyone to the flag of the enemy and the guy carrying the flag back again
     """
+
+    def initialize(self):
+        self.verbose = False
 
     def captured(self):
         """Did this team cature the enemy flag?"""
@@ -54,7 +75,7 @@ class GreedyCommander(Commander):
         their_flag = self.game.enemyTeam.flag.position
         their_base = self.level.botSpawnAreas[self.game.enemyTeam.name][0]
 
-        # Only process bots that are done with their orders...
+        # First process bots that are done with their orders...
         for bot in self.game.bots_available:
 
             # If this team has captured the flag, then tell this bot...
@@ -76,6 +97,15 @@ class GreedyCommander(Commander):
                 self.issue(commands.Attack, bot, path, description = 'attacking enemy flag',
                                 lookAt = random.choice([their_flag, our_flag, their_flag, their_base]))
 
+        # Second process bots that are in a holding attack pattern.
+        holding = len(self.game.bots_holding)
+        for bot in self.game.bots_holding:
+            if holding > 1:
+                self.issue(commands.Charge, bot, random.choice([b.position for b in bot.visibleEnemies]))
+            else:
+                target = self.level.findRandomFreePositionInBox((bot.position-5.0, bot.position+5.0))
+                self.issue(commands.Attack, bot, target, lookAt = random.choice([b.position for b in bot.visibleEnemies]))
+
 
 class DefenderCommander(Commander):
     """
@@ -84,6 +114,7 @@ class DefenderCommander(Commander):
 
     def initialize(self):
         self.attacker = None
+        self.verbose = False
 
     def tick(self):
         if self.attacker and self.attacker.health <= 0:
@@ -122,7 +153,7 @@ class DefenderCommander(Commander):
                     their_flag = self.game.enemyTeam.flag.position
                     their_base = self.level.botSpawnAreas[self.game.enemyTeam.name][0]
                     their_score = self.game.enemyTeam.flagScoreLocation
-                    self.issue(commands.Defend, bot, [(p-bot.position, t) for p, t in [(targetPosition, 2.0), (their_flag, 1.0), (their_base, 1.0), (their_score, 1.0)]], description = 'defending by scanning')
+                    self.issue(commands.Defend, bot, [(p-bot.position, t) for p, t in [(targetPosition, 5.0), (their_flag, 2.5), (their_base, 2.5), (their_score, 2.5)]], description = 'defending by scanning')
 
 
 class BalancedCommander(Commander):
@@ -131,7 +162,7 @@ class BalancedCommander(Commander):
     def initialize(self):
         self.attacker = None
         self.defender = None
-        self.verbose = True
+        self.verbose = False
 
         # Calculate flag positions and store the middle.
         ours = self.game.team.flag.position
@@ -218,6 +249,11 @@ class BalancedCommander(Commander):
                 # issue the order
                 if target:
                     self.issue(commands.Attack, bot, target, description = 'random patrol')
+
+        for bot in self.game.bots_holding:
+            target = self.level.findRandomFreePositionInBox((bot.position-5.0, bot.position+5.0))
+            self.issue(commands.Attack, bot, target, lookAt = random.choice([b.position for b in bot.visibleEnemies]))
+
 
     def getFlankingPosition(self, bot, target):
         flanks = [target + f * 16.0 for f in [self.left, self.right]]

@@ -1,7 +1,7 @@
 import sys
 
 class ConnectServer(object):
-    ExpectedProtocolVersion = "1.2"
+    ExpectedProtocolVersion = "1.3"
 
     def __init__(self, protocolVersion = ExpectedProtocolVersion):
         super(ConnectServer, self).__init__()

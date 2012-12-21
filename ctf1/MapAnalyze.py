@@ -399,6 +399,22 @@ class MapAnalyzeVisibility(object):
 
         return bestPos
 
+    def getMin(self, pos,r,data, key):
+        minX, minY = self.clamp(int(pos.x-r), 0, self.w), self.clamp(int(pos.y-r), 0, self.h)
+        maxX, maxY = self.clamp(int(pos.x+r), 0, self.w), self.clamp(int(pos.y+r), 0, self.h)    
+        rangeX, rangeY = maxX - minX, maxY - minY
+
+        if (rangeX == 0.0) or (rangeY == 0.0):
+            return None 
+        bestPos = None
+        bestResult = 0
+        for x in range(minX, maxX):
+            for y in range(minY, maxY): 
+                if (bestPos == None or data[x][y]<bestResult):
+                    bestPos = Vector2(x+0.5,y+0.5)
+                    bestResult = data[x][y]
+        return bestPos
+
     def getBestPositionSector(self, pos, r, sector):
         minX, minY = self.clamp(int(pos.x-r), 0, self.w), self.clamp(int(pos.y-r), 0, self.h)
         maxX, maxY = self.clamp(int(pos.x+r), 0, self.w), self.clamp(int(pos.y+r), 0, self.h)    
@@ -452,6 +468,8 @@ class MapAnalyzeVisibility(object):
 
 
         return finalResult
+
+    #def getDistPathStraight(self, path)
 
     def debug(self):
         i=0
@@ -544,6 +562,8 @@ def getPathWithPathDistanceMap(start, end, mapData, finishWhenFoundPath = True):
 
     savePath('path',result, mapData)
     return result, distance, parent
+
+
 
 def computeMap(mapData, selector):
     w = len(mapData)

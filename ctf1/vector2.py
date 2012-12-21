@@ -1,3 +1,4 @@
+import random
 import math
 
 class Vector2(object):
@@ -30,6 +31,9 @@ class Vector2(object):
         Return a string representation of the Vector2.
         """
         return "Vector2({}, {})".format(self.x, self.y)
+
+    def __iter__(self):
+        return iter([self.x, self.y])
 
     def __eq__(self, other):
         """
@@ -178,6 +182,26 @@ class Vector2(object):
     #    Calculates a reflection vector to the plane with the given normal.
     #    """
     #     return Vector2(self - (2 * self.dotProduct(normal) * normal))
+
+
+    @staticmethod
+    def random():
+        """ Generate a random vector within in [(0, 0), (1, 1)) """
+        return Vector2(random.random(), random.random())
+
+    @staticmethod
+    def randomVectorInBox(min, max):
+        """ Generate a random vector within a box region. This uses the python random module as the random generator. """
+        return Vector2(random.random() * (max.x - min.x) + min.x, random.random() * (max.y - min.y) + min.y)
+    
+    @staticmethod
+    def randomUnitVector():
+        """ Generate a random unit vector with within a box region. This uses the python random module as the random generator. """
+        angle = 2 * math.pi * random.random()
+        return Vector2(math.cos(angle), math.sin(angle))
+
+
+
 
 
 

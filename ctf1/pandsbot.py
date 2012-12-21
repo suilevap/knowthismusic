@@ -19,7 +19,7 @@ from MapAnalyze import *
 
 #from commander import *
 #from commands import *
-#from ctf1.gameinfo import BotInfo
+#from gameinfo import BotInfo
 #from ctf1 import commands
 #from ctf1.vector2 import Vector2
 #from ctf1.bt import *
@@ -63,7 +63,8 @@ class PandSBot(Commander):
             bot.Enemy = None
             bot.enemyDefenders = []
             bot.safePathFailedLastTime = False
-
+            bot.path = []
+            bot.ready = False
 
         self.defenderPart = 0.4
         self.countBot = len(self.game.team.members)
@@ -152,6 +153,7 @@ class PandSBot(Commander):
 
         for bot in self.game.bots_alive:
             if (bot.brain != None):
+                self.updatePathPos(bot)
                 bot.brain.tick()
 
         #self.levelAnalysis.updateDangerStep(self.game.bots_alive)
@@ -159,6 +161,9 @@ class PandSBot(Commander):
       
         #print self.dangerEnemies
         self.lastTickTime=self.game.match.timePassed
+        if self.verbose:
+            print [(bot.name,bot.state) for bot in self.game.bots_alive]
+            print [(bot.name,bot.state) for bot in self.game.enemyTeam.members]
 
     
     def shutdown(self):
@@ -166,6 +171,47 @@ class PandSBot(Commander):
         analysis of the data accumulated during the game."""
 
         pass
+
+    def issue(self, CommandClass, bot, *args, **dct):
+        #if not self.verbose and 'description' in dct:
+        #    dct['description'] = bot.brain.debugInfo
+        #dct['description'] = bot.brain.debugInfo  + '#' +dct['description']
+
+        if self.verbose:
+            print bot.name+':'+bot.brain.debugInfo
+            dct['description'] = dct['description']+' state:'+str(bot.state)
+
+        bot.command = CommandClass
+        bot.lookAt = None
+        if CommandClass != commands.Defend:
+            target = args[0]
+            if isinstance(target, Vector2):
+                path =  [target]#getPath(bot.position, target, self.levelAnalysis.pathMap)
+            else:
+                path = target
+            bot.path = path
+            if CommandClass == commands.Attack and len(args)>=2:
+                lookAt = args[1]
+        else:
+            bot.path = []
+            bot.lookAt = None
+
+        return super(PandSBot, self).issue(CommandClass, bot, *args, **dct)
+
+    def updatePathPos(self, bot):
+        skip=0;
+        #if bot.command==command.Move or bot.command==command.Charge or bot.command==command.Attack: 
+
+        if len(bot.path)==1 and (bot.path[0]-bot.position).length()<0.5:
+            bot.path=[]
+            bot.ready = True
+        for i in range(len(bot.path)-1):
+            d1 = (bot.path[i]-bot.position).length()
+            d2 = (bot.path[i+1]-bot.position).length()
+            if (d2-d1)>0:
+                skip = i
+        bot.path = bot.path[skip:]
+        bot.ready = len(bot.path)==0 and bot.state != BotInfo.STATE_DEFENDING
 
 
     def getBotNearestToPoint(self,position):
@@ -176,7 +222,11 @@ class PandSBot(Commander):
 
 
     def freePos(self, pos):
-        return self.level.findNearestFreePosition(pos)
+        x,y= int(pos.x),int(pos.y)
+        if x>=0 and y>=y and x<self.level.width and y<self.level.height and self.level.blockHeights[x][y]==0:
+            return Vector2(x+0.5, y+0.5)
+        else:
+            return self.level.findNearestFreePosition(pos)
 
     def getVisibleAliveEnemies(self,bot):
         return [x for x in bot.visibleEnemies if x.health>0]
@@ -340,3 +390,4 @@ class PandSBot(Commander):
 
     def distToNextRespawn(self):
         return self.game.match.timeToNextRespawn*self.level.runningSpeed
+

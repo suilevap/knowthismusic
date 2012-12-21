@@ -1,4 +1,3 @@
-import copy
 import random
 
 from api.vector2 import Vector2
@@ -46,9 +45,9 @@ class LevelInfo(object):
         """
         The radius of the character
         """
-        self.FOVangle = 0.0
+        self.fieldOfViewAngles = []
         """
-        The visibility angle of the bots
+        The visibility angles of the bots in each of the different bot states. See BotInfo for the states
         """
         self.firingDistance = 0.0
         """
@@ -148,8 +147,9 @@ class LevelInfo(object):
     def createFromWorldBuilder(cls, world, worldBuilder, levelConfig): 
         levelInfo = LevelInfo()
 
-        worldBounds = world.getBounds().getMaximum()
-        levelInfo.width, levelInfo.height = int(worldBounds.x), int(worldBounds.z)
+        worldBounds = world.getBounds()
+        extents = worldBounds.getMaximum()
+        levelInfo.width, levelInfo.height = int(extents.x), int(extents.z)
         levelInfo.blockHeights = [ [worldBuilder.getAltitude(x,y) for y in xrange(levelInfo.height)] for x in xrange(levelInfo.width)]     
 
         levelInfo.teamNames = levelConfig.teamConfigs.keys()
@@ -217,11 +217,18 @@ class GameInfo(object):
         return [b for b in self.bots_alive if b.state == BotInfo.STATE_IDLE]
 
     @property
+    def bots_holding(self):
+        """
+        The list of the attacking bots in this team that are deadlocked by defenders.
+        """
+        return [b for b in self.bots_alive if b.state == BotInfo.STATE_HOLDING]
+
+    @property
     def enemyFlags(self):
         """
         Returns a list of FlagInfo objects for all enemy flags. Set up to support more than one enemy team 
         """
-        return [f for f in self.flags.values() if f.team != self.team.name]
+        return [f for f in self.flags.values() if f.team != self.team]
 
     def addTeam(self, team):
         self.teams[team.name] = team
@@ -263,6 +270,9 @@ class TeamInfo(object):
         The (min, max) extents (Vector2, Vector2) of each team's bot spawn area
         """
 
+    def __repr__(self):
+        return "TeamInfo(name='{}')".format(self.name)
+
 
 class FlagInfo(object):
     """
@@ -295,6 +305,9 @@ class FlagInfo(object):
         respawnTimer        Time in seconds until a dropped flag is respawned at its spawn location
         """
 
+    def __repr__(self):
+        return "FlagInfo(name='{}')".format(self.name)
+
 
 class BotInfo(object):
     """
@@ -311,6 +324,7 @@ class BotInfo(object):
     STATE_CHARGING  =  5
     STATE_SHOOTING  =  6
     STATE_TAKINGORDERS = 7
+    STATE_HOLDING   =  8
 
     def __init__(self, name):
         super(BotInfo, self).__init__()
@@ -340,7 +354,7 @@ class BotInfo(object):
         """
         self.facingDirection = None
         """
-        The last known movement direction (Vector2) of the bot, None for bots that you have never seen
+        The last known facing direction (Vector2) of the bot, None for bots that you have never seen
         """
         self.seenlast = None
         """
@@ -360,7 +374,9 @@ class BotInfo(object):
         List of BotInfo objects for enemies which are visible by the team and can see this bot
         For enemy bots which are not visible to this commander, this will be an empty list.
         """
-        
+       
+    def __repr__(self):
+        return "BotInfo(name='{}')".format(self.name)
 
 class MatchInfo(object):
     """
@@ -437,7 +453,7 @@ def toJSON(python_object):
         return {'__class__': 'LevelInfo',
                 '__value__': { 'width': level.width, 'height': level.height, 'blockHeights': level.blockHeights, 'teamNames': level.teamNames,
                                'flagSpawnLocations': level.flagSpawnLocations, 'flagScoreLocations': level.flagScoreLocations, 'botSpawnAreas': level.botSpawnAreas,
-                               'characterRadius': level.characterRadius, 'FOVangle': level.FOVangle, 'firingDistance': level.firingDistance,
+                               'characterRadius': level.characterRadius, 'fieldOfViewAngles': level.fieldOfViewAngles, 'firingDistance': level.firingDistance,
                                'walkingSpeed': level.walkingSpeed, 'runningSpeed': level.runningSpeed,
                                'gameLength': level.gameLength, 'initializationTime': level.initializationTime , 'respawnTime': level.respawnTime }}
 
@@ -510,7 +526,7 @@ def fromJSON(dct):
             for teamName, teamSpawnArea in value['botSpawnAreas'].items():
                 level.botSpawnAreas[teamName.encode('utf-8')] = (toVector2(teamSpawnArea[0]), toVector2(teamSpawnArea[1]))
             level.characterRadius = value['characterRadius']
-            level.FOVangle = value['FOVangle']
+            level.fieldOfViewAngles = value['fieldOfViewAngles']
             level.firingDistance = value['firingDistance']
             level.walkingSpeed = value['walkingSpeed']
             level.runningSpeed = value['runningSpeed']
@@ -592,6 +608,9 @@ def fromJSON(dct):
 
 
 def fixupReferences(obj, game):
+    for name, bot in game.bots.items():
+        assert bot is not None
+
     if isinstance(obj, LevelInfo):
         pass
 
@@ -636,21 +655,31 @@ def fixupReferences(obj, game):
         if combatEvent.type == MatchCombatEvent.TYPE_KILLED:
             combatEvent.instigator = game.bots[combatEvent.instigator]
             combatEvent.subject = game.bots[combatEvent.subject]
+            assert combatEvent.subject is not None
+            assert combatEvent.instigator is not None
         elif combatEvent.type == MatchCombatEvent.TYPE_FLAG_PICKEDUP:
             combatEvent.instigator = game.bots[combatEvent.instigator]
             combatEvent.subject = game.flags[combatEvent.subject]
+            assert combatEvent.subject is not None
+            assert combatEvent.instigator is not None
         elif combatEvent.type == MatchCombatEvent.TYPE_FLAG_DROPPED:
             combatEvent.instigator = game.bots[combatEvent.instigator]
             combatEvent.subject = game.flags[combatEvent.subject]
+            assert combatEvent.subject is not None
+            assert combatEvent.instigator is not None
         elif combatEvent.type == MatchCombatEvent.TYPE_FLAG_CAPTURED:
             combatEvent.instigator = game.bots[combatEvent.instigator]
             combatEvent.subject = game.flags[combatEvent.subject]
+            assert combatEvent.subject is not None
+            assert combatEvent.instigator is not None
         elif combatEvent.type == MatchCombatEvent.TYPE_FLAG_RESTORED:
-            assert combatEvent.instigator == None
+            assert combatEvent.instigator is None
             combatEvent.subject = game.flags[combatEvent.subject]
+            assert combatEvent.subject is not None
         elif combatEvent.type == MatchCombatEvent.TYPE_RESPAWN:
-            assert combatEvent.instigator == None
+            assert combatEvent.instigator is None
             combatEvent.subject = game.bots[combatEvent.subject]
+            assert combatEvent.subject is not None
         else:
             assert False, "Unknown event type"
 
@@ -680,6 +709,7 @@ def mergeBotInfo(gameInfo, newBotInfo):
 
 def mergeMatchInfo(gameInfo, newMatchInfo):
     matchInfo = gameInfo.match
+    matchInfo.scores            = newMatchInfo.scores
     matchInfo.timeRemaining     = newMatchInfo.timeRemaining
     matchInfo.timeToNextRespawn = newMatchInfo.timeToNextRespawn
     matchInfo.timePassed        = newMatchInfo.timePassed

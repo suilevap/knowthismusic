@@ -1,16 +1,7 @@
-#################################################################################
-#  This file is part of The AI Sandbox.
-#
-#  Copyright (c) 2007-2012, AiGameDev.com
-#
-#  Credits:         See the PEOPLE file in the base directory.
-#  License:         This software may be used for your own personal research
-#                   and education only.  For details, see the LICENSING file.
-################################################################################
-
-import bootstrap
-
+#!/usr/bin/python2.7 -u
 import sys
+sys.path.append('./game/impl-1.6-py2.7.egg')
+
 import os
 import glob
 from inspect import isclass
@@ -42,9 +33,6 @@ def getCommander(name, path):
         files.append(filename)
     else:
         files = glob.glob(os.path.join(path, '*.py'))
-
-    logger.debug(files)
-    flushLog(logger)
 
     modules = []
     for file in files:
@@ -111,9 +99,8 @@ def main(args):
         sys.path.insert(0, args.path)
 
     logger.addHandler(logging.StreamHandler(sys.stderr))
-    logger.addHandler(logging.FileHandler(os.path.join('output', args.name + '.log'), mode='w+'))
+    logger.addHandler(logging.FileHandler(os.path.join('logs', args.name + '.log'), mode='w+'))
     logger.setLevel(logging.DEBUG)
-    logger.debug(sys.argv)
     flushLog(logger)
 
     commanderCls = getCommander(args.commander, args.path)
@@ -123,12 +110,11 @@ def main(args):
     logger.debug('Connecting to {}:{}'.format(args.serverHost, args.serverPort))
     flushLog(logger)
 
-    wrapper = networkclient.NetworkClient((args.serverHost, args.serverPort), commanderCls)
-    wrapper.run()
+    wrapper = networkclient.NetworkClient((args.serverHost, args.serverPort), commanderCls, args.name)
 
     try:
         wrapper.run() 
-    except DisconnectError:
+    except networkclient.DisconnectError:
         pass
 
     logger.debug('Finished')
