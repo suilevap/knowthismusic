@@ -102,6 +102,7 @@ class PandSBot(Commander):
         self.dangerMapUpdated = False
         self.timeMap, self.enemyDistMap = self.generateTimeMap()
         print 'timeMap done'
+        self.flagPoints=self.generateFlagPoints()
 
 
         self.levelAnalysis.mergeDangerStaticWith([ [    (3-self.timeMap[x][y])*64
@@ -167,6 +168,8 @@ class PandSBot(Commander):
             if (bot.brain != None):
                 self.updatePathPos(bot)
                 bot.brain.tick()
+                if self.verbose:
+                    print bot.name+':'+bot.brain.debugInfo
 
         #self.levelAnalysis.updateDangerStep(self.game.bots_alive)
         #saveImage('danger', self.levelAnalysis.dangerMap)
@@ -174,9 +177,9 @@ class PandSBot(Commander):
         #print self.dangerEnemies
         self.lastTickTime=self.game.match.timePassed
         self.timeAfterRespawn = self.game.match.timePassed - self.lastRespawnTime;
-        if self.verbose:
-            print [(bot.name,bot.state) for bot in self.game.bots_alive]
-            print [(bot.name,bot.state) for bot in self.game.enemyTeam.members]
+        #if self.verbose:
+        #    print [(bot.name,bot.state) for bot in self.game.bots_alive]
+        #    print [(bot.name,bot.state) for bot in self.game.enemyTeam.members]
 
     
     def shutdown(self):
@@ -361,10 +364,21 @@ class PandSBot(Commander):
         if not self.dangerMapUpdated:
             #print 'dangerMapUpdated'
             #print self.dangerEnemies
-            self.levelAnalysis.updateDangerStep(self.dangerEnemies, self.level.firingDistance*1.0)
+            self.levelAnalysis.updateDangerStep(self.dangerEnemies, self.level.firingDistance*1.0+2)
             self.dangerMapUpdated = True
         path = self.levelAnalysis.getPathThroughDanger(start, end)
         return path
+
+    def generateFlagPoints(self):
+        path, distMap, parentMap = getPathWithPathDistanceMap( self.game.enemyTeam.flag.position, self.ourSpawn, self.levelAnalysis.pathMap, False)
+        d = self.level.firingDistance*2+2
+        result=[]
+        for y in range(self.level.height):
+            for x in range(self.level.width):
+                if abs(distMap[x][y]-d)<0.5:
+                    result.append(Vector2(x+0.5,y+0.5))
+        return result
+
 
     def generateTimeMap(self):
         path, distMap, parentMap = getPathWithPathDistanceMap(self.spawn, self.game.team.flag.position, self.levelAnalysis.pathMap, False)
@@ -408,7 +422,10 @@ class PandSBot(Commander):
         if self.unknownEnemiesCount>0 and self.dangerAtRespawn>0:
             timeFormUnknownEnemy = safeTime-self.timeAfterRespawn
         else:
-            timeFormUnknownEnemy = timeFromRespawn
+            if self.unknownEnemiesCount>0:
+                timeFormUnknownEnemy = 0
+            else:
+                timeFormUnknownEnemy = timeFromRespawn
 
         time = min([timeFromRespawn, timeFromKnownEnemy, timeFormUnknownEnemy])
 
@@ -421,7 +438,7 @@ class PandSBot(Commander):
         if self.dangerAtRespawn<0.3:
             return False
 
-        isSafe = self.EstimateTimeBeforeMeet(pos)>=0
+        isSafe = self.EstimateTimeBeforeMeet(pos)>0
 
         return isSafe
 
