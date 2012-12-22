@@ -57,7 +57,8 @@ class MapAnalyzeVisibility(object):
         self.dangerMap =[ [(0) for y in range(self.h)] for x in range(self.w)]
         self.pathMap = self.createMapForPathFinding()
         self.dangerMapStatic =[ [ -1 if self.map[x][y]>0 else 1 for y in range(self.h)] for x in range(self.w)]
-
+        self.visibleSafeToCharge = self.generateVisibleSafeMap()
+        self.mergeDangerStaticWith(self.visibleSafeToCharge)
         self.cornerPoints = []
         for y in range(self.h):
             for x in range(self.w):
@@ -65,15 +66,15 @@ class MapAnalyzeVisibility(object):
                     self.cornerPoints.append(Vector2(x+0.5,y+0.5))
         
     def pointSafeToCharge(self, x,y):
-        sectors=self.getAllSectors(Vector2(x,y), 4)
-        return len(sectors)<=2
+        sectors=self.getAllSectors(Vector2(x,y), 2)
+        return len(sectors)==1 or (len(sectors)==2 and (sectors[1]-sectors[0])<=1) or (len(sectors)==3 and abs(sectors[1]-sectors[0])<=1 and abs(sectors[2]-sectors[1])<=1) 
 
     def generateVisibleSafeMap(self):
         result=[ [(0) for y in range(self.h)] for x in range(self.w)]
         for y in range(self.h):
             for x in range(self.w):
-                pass
-        saveImage(result)
+                result[x][y] = 0 if self.pathMap[x][y]==-1 else  (self.averageMin[x][y]*8-self.maxField[x][y])/4#0 if self.pointSafeToCharge(x,y) else 64
+        saveImage('saveMap',result)
         return result
 
 
@@ -124,7 +125,8 @@ class MapAnalyzeVisibility(object):
     def mergeDangerStaticWith(self, data):
         for y in range(self.h):
             for x in range(self.w):
-                self.dangerMap[x][y]+=data[x][y]
+                if self.dangerMap[x][y] != -1:
+                    self.dangerMap[x][y]+=data[x][y]
 
     def updateDanger(self, pos, dir, n, r, cost = 196):
         self.updateMap(self.dangerMap, pos, dir, n, r, cost)
@@ -605,14 +607,14 @@ def transpose(m):
     return result
 
 def saveImage(name, data):
-    pass
-    #data = transpose(data)
-    #arr = numpy.array(data, dtype='byte')
-    #
-    #img = PIL.Image.fromarray(arr, mode ='L')
-    ##img.transpose(FLIP_LEFT_RIGHT)
-    #img.save('D:\\tmp\\'+name+'.png') 
-    ##img.show()
+    #pass
+    data = transpose(data)
+    arr = numpy.array(data, dtype='byte')
+    
+    img = PIL.Image.fromarray(arr, mode ='L')
+    #img.transpose(FLIP_LEFT_RIGHT)
+    img.save('D:\\tmp\\'+name+'.png') 
+    #img.show()
 
 def saveImageVector(name, data):
     pass

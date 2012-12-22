@@ -334,8 +334,8 @@ def Command_AttackPathSmartStart(commander, bot, path):
     if len(path)>commander.level.firingDistance+2:
         d = int(commander.level.firingDistance)
         path = path[:d]
-        points = commander.levelAnalysis.getAllVisiblePoints(path[d-1],commander.level.firingDistance*2, -1, 0, True)
-        _, lookP = min([(commander.enemyDistMap[x][y], (x,y)) for (x,y) in points], key=lambda pair:pair[0])
+        points = commander.levelAnalysis.getAllVisiblePoints(path[d-1],commander.level.firingDistance*2, -1, 0, False)
+        _, lookP = min([(commander.enemyDistMap[x][y] if commander.enemyDistMap[x][y]>0 else 10000, (x,y)) for (x,y) in points], key=lambda pair:pair[0])
         lookAt = Vector2(lookP[0]+0.5, lookP[1]+0.5)
     else:
         lookAt = None
@@ -547,9 +547,9 @@ def GetTimeToFight(commander, bot, enemy):
     return (distance-commander.level.firingDistance)/speed
 
 def GetInterceptPoint(commander, bot, start, end):
-    path = getPath(start, end, commander.levelAnalysis.map)
+    path = getPath(start, end, commander.levelAnalysis.pathMap)
     #min(path, key=lambda p: 
-    #myPath,distmap, parent = getPathWithPathDistanceMap(bot.position, end, commander.levelAnalysis.map, False)
+    #myPath,distmap, parent = getPathWithPathDistanceMap(bot.position, end, commander.levelAnalysis.pathMap, False)
     if len(path)==0:
         return end
     points = [p for p in path if (p-start).length()>(p-bot.position).length() ]
@@ -594,7 +594,7 @@ TakeFlag = BTSequence('TakeFlag',
         BTSelector(
 
             BTCondition(
-                lambda commander,bot: commander.enemyBotsAlive==0,
+                lambda commander,bot: commander.enemyBotsAlive<len(commander.game.bots_alive)/2 or commander.unknownEnemiesCount==0,
                 BTSequence(
                     BTBotTask(lambda commander,bot: commander.issue(commands.Charge, bot, commander.game.enemyTeam.flag.position, description='Charge flag (ATTACKER)')),
                     BTBotTask(lambda commander,bot: 
@@ -617,7 +617,11 @@ TakeFlag = BTSequence('TakeFlag',
                 BTSelector(
                     BTSequence(
                         BTCondition(lambda commander,bot: commander.EstimateTimeBeforeMeet(bot.position)>-3),
-                        BTBotTask(Command_AttackEnemyFlagFlankSmart)
+                        BTBotTask(
+                                  choice([Command_AttackEnemyFlagFlankSmart, 
+                                          Command_AttackEnemyFlagFlankSmartStart, 
+                                          Command_RunToEnemyFlagFlank4, 
+                                          Command_RunToEnemyFlag]))
                     ),
                     BTBotTask(Command_AttackEnemyFlagFlankSmartStart)
 
@@ -812,8 +816,7 @@ ReactAtDanger = BTSequence(
         )  
 
 DefendFlag = BTSequence(
-    BTCondition(lambda commander,bot: bot.defendBreakingPointIndex==-1 or (bot.position - bot.defendBreakingPoint[0]).length()>1), #(bot.position - commander.game.team.flag.position).length()>5),
-    BTCondition(Condition_ChooseBreakingPoint),
+    BTCondition(lambda commander,bot: bot.defendBreakingPointIndex==-1 or (bot.position - bot.defendBreakingPoint[0]).length()>1 or (commander.game.team.flagSpawnLocation - commander.game.team.flag.position).length()>4), #(bot.position - commander.game.team.flag.position).length()>5),
     BTSelector(
         BTCondition( lambda commander,bot: (commander.game.team.flagSpawnLocation - commander.game.team.flag.position).length()>4,
             BTSequence(
@@ -836,11 +839,13 @@ DefendFlag = BTSequence(
         #    BTBotTask(Command_DefendMyFlag)
         #),
         BTSequence(
+            BTCondition(Condition_ChooseBreakingPoint),
             BTSelector(
                 BTCondition(lambda commander,bot: commander.IsPosSafeNow(bot.position),
                     BTBotTask(Command_MoveToMyFlag)),
                 BTBotTask(lambda commander,bot: Command_AttackSmartStart(commander, bot, bot.defendBreakingPoint[0]))
             ),
+            BTCondition(lambda commander,bot: bot.defendBreakingPoint==None or (bot.position - bot.defendBreakingPoint[0]).length()<1),
             BTBotTask(Command_DefendMyFlag)
         ),
         BTSequence(
