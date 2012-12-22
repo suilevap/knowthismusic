@@ -4,8 +4,8 @@
 
 # The commander can send 'Commands' to individual bots.  These are listed and
 # documented in commands.py from the ./api/ folder also.
-#import sys
-#sys.path.append("c:\\Python27\\Lib\\site-packages\\")
+import sys
+sys.path.append("c:\\Python27\\Lib\\site-packages\\")
 
 from api import Commander
 from api import commands
