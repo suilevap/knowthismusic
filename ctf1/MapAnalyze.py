@@ -109,8 +109,11 @@ class MapAnalyzeVisibility(object):
     def updateDangerStatic(self, pos, r, cost = 128):
         self.updateMap(self.dangerMapStatic, pos, Vector2(0,0), 0, r, cost)
 
+    def mergeDangerStaticWith(self, data):
+        for y in range(self.h):
+            for x in range(self.w):
+                self.dangerMap[x][y]+=data[x][y]
 
-     
     def updateDanger(self, pos, dir, n, r, cost = 196):
         self.updateMap(self.dangerMap, pos, dir, n, r, cost)
 
@@ -473,25 +476,25 @@ class MapAnalyzeVisibility(object):
 
     def debug(self):
         i=0
-        for d in self.visibleSectors:
-            saveImage('min_'+str(i), [ [(d[x][y][0])for x in range(self.w)] for y in range(self.h)] )
-            saveImage('max_'+str(i), [ [(d[x][y][1])for x in range(self.w)] for y in range(self.h)] )
-            i+=1
-        saveImage('all_min', self.averageMin )
+        #for d in self.visibleSectors:
+        #    saveImage('min_'+str(i), [ [(d[x][y][0])for x in range(self.w)] for y in range(self.h)] )
+        #    saveImage('max_'+str(i), [ [(d[x][y][1])for x in range(self.w)] for y in range(self.h)] )
+        #    i+=1
+        #saveImage('all_min', self.averageMin )
 
-        saveImage('all_max', [ [(self.visibleSectors[0][x][y][1]
-                                     +self.visibleSectors[1][x][y][1]
-                                     +self.visibleSectors[2][x][y][1]
-                                     +self.visibleSectors[3][x][y][1]
-                                     +self.visibleSectors[4][x][y][1]
-                                     +self.visibleSectors[5][x][y][1]
-                                     +self.visibleSectors[6][x][y][1]
-                                     +self.visibleSectors[7][x][y][1]
-                                     +7)/8 for x in range(self.w)] for y in range(self.h)] )
+        #saveImage('all_max', [ [(self.visibleSectors[0][x][y][1]
+        #                             +self.visibleSectors[1][x][y][1]
+        #                             +self.visibleSectors[2][x][y][1]
+        #                             +self.visibleSectors[3][x][y][1]
+        #                             +self.visibleSectors[4][x][y][1]
+        #                             +self.visibleSectors[5][x][y][1]
+        #                             +self.visibleSectors[6][x][y][1]
+        #                             +self.visibleSectors[7][x][y][1]
+        #                             +7)/8 for x in range(self.w)] for y in range(self.h)] )
 
-        tmpbestDirectionsMap =[ [self.directions[self.bestDirectionsMap[x][y]] if self.map[x][y]==0 else None 
-                                for y in range(self.h)] for x in range(self.w) ]
-        saveImageVector('Dir', tmpbestDirectionsMap)
+        #tmpbestDirectionsMap =[ [self.directions[self.bestDirectionsMap[x][y]] if self.map[x][y]==0 else None 
+        #                        for y in range(self.h)] for x in range(self.w) ]
+        #saveImageVector('Dir', tmpbestDirectionsMap)
 
 
     def clamp(self, x, minValue, maxValue):
@@ -540,7 +543,7 @@ def getPathWithPathDistanceMap(start, end, mapData, finishWhenFoundPath = True):
 
     pathFounded = False
     if checkPos(0, xstart,ystart, 0,0, 0):
-        return [Vector2(x,y)]
+        return [Vector2(x+0.5,y+0.5)]
     while queue._qsize()>0:
         prior,pos = queue._get()
         x,y=pos
