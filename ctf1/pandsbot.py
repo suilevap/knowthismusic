@@ -4,8 +4,8 @@
 
 # The commander can send 'Commands' to individual bots.  These are listed and
 # documented in commands.py from the ./api/ folder also.
-import sys
-sys.path.append("c:\\Python27\\Lib\\site-packages\\")
+#import sys
+#sys.path.append("c:\\Python27\\Lib\\site-packages\\")
 
 from api import Commander
 from api import commands
@@ -42,7 +42,7 @@ class PandSBot(Commander):
 
     def initialize(self):
         """Use this function to setup your bot before the game starts."""
-        self.verbose = True    # display the command descriptions next to the bot labels
+        self.verbose = False    # display the command descriptions next to the bot labels
 
         # Calculate flag positions and store the middle.
         ours = self.game.team.flag.position
@@ -87,11 +87,12 @@ class PandSBot(Commander):
         #self.levelAnalysis.getBreakingPoints(path)
         #self.levelAnalysis.getBreakingMap(path, self.level.firingDistance)
         ##result = an.buildLOS()
-        self.attackingPaths = self.levelAnalysis.getBestBreakingPoints([self.ourSpawn], self.game.enemyTeam.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
-
+        self.attackingPaths = self.levelAnalysis.getBestBreakingPoints([self.ourSpawn], self.game.enemyTeam.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, 3)#int(self.countBot)+2*0)
+        print 'attackingPoints done'
         ourFlanks = [self.freePos(self.game.team.flag.position + f * 16.0) for f in [self.left, self.right]]
         startPoints = [self.spawn]+ourFlanks
-        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(startPoints, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
+        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(startPoints, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, 3)#int(self.countBot)+2*0)
+        print 'breakingPoints done'
 
 
         self.visibleEnemies =[]
@@ -99,16 +100,25 @@ class PandSBot(Commander):
         self.dangerEnemies =[]
         self.dangerEvents = []
         self.dangerMapUpdated = False
-        self.timeMap = self.generateTimeMap()
+        self.timeMap, self.enemyDistMap = self.generateTimeMap()
+        print 'timeMap done'
+
+
+        self.levelAnalysis.mergeDangerStaticWith([ [    (3-self.timeMap[x][y])*64
+                                                        if self.timeMap[x][y]<3
+                                                        else 0
+                                                    for y in range(self.levelAnalysis.h)] for x in range(self.levelAnalysis.w)])
 
         self.enemyDefendersDelta = 0
         self.enemyDefendersPrevious = 0
+        self.unknownEnemiesCount = self.countBot
         
 
         #print self.level.initializationTime
         #print "New commander"
         self.dangerAtRespawn = 0.0;
         self.lastRespawnTime = 0;
+        self.timeAfterRespawn = 0;
         self.updateDangerAtRespawn()
         
 
@@ -116,16 +126,18 @@ class PandSBot(Commander):
         """Override this function for your own bots.  Here you can access all the information in self.game,
         which includes game information, and self.level which includes information about the level."""
        
-        self.visibleEnemies = [bot for bot in self.game.enemyTeam.members if len(bot.seenBy)>0 and bot.health>0]
-        self.visibleEnemies2 = [[b.name for b in bot.visibleEnemies] for bot in self.game.team.members]
+        self.visibleEnemies = [bot for bot in self.game.enemyTeam.members if len(bot.seenBy)>=0 and bot.health>0 and bot.position!=None]
+        #self.visibleEnemies2 = [[b.name for b in bot.visibleEnemies] for bot in self.game.team.members]
 
         #print [b.health for b in self.visibleEnemies ]
         #print self.visibleEnemies2
 
         self.dangerEnemies = [bot for bot in self.game.enemyTeam.members 
-                               if bot.health>0 and 
+                               if bot.health>0 and bot.position!=None and
                                ((bot.seenlast)<self.eventInvalidationTime or 
                                 (bot.state == BotInfo.STATE_DEFENDING and (bot.seenlast)<self.eventInvalidationTime*2))]
+        self.unknownEnemiesCount = self.countBot-len(self.dangerEnemies)
+
 
         self.enemyDefenders = [b for b in self.game.enemyTeam.members if b.state == BotInfo.STATE_DEFENDING and b.health>0] 
         self.enemyDefendersDelta = len(self.enemyDefenders)-self.enemyDefendersPrevious
@@ -161,6 +173,7 @@ class PandSBot(Commander):
       
         #print self.dangerEnemies
         self.lastTickTime=self.game.match.timePassed
+        self.timeAfterRespawn = self.game.match.timePassed - self.lastRespawnTime;
         if self.verbose:
             print [(bot.name,bot.state) for bot in self.game.bots_alive]
             print [(bot.name,bot.state) for bot in self.game.enemyTeam.members]
@@ -243,6 +256,8 @@ class PandSBot(Commander):
 
     def getBestEnemy(self,bot, list):
         def getEnemyInverstPriority(bot,enemy):
+            if bot.position==None:
+                return 1000
             result = (bot.position-enemy.position).length()
             if (bot in enemy.visibleEnemies):
                 result /= 2
@@ -372,7 +387,33 @@ class PandSBot(Commander):
 
         #timeMap5s = computeMap(timeMap, lambda v,x,y: 255 if v>5 else v)
         #saveImage('timeMap3s', timeMap5s)
-        return timeMap
+        return timeMap, distMap
+
+    def EstimateTimeBeforeMeet(self, pos):
+        x,y = int(pos.x), int(pos.y)
+        safeTime = self.timeMap[x][y]
+
+        timeFromRespawn = self.game.match.timeToNextRespawn+safeTime
+
+        if self.enemyBotsAlive == 0:
+            return timeFromRespawn
+        if self.enemyBotsAlive == self.countBot:
+            timeFromRespawn *= 2
+        
+        if len(self.dangerEnemies)>0:
+            timeFromKnownEnemy = min( [((pos-b.position).length()- self.level.firingDistance) /self.level.runningSpeed for b in self.dangerEnemies])
+        else:
+            timeFromKnownEnemy = timeFromRespawn
+
+        if self.unknownEnemiesCount>0 and self.dangerAtRespawn>0:
+            timeFormUnknownEnemy = safeTime-self.timeAfterRespawn
+        else:
+            timeFormUnknownEnemy = timeFromRespawn
+
+        time = min([timeFromRespawn, timeFromKnownEnemy, timeFormUnknownEnemy])
+
+        
+        return time
 
     def IsPosSafeNow(self, pos):
         if self.enemyBotsAlive == 0:
@@ -380,11 +421,7 @@ class PandSBot(Commander):
         if self.dangerAtRespawn<0.3:
             return False
 
-        deltaTime = self.game.match.timePassed - self.lastRespawnTime;
-        
-        x,y = int(pos.x), int(pos.y)
-        safeTime = self.timeMap[x][y]
-        isSafe = safeTime>deltaTime
+        isSafe = self.EstimateTimeBeforeMeet(pos)>1
 
         return isSafe
 
