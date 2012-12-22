@@ -343,7 +343,8 @@ def Command_AttackPathSmartStart(commander, bot, path):
     commander.issue( command, bot, path, lookAt, description = 'Go smart at start')
     return True
 
-def Command_RunToEnemyFlagFlank4(commander, bot, fast):
+def Command_RunToEnemyFlagFlank4(commander, bot):
+    fast=True
     pos = commander.freePos(commander.game.enemyTeam.flag.position)
     path = GetPathFromFlank(commander, bot,pos)
     if len(path)<=1:
@@ -427,7 +428,7 @@ def Command_AttackDangerEvent(commander, bot):
 
 def Command_AttackEnemyFromFlank(commander, bot):
     path = GetPathFromFlank(commander, bot, bot.Enemy.position)
-    if len(path)>0 and (len(path)<commander.level.walkingSpeed*3 or bot.Enemy.state == BotInfo.STATE_DEFENDING):
+    if len(path)>0 and (len(path)<commander.level.walkingSpeed*5 or bot.Enemy.state == BotInfo.STATE_DEFENDING):
         #commander.issue(commands.Attack, bot, path, bot.Enemy.position,description='Attack enemy from flank');
         commander.issue(commands.Attack, bot, path, description='Attack enemy from flank');
         return True
@@ -540,6 +541,8 @@ def Command_MoveToSuppressEnemyPosition(commander, bot):
     return True
 
 def GetTimeToFight(commander, bot, enemy):
+    if bot.Enemy.state == BotInfo.STATE_DEFENDING:
+        return 999
     distance = (bot.position- enemy.position).length()
     speed = commander.level.runningSpeed
     if enemy.state == BotInfo.STATE_ATTACKING:
@@ -579,14 +582,11 @@ InterceptEnemy = BTSequence('Intercept My Flag',
         )
     )
 )
-ControlTerritory =  BTCondition(
-    lambda commander,bot: commander.enemyBotsAlive==0,
-    BTSequence('Control level',
-        BTBotTask(lambda commander,bot: 
-            Command_MoveToDefendPosition(
-                commander, bot, commander.level.findRandomFreePositionInBox((commander.game.enemyTeam.flagSpawnLocation-commander.level.firingDistance,commander.game.enemyTeam.flagSpawnLocation-+commander.level.firingDistance)))),
-        BTBotTask(Command_DefendCurrentPosition)
-    )
+ControlTerritory =  BTSequence('Control level',
+    BTBotTask(lambda commander,bot: 
+        Command_MoveToDefendPosition(
+            commander, bot, commander.level.findRandomFreePositionInBox((commander.game.enemyTeam.flagSpawnLocation-commander.level.firingDistance,commander.game.enemyTeam.flagSpawnLocation-+commander.level.firingDistance)))),
+    BTBotTask(Command_DefendCurrentPosition)
 )
 
 TakeFlag = BTSequence('TakeFlag',
@@ -615,15 +615,23 @@ TakeFlag = BTSequence('TakeFlag',
 
             BTCondition((lambda commander,bot: commander.enemyBotsAlive>0 and (commander.game.enemyTeam.flag.position-bot.position).length()>commander.level.firingDistance*1.2),
                 BTSelector(
-                    BTSequence(
-                        BTCondition(lambda commander,bot: commander.EstimateTimeBeforeMeet(bot.position)>-3),
-                        BTBotTask(
-                                  choice([Command_AttackEnemyFlagFlankSmart, 
-                                          Command_AttackEnemyFlagFlankSmartStart, 
-                                          Command_RunToEnemyFlagFlank4, 
-                                          Command_RunToEnemyFlag]))
-                    ),
-                    BTBotTask(Command_AttackEnemyFlagFlankSmartStart)
+                    #BTSequence(
+                    #    BTCondition(lambda commander,bot: commander.EstimateTimeBeforeMeet(bot.position)>-3),
+                    #    BTBotTask(
+                    #              choice([Command_AttackEnemyFlagFlankSmart, 
+                    #                      Command_AttackEnemyFlagFlankSmartStart, 
+                    #                      Command_RunToEnemyFlagFlank4, 
+                    #                      Command_RunToEnemyFlagFlank2,
+                    #                      Command_RunToEnemyFlag]))
+                    #),
+                    #BTBotTask(Command_AttackEnemyFlagFlankSmartStart)
+
+                    BTBotTask(
+                        choice([Command_AttackEnemyFlagFlankSmart, 
+                                Command_AttackEnemyFlagFlankSmartStart, 
+                                Command_RunToEnemyFlagFlank4, 
+                                Command_RunToEnemyFlagFlank2,
+                                Command_RunToEnemyFlag]))
 
                     #BTBotTask(Command_AttackEnemyFlagFlank3)
                 )
@@ -697,16 +705,16 @@ ChaseFlagCarrier =BTSequence(
     )
 )
 
-AttackFromFlank = BTCondition(lambda commander,bot: bot.Enemy!=None and bot.Enemy.health>0,
+AttackFromFlank = BTCondition(lambda commander,bot: bot.Enemy!=None and bot.Enemy.health>0 and commander.enemyDefendersDelta!=0,
     BTSelector('Attack from flank',
-        BTCondition(lambda commander, bot: commander.enemyDefendersDelta!=0,
-            BTBotTask(Command_None)
-        ),
+        #BTCondition(lambda commander, bot: commander.enemyDefendersDelta!=0,
+        #    BTBotTask(Command_None)
+        #),
         BTBotTask(Command_AttackEnemyFromFlank),
         BTSequence(
             BTCondition(lambda commander,bot: (bot.state==BotInfo.STATE_DEFENDING or bot.state==BotInfo.STATE_HOLDING)  and len(GetFriends(commander,bot))>=len(bot.seenBy)),
             #BTBotTask(Command_AttackEnemy)
-            BTBotTask(Command_ChargeEnemyWithPrediction)
+            BTBotTask(Command_ChargeEnemy)
         ),
         BTSequence(
             BTCondition(lambda commander,bot: bot.Enemy.state==BotInfo.STATE_DEFENDING, #and bot in bot.Enemy.visibleEnemies,
@@ -723,11 +731,11 @@ AttackFromFlank = BTCondition(lambda commander,bot: bot.Enemy!=None and bot.Enem
 SmartAttack = BTSequence('SmartAttack',
     BTCondition(lambda commander,bot: bot.Enemy!=None and bot.Enemy.health>0,
         BTSelector(
-            BTSequence('Killed Enemy',
-                BTCondition(lambda commander,bot: bot.Enemy==None or bot.Enemy.health<=0),
-                BTCondition(lambda commander,bot: Condition_SetEnemy(commander, bot, None)),
-                BTBotTask(Command_None)
-            ),
+        #    BTSequence('Killed Enemy',
+        #        BTCondition(lambda commander,bot: bot.Enemy==None or bot.Enemy.health<=0),
+        #        BTCondition(lambda commander,bot: Condition_SetEnemy(commander, bot, None)),
+        #        BTBotTask(Command_None)
+        #    ),
             BTSequence('EnemySee',
                 BTCondition(lambda commander,bot: len(bot.seenBy)>0),#bot in bot.Enemy.visibleEnemies),
                 BTSelector(                    
@@ -741,7 +749,7 @@ SmartAttack = BTSequence('SmartAttack',
 
                         AttackFromFlank
                     ),
-                    BTCondition(lambda commander,bot: len(bot.visibleEnemies)==0,
+                    BTCondition(lambda commander,bot: len(bot.visibleEnemies)<=1,
                         BTBotTask(Command_AttackEnemy))
                 )
             ),
@@ -911,7 +919,10 @@ AttackerBTTree = BTTree(
         BTSequence(
             BTCondition(lambda commander,bot: len(commander.visibleEnemies)>0),
             BTCondition(lambda commander,bot: Condition_SetEnemyIfNotNone(commander,bot, commander.getBestEnemy(bot,commander.visibleEnemies)) 
-                        and bot.Enemy!=None and (bot.Enemy.position-bot.position).length()<commander.level.firingDistance*4,
+                        and bot.Enemy!=None 
+                        and (((bot.Enemy.position-bot.position).length()<commander.level.firingDistance*4
+                                and (commander.game.enemyTeam.flag.position-bot.position).length()>(bot.Enemy.position-bot.position).length())
+                            or (bot.Enemy.position-bot.position).length()<commander.level.firingDistance*1.5),
             #BTCondition(lambda commander,bot: bot.Enemy!= None and 
             #            (bot.Enemy.position-bot.position).length()<commander.level.firingDistance 
             #            and commander.botCanSeePos(bot, bot.Enemy.position)),
