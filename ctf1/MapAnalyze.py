@@ -542,8 +542,8 @@ def getPathWithPathDistanceMap(start, end, mapData, finishWhenFoundPath = True):
         return result
 
     pathFounded = False
-    if checkPos(0, xstart,ystart, 0,0, 0):
-        return [Vector2(x+0.5,y+0.5)]
+    if checkPos(0, xstart,ystart, 0,0, 0) and finishWhenFoundPath:
+        return [Vector2(x+0.5,y+0.5)], distance, parent
     while queue._qsize()>0:
         prior,pos = queue._get()
         x,y=pos
