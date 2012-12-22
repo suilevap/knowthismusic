@@ -252,7 +252,7 @@ class MapAnalyzeVisibility(object):
         savePathWithText('pathDelta',result, self.map)
         return result
 
-    def getBreakingMap(self, paths, r, allPaths = [],ignorePoints = None):
+    def getBreakingMap(self, paths, r, allPathsData = None,ignorePoints = None):
        
         ranks =[ [(0) for y in range(self.h)] for x in range(self.w)]
         rank = 1.0
@@ -264,7 +264,7 @@ class MapAnalyzeVisibility(object):
                 rank = 1.0-abs(0.95-part)
                 prevPoint = path[i-1]
                 i+=1
-
+                
                 if ignorePoints!=None and (x,y) in ignorePoints:
                     continue
                 
@@ -277,23 +277,28 @@ class MapAnalyzeVisibility(object):
                             d *= 16
                         ranks[x][y] = max([ranks[x][y] ,d])
 
+        if allPathsData != None:
+            for x in range(0,self.w):
+                for y in range(0,self.h):
+                    if allPathsData[x][y]!=0:
+                        ranks[x][y] /= allPathsData[x][y]+1
+        #for path in allPaths:
+        #    i = 0;
+        #    for p in path:
+        #        x,y=int(p.x), int(p.y)
+        #        part = i*1.0/len(path)
+        #        prevPoint = path[i-1]
+        #        i+=1
 
-        for path in allPaths:
-            i = 0;
-            for p in path:
-                x,y=int(p.x), int(p.y)
-                part = i*1.0/len(path)
-                prevPoint = path[i-1]
-                i+=1
+        #        if ignorePoints!=None and (x,y) in ignorePoints:
+        #            continue
+        #        
+        #        points = self.getAllVisiblePoints(p, r, self.getSectorIndexFloat(p-prevPoint), 1)
+        #        for visiblePoint in points:
+        #            x,y = visiblePoint
+        #            if (self.distanceField[x][y] >= 0):
+        #                ranks[x][y] /= 1.25
 
-                if ignorePoints!=None and (x,y) in ignorePoints:
-                    continue
-                
-                points = self.getAllVisiblePoints(p, r, self.getSectorIndexFloat(p-prevPoint), 1)
-                for visiblePoint in points:
-                    x,y = visiblePoint
-                    if (self.distanceField[x][y] >= 0):
-                        ranks[x][y] /= 1.25
             #rank += 1.0/len(path)
 
         #for x in range(0,self.w):
@@ -304,6 +309,20 @@ class MapAnalyzeVisibility(object):
         #            ranks[x][y] = 0
         saveImage("breaking", ranks) 
         return ranks
+
+    def MergeDataOnPath(self, path,r, data, value):
+        i = 0;
+        for p in path:
+            x,y=int(p.x), int(p.y)
+            part = i*1.0/len(path)
+            prevPoint = path[i-1]
+            i+=1
+                
+            points = self.getAllVisiblePoints(p, r, self.getSectorIndexFloat(p-prevPoint), 1)
+            for visiblePoint in points:
+                x,y = visiblePoint
+                if (self.map[x][y] == 0):
+                    data[x][y] += value
 
     def getTheBestPos(self, data):
         best = 0
@@ -322,6 +341,8 @@ class MapAnalyzeVisibility(object):
         tmpMap = self.createMapForPathFinding()
         result = []
         allpaths = []
+        allPathData = [ [0  for y in range(self.h)] for x in range(self.w)]
+
         for i in range(n):
             start = startPoints[i%len(startPoints)]
             path = getPath(start, end, tmpMap)
@@ -331,7 +352,8 @@ class MapAnalyzeVisibility(object):
 
             allpaths.append(path[-pathMaxLength:])
 
-            breakingMap = self.getBreakingMap([path], rPrefered, allpaths)
+            self.MergeDataOnPath(path, rPrefered, allPathData, 1)
+            breakingMap = self.getBreakingMap([path], rPrefered, allPathData)
             x,y = self.getTheBestPos(breakingMap)
             bestPoint = Vector2(x+0.5,y+0.5)
 
@@ -358,7 +380,7 @@ class MapAnalyzeVisibility(object):
                         tmpMap[x][y] = 255
         savePath("allBreakingPoints", result, self.createMapForPathFinding())
         saveImage('corners', [ [ 0 if self.distanceField[x][y]<0 else 124 if self.isCorner(x,y) else 255 for x in range(self.w)] for y in range(self.h)] )
-
+        saveImage('allPathData', allPathData)
         return result
 
     def getMaxD(self, pos1, pos2):
@@ -606,15 +628,16 @@ def transpose(m):
             result[y][x] = m[x][y]
     return result
 
+
 def saveImage(name, data):
-    #pass
-    data = transpose(data)
-    arr = numpy.array(data, dtype='byte')
-    
-    img = PIL.Image.fromarray(arr, mode ='L')
-    #img.transpose(FLIP_LEFT_RIGHT)
-    img.save('D:\\tmp\\'+name+'.png') 
-    #img.show()
+    pass
+    #data = transpose(data)
+    #arr = numpy.array(data, dtype='byte')
+    #
+    #img = PIL.Image.fromarray(arr, mode ='L')
+    ##img.transpose(FLIP_LEFT_RIGHT)
+    #img.save('D:\\tmp\\'+name+'.png') 
+    ##img.show()
 
 def saveImageVector(name, data):
     pass
@@ -632,37 +655,37 @@ def saveImageVector(name, data):
     #img.save('D:\\tmp\\'+name+'.png') 
 
 def savePath(name, path,data):
-    #pass
-    s = 16;
-    w = len(data)
-    h = len(data[0])
-    img = PIL.Image.new(mode="RGB", size=(w*s, h*s), color = 0xFFFFFF)
-    draw = ImageDraw.Draw(img)
-    
-    for y in range(h):
-        for x in range(w):
-            color = 0xFFFFFF-data[x][y] if data[x][y]>0 else 0
-            draw.rectangle([(x*s,y*s),((x+1)*s,(y+1)*s)], fill = color)
-    i = 1
-    for p in path:
-        if isinstance(p, tuple):
-            p1 = p[0]
-            if isinstance(p[1], list):
-                p2 = p[1]
-            else:
-                p2 = [p[1]]
-        else:
-            p1 = p
-            p2 = None
+    pass
+    #s = 16;
+    #w = len(data)
+    #h = len(data[0])
+    #img = PIL.Image.new(mode="RGB", size=(w*s, h*s), color = 0xFFFFFF)
+    #draw = ImageDraw.Draw(img)
+    #
+    #for y in range(h):
+    #    for x in range(w):
+    #        color = 0xFFFFFF-data[x][y] if data[x][y]>0 else 0
+    #        draw.rectangle([(x*s,y*s),((x+1)*s,(y+1)*s)], fill = color)
+    #i = 1
+    #for p in path:
+    #    if isinstance(p, tuple):
+    #        p1 = p[0]
+    #        if isinstance(p[1], list):
+    #            p2 = p[1]
+    #        else:
+    #            p2 = [p[1]]
+    #    else:
+    #        p1 = p
+    #        p2 = None
 
-        draw.ellipse([(p1.x*s-s/4,p1.y*s-s/4),(p1.x*s+s/4,p1.y*s+s/4) ], fill=0x00FF00)
-        draw.text((p1.x*s-s/8,p1.y*s-s/8), str(i), fill=0xFF0000)
-        if p2!=None:
-            for p3 in p2:
-                draw.line([(p1.x*s,p1.y*s),(p3.x*s,p3.y*s)], fill=0x00FF00)
-        i+=1
-                    
-    img.save('D:\\tmp\\'+name+'.png') 
+    #    draw.ellipse([(p1.x*s-s/4,p1.y*s-s/4),(p1.x*s+s/4,p1.y*s+s/4) ], fill=0x00FF00)
+    #    draw.text((p1.x*s-s/8,p1.y*s-s/8), str(i), fill=0xFF0000)
+    #    if p2!=None:
+    #        for p3 in p2:
+    #            draw.line([(p1.x*s,p1.y*s),(p3.x*s,p3.y*s)], fill=0x00FF00)
+    #    i+=1
+    #                
+    #img.save('D:\\tmp\\'+name+'.png') 
     
 
 def savePathWithText(name, path,data):
