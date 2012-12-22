@@ -42,7 +42,7 @@ class PandSBot(Commander):
 
     def initialize(self):
         """Use this function to setup your bot before the game starts."""
-        self.verbose = False    # display the command descriptions next to the bot labels
+        self.verbose = True    # display the command descriptions next to the bot labels
 
         # Calculate flag positions and store the middle.
         ours = self.game.team.flag.position
@@ -87,11 +87,11 @@ class PandSBot(Commander):
         #self.levelAnalysis.getBreakingPoints(path)
         #self.levelAnalysis.getBreakingMap(path, self.level.firingDistance)
         ##result = an.buildLOS()
-        self.attackingPaths = self.levelAnalysis.getBestBreakingPoints([self.ourSpawn], self.game.enemyTeam.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, 3)#int(self.countBot)+2*0)
+        self.attackingPaths = self.levelAnalysis.getBestBreakingPoints([self.ourSpawn], self.game.enemyTeam.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
         print 'attackingPoints done'
         ourFlanks = [self.freePos(self.game.team.flag.position + f * 16.0) for f in [self.left, self.right]]
         startPoints = [self.spawn]+ourFlanks
-        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(startPoints, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, 3)#int(self.countBot)+2*0)
+        self.breakingPoints = self.levelAnalysis.getBestBreakingPoints(startPoints, self.game.team.flag.position, self.level.firingDistance*0.75, self.level.firingDistance*1.5, int(self.countBot)+2*0)
         print 'breakingPoints done'
 
 
@@ -421,7 +421,7 @@ class PandSBot(Commander):
         if self.dangerAtRespawn<0.3:
             return False
 
-        isSafe = self.EstimateTimeBeforeMeet(pos)>1
+        isSafe = self.EstimateTimeBeforeMeet(pos)>=0
 
         return isSafe
 
