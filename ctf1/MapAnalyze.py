@@ -128,11 +128,11 @@ class MapAnalyzeVisibility(object):
                 if self.dangerMap[x][y] != -1:
                     self.dangerMap[x][y]+=data[x][y]
 
-    def updateDanger(self, pos, dir, n, r, cost = 196):
+    def updateDanger(self, pos, dir, n, r, cost = 16):
         self.updateMap(self.dangerMap, pos, dir, n, r, cost)
 
 
-    def updateMap(self, map, pos, dir, n, r, cost = 196):
+    def updateMap(self, map, pos, dir, n, r, cost = 16):
         if dir.x != 0 or dir.y!= 0:
             sector = self.getSectorIndexFloat(dir)
         else:
@@ -155,7 +155,7 @@ class MapAnalyzeVisibility(object):
             if bot.state == BotInfo.STATE_DEFENDING:
                 self.updateDanger(bot.position, bot.facingDirection, 1, r, -1)
             else:
-                self.updateDanger(bot.position, bot.facingDirection, 1, r, 196)
+                self.updateDanger(bot.position, bot.facingDirection, 1, r, 16)
 
         saveImage("DangerMap", self.dangerMap) 
 
