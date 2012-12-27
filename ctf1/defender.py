@@ -20,12 +20,14 @@ class PlaceholderCommander(Commander):
     def initialize(self):
         """Use this function to setup your bot before the game starts."""
         self.pos = self.game.team.flag.position
+        dir = [Vector2(1,0),Vector2(1.73/2,-1.0/2),Vector2(1.73/2,1.0/2),Vector2(1.0/2, 1.73/2),Vector2(1.0/2, -1.73/2),Vector2(0,1),Vector2(0,-1)]
+
         if self.pos.x>self.level.width/2:
             self.pos.x=self.level.width-1
-            self.dir = [Vector2(-1,0),Vector2(-1,-2),Vector2(-1,2)]
+            self.dir = [-d for d in dir]
         else:
             self.pos.x=0+1
-            self.dir = [Vector2(1,0),Vector2(1,-2),Vector2(1,2)]
+            self.dir = [d for d in dir]
         self.dirIndex=0
         self.verbose = True    # display the command descriptions next to the bot labels
 
@@ -33,7 +35,8 @@ class PlaceholderCommander(Commander):
         """Override this function for your own bots.  Here you can access all the information in self.game,
         which includes game information, and self.level which includes information about the level."""
         
-        
+        for bot in self.game.team.members: 
+            print bot.visibleEnemies,bot.seenBy
         
         # for all bots which aren't currently doing anything
         for bot in self.game.bots_available:
