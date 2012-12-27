@@ -14,17 +14,13 @@ class BTContext:
     def __init__(self, root, *executionContext):
         self.root = root
         self.executionContext=executionContext
-        #self.currentChild=[0 for x in range(n)]
         self.prevPath = []
         self.currentIdPath = []
         self.lastRunningNode=None
         self.debugInfo = ''
-        #commander, bot = self.executionContext
-        #commander.log.info("Context created") 
+
 
     def tick(self):
-        #commander, bot = self.executionContext
-        #commander.log.info("Context run") 
         self.debugInfo = ''
         self.root.execute(self, [], len(self.prevPath)>0)
         #print self.debugInfo
@@ -71,8 +67,7 @@ class BTSequence(BTNode):
         else:
             prevPathChild = -1
         context.debugInfo+=' Seq['
-        #commander, bot = context.executionContext
-        #commander.log.info("Sequence run" + str(currentChild))  
+
 
         status = self.childs[currentChild].execute(context, currentPath+[currentChild], isPathLikePrev)
         context.debugInfo+=str(currentChild)+'/'
@@ -86,10 +81,6 @@ class BTSequence(BTNode):
                 #currentChild = 0
                 break
 
-        #if (status == BTNode.STATUS_FAIL):
-        #    currentChild=0
-
-        #context.currentChild[self.id] = currentChild   
         context.debugInfo+=']'
              
         return status
@@ -100,8 +91,7 @@ class BTSelector(BTNode):
      Sequence node for Behaviour Tree
     """
     def execute(self, context, currentPath, isPathLikePrev):
-        #commander, bot = context.executionContext
-        #commander.log.info("Selector run")  
+
         context.debugInfo+= self.name
         
         if (isPathLikePrev):
@@ -139,9 +129,6 @@ class BTAction(BTNode):
         """
         Run node
         """    
-        #commander, bot = context.executionContext
-        #commander.log.info("Action run")    
-        
   
         check = self.action(*context.executionContext);
         context.debugInfo+='Act'
@@ -171,9 +158,6 @@ class BTCondition(BTNode):
         """
         Run node
         """
-        #commander, bot = context.executionContext
-        #commander.log.info("Condition run")    
-
         check = self.condition(*context.executionContext);
         context.debugInfo+='Cond:'+str(check)
 
@@ -185,3 +169,24 @@ class BTCondition(BTNode):
         else:
             return BTNode.STATUS_FAIL
 
+
+class BTParallelCondition(BTNode):
+    """
+    Check condition in parallel with some node
+    """
+    def __init__(self, condition, guardedNode):
+        self.condition = condition
+        self.childs=[]
+        self.guardedNode = guardedNode
+
+    def execute(self, context, currentPath, isPathLikePrev):
+        """
+        Run node
+        """
+        check = self.condition(*context.executionContext);
+        context.debugInfo+='ParallelCond:'+str(check)
+
+        if (check):
+            return self.guardedNode.execute(context, currentPath, isPathLikePrev)
+        else:
+            return BTNode.STATUS_FAIL
