@@ -46,6 +46,7 @@
     <Compile Include="role.py" />
     <Compile Include="simulate.py" />
     <Compile Include="vector2.py" />
+    <Compile Include="visibility.py" />
     <Compile Include="__init__.py" />
   </ItemGroup>
   <ItemGroup>

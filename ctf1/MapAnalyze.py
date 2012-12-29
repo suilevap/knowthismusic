@@ -4,6 +4,7 @@ import numpy
 from PIL import Image, ImageDraw
 from api.vector2 import Vector2
 from api.gameinfo import *
+from visibility import Wave
 
 from Queue import PriorityQueue 
 import math
@@ -64,6 +65,39 @@ class MapAnalyzeVisibility(object):
             for x in range(self.w):
                 if self.isCorner(x,y):
                     self.cornerPoints.append(Vector2(x+0.5,y+0.5))
+
+        #self.possibleEnemyPosMapWithBorder =[ [ False for y in range(self.h+2)] for x in range(self.w+2)]
+        #self.possibleEnemyPosMapWithBorderTmp =[ [ False for y in range(self.h+2)] for x in range(self.w+2)]
+        self.cells = []
+        self.wave = Wave((self.w,self.h), lambda x,y: self.map[x][y]>1, lambda x,y: self.cells.append((x,y)))
+
+    def getNewVisiblePoints(self, pos1, pos2):
+        self.cells=[]
+        self.wave.compute(pos1)
+        visiblePoints=self.cells[:]
+        self.cells=[]
+        self.wave.compute(pos2)
+        result =[]
+        for p in self.cells:
+            if p not in visiblePoints:
+                result.append(p)
+        return result
+
+    def updatePossibleEnemyPos(self):
+        for y0 in range(self.h):
+            for x0 in range(self.w):
+                x,y=x0+1,y0+1
+                self.possibleEnemyPosMapWithBorderTmp[x][y] = (
+                    self.possibleEnemyPosMapWithBorder[x-1][y-1] or
+                    self.possibleEnemyPosMapWithBorder[x-0][y-1] or
+                    self.possibleEnemyPosMapWithBorder[x+1][y-1] or
+                    self.possibleEnemyPosMapWithBorder[x-1][y] or
+                    self.possibleEnemyPosMapWithBorder[x-0][y] or
+                    self.possibleEnemyPosMapWithBorder[x+1][y] or
+                    self.possibleEnemyPosMapWithBorder[x-1][y+1] or
+                    self.possibleEnemyPosMapWithBorder[x-0][y+1] or
+                    self.possibleEnemyPosMapWithBorder[x+1][y+1] )
+        
         
     def pointSafeToCharge(self, x,y):
         sectors=self.getAllSectors(Vector2(x,y), 2)
@@ -73,7 +107,7 @@ class MapAnalyzeVisibility(object):
         result=[ [(0) for y in range(self.h)] for x in range(self.w)]
         for y in range(self.h):
             for x in range(self.w):
-                result[x][y] = 0 if self.pathMap[x][y]==-1 else  (self.averageMin[x][y]*8-self.maxField[x][y])/4#0 if self.pointSafeToCharge(x,y) else 64
+                result[x][y] = 0 if self.pathMap[x][y]==-1 else  (self.averageMin[x][y]*8-self.maxField[x][y])/2#0 if self.pointSafeToCharge(x,y) else 64
         saveImage('saveMap',result)
         return result
 
@@ -96,10 +130,22 @@ class MapAnalyzeVisibility(object):
                 return Vector2(x+0.5, y+0.5)
         return None
 
-    def getAllVisiblePoints(self, pos ,r, targetSector = -1, sectorsCount=0, useMax = False ):
+    def getAllVisiblePoints(self, pos ,r, targetSector = -1, sectorsCount=0, useMax = False, usePrecise=False ):
         result = []
         x0 = int(pos.x)
         y0 = int(pos.y)
+
+        if usePrecise:
+            if targetSector!=-1:
+                print 'Error! Use precise visibility only with targetSector -1'
+            self.cells=[]
+            self.wave.compute(pos)
+            for p in self.cells:
+                x,y=p
+                if ((x0-x)*(x0-x)+(y0-y)*(y0-y))<=r*r:
+                    result.append(p)
+            return result
+
 
         minX, minY = self.clamp(int(pos.x-r), 0, self.w), self.clamp(int(pos.y-r), 0, self.h)
         maxX, maxY = self.clamp(int(pos.x+r), 0, self.w), self.clamp(int(pos.y+r), 0, self.h) 
@@ -139,15 +185,21 @@ class MapAnalyzeVisibility(object):
             sector = -1
         x0 = int(pos.x)
         y0 = int(pos.y)
-        points = self.getAllVisiblePoints(pos, r, sector, n, True)
+        points = self.getAllVisiblePoints(pos, r, -1, 0, True)
         for visiblePoint in points:
             x,y = visiblePoint
+               
             if map[x][y]!=-1 and (x!=x0 or y!=y0):
-                if cost != -1:
-                    map[x][y] += cost
+                delta = Vector2(x,y)-pos
+                sectorFloat = self.getSectorIndexFloat(delta)
+                if sector==-1 or self.getSectorDiff(sector,sectorFloat)<=n:
+                    if cost != -1:
+                        map[x][y] += cost
+                    else:
+                        map[x][y] = cost
                 else:
-                    map[x][y] = cost
-
+                    if cost != -1:
+                        map[x][y] += cost/8
 
     def updateDangerStep(self, bots, r):
         self.dangerMap =[ [ self.dangerMapStatic[x][y] for y in range(self.h)] for x in range(self.w)]
