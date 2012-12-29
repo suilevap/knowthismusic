@@ -105,8 +105,8 @@ class PandSBot(Commander):
         self.flagPoints=self.generateFlagPoints()
 
 
-        self.levelAnalysis.mergeDangerStaticWith([ [    (3-self.timeMap[x][y])*64
-                                                        if self.timeMap[x][y]<3
+        self.levelAnalysis.mergeDangerStaticWith([ [    (5-self.timeMap[x][y])*64
+                                                        if self.timeMap[x][y]<5
                                                         else 0
                                                     for y in range(self.levelAnalysis.h)] for x in range(self.levelAnalysis.w)])
 
@@ -218,13 +218,13 @@ class PandSBot(Commander):
         skip=0;
         #if bot.command==command.Move or bot.command==command.Charge or bot.command==command.Attack: 
 
-        if len(bot.path)==1 and (bot.path[0]-bot.position).length()<0.5:
+        if len(bot.path)==1 and (bot.path[-1]-bot.position).length()<0.5:
             bot.path=[]
             bot.ready = True
         for i in range(len(bot.path)-1):
             d1 = (bot.path[i]-bot.position).length()
             d2 = (bot.path[i+1]-bot.position).length()
-            if (d2-d1)>0:
+            if (d2<d1):
                 skip = i
         bot.path = bot.path[skip:]
         bot.ready = len(bot.path)==0 and bot.state != BotInfo.STATE_DEFENDING
@@ -367,6 +367,7 @@ class PandSBot(Commander):
             self.levelAnalysis.updateDangerStep(self.dangerEnemies, self.level.firingDistance*1.0+2)
             self.dangerMapUpdated = True
         path = self.levelAnalysis.getPathThroughDanger(start, end)
+        #path = path[0::2]
         return path
 
     def generateFlagPoints(self):
