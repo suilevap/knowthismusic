@@ -1,4 +1,5 @@
 
+import random
 
 class BTTree():
     def __init__(self, root):
@@ -14,18 +15,30 @@ class BTContext:
     def __init__(self, root, *executionContext):
         self.root = root
         self.executionContext=executionContext
-        self.prevPath = []
-        self.currentIdPath = []
-        self.lastRunningNode=None
-        self.debugInfo = ''
-
+        self.clear()
 
     def tick(self):
         self.debugInfo = ''
         self.root.execute(self, [], len(self.prevPath)>0)
         #print self.debugInfo
+    
+    def clear(self):
+        self.prevPath = []
+        self.currentIdPath = []
+        self.lastRunningNode=None
+        self.debugInfo = ''
+        self.choices = []
 
-        
+    def addChoice(self, node, childIndex):
+        #print 'choice', childIndex
+        self.choices.append((node, childIndex))
+    
+    def applyLearning(self, delta):
+        importantChoices = self.choices[-2:]
+        for node, childIndex in importantChoices:
+            node.score[childIndex]+=delta
+        #self.choices = []
+        #print 'Apply learning',  delta
 
 class BTNode():
     """
@@ -190,3 +203,46 @@ class BTParallelCondition(BTNode):
             return self.guardedNode.execute(context, currentPath, isPathLikePrev)
         else:
             return BTNode.STATUS_FAIL
+
+class BTLearningChoice(BTNode):
+    """
+     Learning choice node for Behaviour Tree
+    """
+    def __init__(self, *childs):
+        
+        if isinstance(childs[0], str):
+            self.name = childs[0]
+            childs = childs[1:]        
+        else:
+            self.name = ''
+            #childs=childs        
+        self.score = [s for s,_ in childs]
+        self.childs = [node for _,node in childs]
+        #return super(BTLearningChoice, self).__init__(*childs)
+        
+
+    def execute(self, context, currentPath, isPathLikePrev):
+
+        context.debugInfo+= self.name
+        currentChild = -1
+        if (isPathLikePrev):
+            prevPathChild = context.prevPath[len(currentPath)]
+            currentChild = prevPathChild
+        else:
+            prevPathChild = -1
+        context.debugInfo+=' LearningChoice('
+        
+        newChoice = False
+        if currentChild == -1:
+            newChoice = True
+            currentChild = max(range(len(self.childs)), key = lambda index: self.score[index]*(0.5+random.random()*0.5))
+
+        status = self.childs[currentChild].execute(context, currentPath+[currentChild], isPathLikePrev)
+        if newChoice and status == BTNode.STATUS_RUNNING:
+            context.addChoice(self, currentChild)
+        context.debugInfo+=str(currentChild)+'/'
+
+
+        context.debugInfo+=')'
+        #print 'Choice', self.score
+        return status
