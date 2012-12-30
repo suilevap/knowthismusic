@@ -102,11 +102,11 @@ class PandSBot(Commander):
         self.dangerMapUpdated = False
         self.timeMap, self.enemyDistMap = self.generateTimeMap()
         print 'timeMap done'
-        self.flagPoints=self.generateFlagPoints()
+        #self.flagPoints=self.generateFlagPoints()
 
 
-        self.levelAnalysis.mergeDangerStaticWith([ [    (5-self.timeMap[x][y])*64
-                                                        if self.timeMap[x][y]<5
+        self.levelAnalysis.mergeDangerStaticWith([ [    (10-self.timeMap[x][y])/10.0*256
+                                                        if self.timeMap[x][y]<10
                                                         else 0
                                                     for y in range(self.levelAnalysis.h)] for x in range(self.levelAnalysis.w)])
 
@@ -121,6 +121,11 @@ class PandSBot(Commander):
         self.lastRespawnTime = 0;
         self.timeAfterRespawn = 0;
         self.updateDangerAtRespawn()
+        self.matchTime = self.game.match.timeRemaining
+                            
+        self.matchDynamicInv = (self.game.match.timeToNextRespawn*1.0/self.matchTime)/self.countBot
+        self.flagPickedUpPos = Vector2(0,0)
+        print 'match',self.matchTime, self.matchDynamicInv * 10000
         
 
     def tick(self):
@@ -301,15 +306,34 @@ class PandSBot(Commander):
             elif event.type==MatchCombatEvent.TYPE_KILLED:
                 if event.subject.team.name!=self.game.team.name:
                     self.enemyBotsAlive-=1
+                    if event.instigator != None:
+                        bot = event.instigator
+                        bot.brain.applyLearning(+1)
                     #print "Alive enemies: %d"%self.enemyBotsAlive
                 else:
                     self.dangerEvents.append(event)
                     #pos = e.instigator.position if e.instigator!=None else e.subject.position
                     pos = event.subject.position
-                    self.levelAnalysis.updateDangerStatic(pos, 4, 196)
+                    cost = 10000 *self.matchDynamicInv
+                    self.levelAnalysis.updateDangerStatic(pos, 4, cost)
+                    bot = event.subject
+                    bot.brain.applyLearning(-1)
+                    bot.brain.clear()
             elif event.type == MatchCombatEvent.TYPE_FLAG_PICKEDUP and event.subject.team.name==self.game.team.name:
                 self.dangerEvents.append(event)
-
+            elif event.type == MatchCombatEvent.TYPE_FLAG_PICKEDUP and event.subject.team.name!=self.game.team.name:
+                self.flagPickedUpPos = event.subject.position
+            elif event.type == MatchCombatEvent.TYPE_FLAG_CAPTURED and event.subject.team.name!=self.game.team.name:
+                 if event.instigator != None:
+                    bot = event.instigator                    
+                    bot.brain.applyLearning(+8)
+            elif event.type == MatchCombatEvent.TYPE_FLAG_DROPPED and event.subject.team.name!=self.game.team.name:
+                 if event.instigator != None:
+                    bot = event.instigator
+                    dist = (self.game.enemyTeam.flagSpawnLocation-self.game.team.flagScoreLocation).length()
+                    delta = (self.flagPickedUpPos-event.subject.position).length()
+                    score = delta/dist*7-3
+                    bot.brain.applyLearning(score)
         #if len(self.dangerEvents)>0:
         #    print 'events'
         #    print self.dangerEvents
