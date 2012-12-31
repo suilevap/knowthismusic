@@ -107,7 +107,7 @@ class MapAnalyzeVisibility(object):
         result=[ [(0) for y in range(self.h)] for x in range(self.w)]
         for y in range(self.h):
             for x in range(self.w):
-                result[x][y] = 0 if self.pathMap[x][y]==-1 else  (self.averageMin[x][y]*8-self.maxField[x][y])/2#0 if self.pointSafeToCharge(x,y) else 64
+                result[x][y] = 0 if self.pathMap[x][y]==-1 else  (self.averageMin[x][y]*8-self.maxField[x][y])/4#0 if self.pointSafeToCharge(x,y) else 64
         saveImage('saveMap',result)
         return result
 
@@ -167,6 +167,8 @@ class MapAnalyzeVisibility(object):
     
     def updateDangerStatic(self, pos, r, cost = 128):
         self.updateMap(self.dangerMapStatic, pos, Vector2(0,0), 0, r, cost)
+    def updateDangerStaticDir(self, pos, r, dir, n, cost = 128):
+        self.updateMap(self.dangerMapStatic, pos, dir, 1, r, cost, True)
 
     def mergeDangerStaticWith(self, data):
         for y in range(self.h):
@@ -175,17 +177,17 @@ class MapAnalyzeVisibility(object):
                     self.dangerMap[x][y]+=data[x][y]
 
     def updateDanger(self, pos, dir, n, r, cost = 16):
-        self.updateMap(self.dangerMap, pos, dir, n, r, cost)
+        self.updateMap(self.dangerMap, pos, dir, n, r, cost, True)
 
 
-    def updateMap(self, map, pos, dir, n, r, cost = 16):
+    def updateMap(self, map, pos, dir, n, r, cost = 16, usePrecise = False):
         if dir.x != 0 or dir.y!= 0:
             sector = self.getSectorIndexFloat(dir)
         else:
             sector = -1
         x0 = int(pos.x)
         y0 = int(pos.y)
-        points = self.getAllVisiblePoints(pos, r, -1, 0, True)
+        points = self.getAllVisiblePoints(pos, r, -1, 0, True, usePrecise)
         for visiblePoint in points:
             x,y = visiblePoint
                
@@ -199,7 +201,7 @@ class MapAnalyzeVisibility(object):
                         map[x][y] = cost
                 else:
                     if cost != -1:
-                        map[x][y] += cost/8
+                        map[x][y] += cost/16
 
     def updateDangerStep(self, bots, r):
         self.dangerMap =[ [ self.dangerMapStatic[x][y] for y in range(self.h)] for x in range(self.w)]
