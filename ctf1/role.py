@@ -251,10 +251,13 @@ def Command_TryChargeHomeSafe(commander, bot):
     if len(path)==0:
         return False
     pathSame = True
-    for i,p in enumerate(path):
-        if (p-bot.path[i]).squaredLength()>4:
-            pathSame = False
-            break
+    if len(path)>len(bot.path):
+        pathSame = False
+    else:
+        for i,p in enumerate(path):
+            if (p-bot.path[i]).squaredLength()>4:
+                pathSame = False
+                break
     if pathSame:
         return False
     commander.issue(  commands.Charge, bot, path, description = 'Charging home safe another way (ATTACKER)')
