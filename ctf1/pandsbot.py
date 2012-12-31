@@ -105,15 +105,16 @@ class PandSBot(Commander):
         #self.flagPoints=self.generateFlagPoints()
 
 
-        self.levelAnalysis.mergeDangerStaticWith([ [    (10-self.timeMap[x][y])/10.0*256
-                                                        if self.timeMap[x][y]<10
+        self.levelAnalysis.mergeDangerStaticWith([ [    (2-self.timeMap[x][y])/2.0*32
+                                                        if self.timeMap[x][y]<2
                                                         else 0
                                                     for y in range(self.levelAnalysis.h)] for x in range(self.levelAnalysis.w)])
 
         self.enemyDefendersDelta = 0
         self.enemyDefendersPrevious = 0
         self.unknownEnemiesCount = self.countBot
-        
+        self.unknownEnemiesPrevious = self.countBot
+        self.unknownEnemiesCountDelta = 0
 
         #print self.level.initializationTime
         #print "New commander"
@@ -142,8 +143,9 @@ class PandSBot(Commander):
                                if bot.health>0 and bot.position!=None and
                                ((bot.seenlast)<self.eventInvalidationTime or 
                                 (bot.state == BotInfo.STATE_DEFENDING and (bot.seenlast)<self.eventInvalidationTime*2))]
+        self.unknownEnemiesCountPrevious = self.unknownEnemiesCount
         self.unknownEnemiesCount = self.countBot-len(self.dangerEnemies)
-
+        self.unknownEnemiesCountDelta = self.unknownEnemiesCount - self.unknownEnemiesCountPrevious
 
         self.enemyDefenders = [b for b in self.game.enemyTeam.members if b.state == BotInfo.STATE_DEFENDING and b.health>0] 
         self.enemyDefendersDelta = len(self.enemyDefenders)-self.enemyDefendersPrevious
@@ -316,6 +318,12 @@ class PandSBot(Commander):
                     pos = event.subject.position
                     cost = 10000 *self.matchDynamicInv
                     self.levelAnalysis.updateDangerStatic(pos, 4, cost)
+                    if event.instigator!=None:
+                        enemy = event.instigator
+                        bot = event.subject
+                        self.levelAnalysis.updateDangerStaticDir(enemy.position, self.level.firingDistance, bot.position-enemy.position, 1, cost/8)
+
+
                     bot = event.subject
                     bot.brain.applyLearning(-1)
                     bot.brain.clear()
@@ -435,7 +443,7 @@ class PandSBot(Commander):
         timeFromRespawn = self.game.match.timeToNextRespawn+safeTime
 
         if self.enemyBotsAlive == 0:
-            return timeFromRespawn
+            return timeFromRespawn+safeTime
         if self.enemyBotsAlive == self.countBot:
             timeFromRespawn *= 2
         
@@ -460,7 +468,7 @@ class PandSBot(Commander):
     def IsPosSafeNow(self, pos):
         if self.enemyBotsAlive == 0:
             return True
-        if self.dangerAtRespawn<0.3:
+        if self.dangerAtRespawn<0.3 and self.unknownEnemiesCount>0:
             return False
 
         isSafe = self.EstimateTimeBeforeMeet(pos)>0
