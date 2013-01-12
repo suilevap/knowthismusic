@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{8be6af34-009a-479e-a277-7be86a56c2b8}</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>MapAnalyze.py</StartupFile>
+    <SearchPath>D:\dev\AI\CTF\ourBot\ctf1\api\;D:\dev\AI\CTF\ourBot\ctf1\;C:\Python27\Lib\site-packages\;D:\dev\ai\CTF\pands\ctf1\api</SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>ctf1</Name>
+    <RootNamespace>ctf1</RootNamespace>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <CommandLineArguments />
+    <InterpreterPath />
+    <InterpreterArguments />
+    <DjangoSettingsModule />
+    <DebugStdLib>False</DebugStdLib>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <InterpreterId>2af0f10d-7135-4994-9156-5d01c9c11b7e</InterpreterId>
+    <InterpreterVersion>2.7</InterpreterVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="bootstrap.py" />
+    <Compile Include="bt.py" />
+    <Compile Include="client.py" />
+    <Compile Include="commander.py" />
+    <Compile Include="commands.py" />
+    <Compile Include="competition.py" />
+    <Compile Include="defender.py" />
+    <Compile Include="examples.py" />
+    <Compile Include="gameinfo.py" />
+    <Compile Include="handshaking.py" />
+    <Compile Include="MapAnalyze.py" />
+    <Compile Include="mycmd.py" />
+    <Compile Include="pandsbot.py" />
+    <Compile Include="role.py" />
+    <Compile Include="simulate.py" />
+    <Compile Include="vector2.py" />
+    <Compile Include="__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bootstrap.pyc" />
+    <Content Include="client.bat" />
+    <Content Include="competition.bat" />
+    <Content Include="examples.pyc" />
+    <Content Include="README.txt" />
+    <Content Include="simulate.bat" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+</Project>
