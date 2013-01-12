@@ -241,12 +241,14 @@ def Command_RunHomeSafe(commander, bot):
     path = commander.getSafePath(bot.position, target)
     if len(path)==0:
         return False
-    commander.issue(  commands.Charge, bot, path, description = 'Running home safe (ATTACKER)')
+    command = choice([commands.Charge, commands.Charge, commands.Move])
+    commander.issue(  command, bot, path, description = 'Running home safe (ATTACKER)')
     return True
 
 def Command_RunHome(commander, bot):
     target = commander.game.team.flagScoreLocation
-    commander.issue(  commands.Charge, bot, target, description = 'Running home (ATTACKER)')
+    command = choice([commands.Charge, commands.Charge, commands.Move])
+    commander.issue(  command, bot, target, description = 'Running home (ATTACKER)')
     return True
 
 
@@ -388,6 +390,7 @@ def Condition_SetEnemy(commander, bot, enemy):
     return True
 
 def Condition_ReadyToAttack(commander, bot):
+    return False;
     result = (bot.state==BotInfo.STATE_SHOOTING or bot.state==BotInfo.STATE_TAKINGORDERS
                or len([b for b in bot.visibleEnemies if b.health>0 and (b.position-bot.position).length()<commander.level.firingDistance ])>0)
     return result
@@ -639,7 +642,10 @@ TakeFlag = BTSequence('TakeFlag',
                                 Command_AttackEnemyFlagFlankSmartStart, 
                                 Command_RunToEnemyFlagFlank4, 
                                 Command_RunToEnemyFlagFlank2,
-                                Command_RunToEnemyFlag])(commander,bot))
+                                Command_RunToEnemyFlag
+                                #lambda commnder,bot: Command_AttackFlankSmart(commannder, bot, commander.game.enemyTeam.flagScoreLocation),
+                                #lambda commnder,bot: Command_AttackFlankSmartStart(commannder, bot, commander.game.enemyTeam.flagScoreLocation)
+                                ])(commander,bot))
 
                     #BTBotTask(Command_AttackEnemyFlagFlank3)
                 )

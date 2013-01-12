@@ -166,10 +166,11 @@ class PandSBot(Commander):
 
         for bot in self.game.bots_alive:
             if (bot.brain != None):
-                self.updatePathPos(bot)
-                bot.brain.tick()
-                if self.verbose:
-                    print bot.name+':'+bot.brain.debugInfo
+                if (bot.state!=BotInfo.STATE_SHOOTING and bot.state!=BotInfo.STATE_TAKINGORDERS):
+                    self.updatePathPos(bot)
+                    bot.brain.tick()
+                    if self.verbose:
+                        print bot.name+':'+bot.brain.debugInfo
 
         #self.levelAnalysis.updateDangerStep(self.game.bots_alive)
         #saveImage('danger', self.levelAnalysis.dangerMap)
