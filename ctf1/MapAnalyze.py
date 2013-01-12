@@ -358,11 +358,13 @@ class MapAnalyzeVisibility(object):
             bestPoint = Vector2(x+0.5,y+0.5)
 
             pathMap = [ [tmpMap[x][y]  for y in range(self.h)] for x in range(self.w)]
-            
+            bestPair = None
             for p in path:
                 if self.checkVisibility(bestPoint, p):
                     bestPair = (bestPoint,[p], path, pathMap, i)
                     break
+            if bestPair==None:
+                break
             result.append(bestPair)
             sector = self.getSectorIndexFloat(bestPair[1][0]-bestPair[0])
 
