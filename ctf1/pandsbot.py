@@ -56,15 +56,7 @@ class PandSBot(Commander):
         self.front = Vector2(d.x, d.y).normalized()
 
         for bot in self.game.team.members:            
-            bot.role=None
-            bot.brain = None
-            bot.defendBreakingPoint=None
-            bot.defendBreakingPointIndex=-1
-            bot.Enemy = None
-            bot.enemyDefenders = []
-            bot.safePathFailedLastTime = False
-            bot.path = []
-            bot.ready = False
+            self.botInit(bot)
 
         self.defenderPart = 0.4
         self.countBot = len(self.game.team.members)
@@ -215,6 +207,17 @@ class PandSBot(Commander):
 
         return super(PandSBot, self).issue(CommandClass, bot, *args, **dct)
 
+    def botInit(self, bot):
+        bot.role=None
+        bot.brain = None
+        bot.defendBreakingPoint=None
+        bot.defendBreakingPointIndex=-1
+        bot.Enemy = None
+        bot.enemyDefenders = []
+        bot.safePathFailedLastTime = False
+        bot.path = []
+        bot.ready = False
+
     def updatePathPos(self, bot):
         skip=0;
         #if bot.command==command.Move or bot.command==command.Charge or bot.command==command.Attack: 
@@ -308,6 +311,7 @@ class PandSBot(Commander):
                     #pos = e.instigator.position if e.instigator!=None else e.subject.position
                     pos = event.subject.position
                     self.levelAnalysis.updateDangerStatic(pos, 4, 196)
+                    self.botInit(event.subject)
             elif event.type == MatchCombatEvent.TYPE_FLAG_PICKEDUP and event.subject.team.name==self.game.team.name:
                 self.dangerEvents.append(event)
 

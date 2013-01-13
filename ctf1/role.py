@@ -363,6 +363,8 @@ def Command_RunToEnemyFlagFlank4(commander, bot):
 
 
 def Command_RunToEnemyFlagFlank2(commander, bot):
+    if len(commander.attackingPaths)==0:
+        return False;
     pos = commander.game.enemyTeam.flag.position
     pos, threat, tmpPath, map, index = choice(commander.attackingPaths)
     path = getPath(bot.position, commander.freePos(pos), map)
@@ -939,6 +941,7 @@ AttackerBTTree = BTTree(
             BTCondition(lambda commander,bot: len(commander.visibleEnemies)>0),
             BTCondition(lambda commander,bot: Condition_SetEnemyIfNotNone(commander,bot, commander.getBestEnemy(bot,commander.visibleEnemies)) 
                         and bot.Enemy!=None 
+                        and bot.Enemy.position!=None
                         and (((bot.Enemy.position-bot.position).length()<commander.level.firingDistance*4
                                 and (commander.game.enemyTeam.flag.position-bot.position).length()>(bot.Enemy.position-bot.position).length())
                             or (bot.Enemy.position-bot.position).length()<commander.level.firingDistance*1.5),
